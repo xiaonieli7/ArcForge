@@ -81,6 +81,7 @@ C:\Users\<user>\.arcforge
 - [目标架构](docs/ARCHITECTURE.md)
 - [ArcForge Home 本地存储规范](docs/ARCFORGE_HOME.md)
 - [阶段路线与验收门](docs/ROADMAP.md)
+- [Research & Report Work Pack V1](docs/work-packs/RESEARCH_REPORT_V1.md)
 
 ## 参考原则
 
