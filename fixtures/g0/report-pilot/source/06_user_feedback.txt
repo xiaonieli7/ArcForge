@@ -1,0 +1,10 @@
+Project Northstar pilot interview synthesis
+Cutoff: 2026-09-12
+Participants: 12
+
+8 participants requested bulk CSV import as the most valuable follow-up capability.
+3 participants said the label "workspace applied" was confusing without a destination path.
+2 participants requested clearer ownership on open risks.
+1 participant requested dark theme support.
+
+These are qualitative requests, not committed scope.

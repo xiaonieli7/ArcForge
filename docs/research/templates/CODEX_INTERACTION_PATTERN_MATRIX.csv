@@ -1,0 +1,8 @@
+pattern_id,product_area,case_ids,observed_pattern,evidence_refs,confidence,arcforge_decision,target_docs,priority,status
+IP-01,workspace and task,W10-01;W10-04,,,,,Keep workspace task run scope continuously visible,MVP_PRD_V1;UI_WIREFRAMES_V1,P1,not_observed
+IP-02,plan,W20-01;W20-02;W20-03,,,,,Separate workflow mode from broker-enforced effect policy,MVP_PRD_V1;PROTOCOL_V1,P0,not_observed
+IP-03,approval,W30-01;W30-04;W30-05,,,,,Bind approvals to sealed invocation and exact scope,PROTOCOL_V1;UI_WIREFRAMES_V1,P0,not_observed
+IP-04,review,W40-01;W40-02;W40-03,,,,,Use typed deliverable inspector and invalidate stale previews,MVP_PRD_V1;UI_WIREFRAMES_V1,P0,not_observed
+IP-05,apply and recovery,W40-04;W40-05;W40-06,,,,,Separate accepted applied succeeded and preserve unknown,DOMAIN_MODEL_V1;UI_WIREFRAMES_V1,P0,not_observed
+IP-06,provider,W30-02;W50-01,,,,,Show provider endpoint and egress scope at decision time,MVP_PRD_V1;UI_WIREFRAMES_V1,P0,not_observed
+IP-07,extensions,W50-02;W50-03;W50-04,,,,,Keep configured connected available and authorized as distinct facts,MVP_PRD_V1;PROTOCOL_V1,P1,not_observed

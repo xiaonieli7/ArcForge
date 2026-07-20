@@ -9,7 +9,7 @@
 
 ## 1. 产品目标
 
-帮助用户把一个本地资料文件夹转化为带可追溯引用、可审查并可导出的报告 Artifact。
+帮助用户把一个本地资料文件夹转化为带可追溯引用、可审查，并能在审查后保存/应用的报告 Artifact。
 
 示例任务：
 
@@ -38,14 +38,18 @@
 
 | 格式 | 支持等级 | 引用定位 |
 |---|---|---|
-| Markdown | 完整 | 标题、行号 |
-| TXT | 完整 | 行号 |
-| 文本型 PDF | 完整 | 页码、文本片段 |
-| DOCX | 完整 | 标题、段落、表格 |
+| Markdown | V1 认证子集 | 标题、行号 |
+| TXT | V1 认证子集 | 行号 |
+| 文本型 PDF | V1 认证子集 | 页码、文本片段 |
+| DOCX | V1 认证子集 | 标题、段落、表格 |
 | CSV | 基础 | 行列范围 |
 | XLSX | 基础 | Workbook、Sheet、单元格范围 |
 
 “基础”表示支持读取、预览、抽取和引用，不承诺复杂公式计算、宏、数据透视表和格式保真编辑。
+
+- 文本型 PDF 的认证子集包含正文与页码，不含 OCR、表单和嵌入对象；
+- DOCX 的认证子集包含标题、段落、基础列表和简单表格，不保证文本框、修订记录、OLE 和复杂版式；
+- “认证子集”不表示任意同扩展名文件都能完整解析，失败必须可见。
 
 ### 4.2 V1 不支持
 
@@ -84,14 +88,14 @@ DocumentArtifact
 └── provenance
 ```
 
-### 5.2 导出
+### 5.2 Render 与保存
 
 - Markdown：V1 必须；
 - DOCX：Private Alpha 必须；
 - 引用清单 Markdown/JSON：V1 必须；
 - PDF：后置，不作为 V1 发布门。
 
-导出文件先生成在隔离 Task Workspace，用户审查后才写入真实 Workspace。
+Markdown/DOCX 先通过 `artifact.request_render` 生成在隔离 Task Workspace。用户审查后，通过独立 ApplyEffect 写入真实 Workspace；UI 可以使用“保存/导出”文案，但不得绕过 ApplyReceipt。
 
 ## 6. Source 与 Citation
 
@@ -166,7 +170,8 @@ ResearchTask
 → 展示材料清单和数据目的地
 → 用户输入 Goal
 → ArcForge 提议 Acceptance Criteria
-→ 用户确认 Plan
+→ 使用本地 Work Pack 模板形成 Plan
+→ 用户一次确认 Plan、SourceSet、数据等级、Provider、Model、Endpoint 与 Egress Policy
 → 读取、解析、索引资料
 → 展示聚合后的调查活动
 → 生成 Report Artifact
@@ -182,10 +187,10 @@ ResearchTask
 ### Plan
 
 - 可以列出和读取用户已选择 Workspace 内的支持文件；
-- 可以调用用户已选择并已展示的数据目的地模型；
+- 可以在有效 DataBoundaryGrant 下调用用户已选择并已展示的数据目的地模型；该请求属于 DataEgress，会产生网络、费用和 Provider 日志；
 - 不写真实 Workspace；
 - 不执行 Shell、Skill Script、第三方 MCP 或额外 Web；
-- 不生成真实外部 Effect。
+- 不启动用户/第三方能力进程，不持久化长期 Memory，也不产生 WorkspaceMutation 或 ExternalBusinessMutation。
 
 ### Execute
 
@@ -207,8 +212,8 @@ source.index
 model.generate
 artifact.create
 artifact.validate
-artifact.export.markdown
-artifact.export.docx
+artifact.render.markdown
+artifact.render.docx
 workspace.apply
 memory.propose
 ```
@@ -281,17 +286,20 @@ Composer / Plan-Execute / Model / Enabled Capabilities
 ## 12. 关键事件
 
 ```text
-workspace.scan.started/completed/failed
+workspace.scan.started/progressed/completed/failed
 source.discovered/unsupported/parse_failed/indexed/stale
 task.acceptance_criteria.proposed/accepted
-plan.updated
-research.progress
+task.data_boundary.confirmed/invalidated
+plan.created/updated/accepted
+activity.progress_updated
 finding.created/updated
 citation.created/invalidated
-artifact.created/updated/validated/exported
-effect.apply.proposed/approved/applied/failed/unknown
-memory.candidate.proposed/accepted/rejected
-task.completed/failed/canceled
+artifact.created/version_created/validation_started/validated
+artifact.validation_failed/validation_invalidated
+effect.proposed/authorized/execution_started/applied/failed/unknown
+approval.requested/decided/consumed
+memory_candidate.proposed/accepted/rejected
+task.completed/failed/canceled/unknown
 ```
 
 所有 UI 状态来自结构化事件，不解析 Agent 文本判断阶段。
@@ -306,8 +314,8 @@ task.completed/failed/canceled
 → 用户审查
 → 重新校验目标文件
 → Apply Journal
-→ 原子写入或明确失败
-→ Evidence Receipt
+→ 逐文件原子替换或明确失败
+→ ApplyReceipt
 ```
 
 规则：
@@ -317,6 +325,7 @@ task.completed/failed/canceled
 - 用户或外部应用修改目标后，禁止静默覆盖；
 - Apply 中断后启动时必须对账；
 - “生成成功”与“已保存到真实 Workspace”是两个不同状态。
+- 每个文件尽可能使用同目录临时文件、Flush 和原子替换；多文件批次不承诺整体原子性，Journal 必须记录逐项 `Applied / Failed / Unknown`。
 
 ## 14. Memory
 
@@ -347,15 +356,15 @@ Memory 默认是 Candidate，只有用户确认后才能提升到 Workspace/User
 - Markdown/DOCX 导出符合结构要求；
 - 用户可跳转到每个关键 Finding 的来源；
 - 用户可以放弃 Task Workspace 而不改变真实 Workspace；
-- Apply 结果产生结构化 Receipt。
+- Apply 结果产生结构化 ApplyReceipt。
 
 ### 质量
 
-- 关键 Finding Citation 覆盖率 ≥95%；
+- 关键 Finding Citation 覆盖率 ≥95%：有至少一个有效 Citation 的关键事实 Finding / 人工标注的全部关键事实 Finding；
 - 不存在来源的事实性结论必须标为假设；
-- Citation 指向错误来源的比例 <2%；
+- Citation 指向错误来源的比例 <2%：来源不能支持对应 Claim 的 Citation / 人工审计 Citation；认证样本至少审计约 200 条 Citation；
 - 报告章节和 Acceptance Criteria 覆盖率 ≥90%；
-- 产生 Artifact 的任务中，用户保留或仅小改后保留比例目标 ≥70%。
+- 产生 Artifact 的任务中，用户保留或仅小改后保留比例目标 ≥70%；“仅小改”按预定义结构修改 Rubric 和编辑时长判断。
 
 ### 安全
 
@@ -369,7 +378,7 @@ Memory 默认是 Candidate，只有用户确认后才能提升到 Workspace/User
 
 - ≥80% 测试用户无需帮助完成 Workspace → Report → Review → Save；
 - ≥90% 用户正确判断报告是否已写入真实 Workspace；
-- ≥90% 用户能够确认代码/资料将发送到哪个 Provider；
+- ≥90% 用户能够确认所选资料内容将发送到哪个 Provider/Endpoint；
 - 首个可审查 Artifact 的时间需要在真实基线测试后冻结目标。
 
 ## 16. 测试数据集
@@ -411,12 +420,18 @@ Private Alpha 建议初始限制：
 - 任意模型都能达到相同报告质量；
 - 将所有历史对话自动保存为 Memory。
 
-## 19. G0 待确认
+## 19. G0 决策状态
 
-1. Private Alpha 默认导出是否确定为 Markdown + DOCX。
-2. PDF 是否仅支持文本型文件。
-3. CSV/XLSX 第一版是否只读，不编辑源表格。
-4. Web Research 是否完全后置。
-5. 默认报告文件名和输出目录规则。
-6. 引用短摘录的本地保存与脱敏策略。
-7. 第一批 5–10 个真实 Workspace 样本来源。
+已决：
+
+1. Private Alpha Render Markdown + DOCX；
+2. PDF 仅支持文本型认证子集；
+3. CSV/XLSX 只读，不编辑源表格；
+4. Web Research 后置；
+5. 默认保存到 `<Workspace>\ArcForge Output\<任务标题>-<YYYYMMDD-HHmm>\`，不覆盖已有文件。
+
+仍待验证：
+
+1. 最终报告文件名的字符清洗、冲突和本地化规则；
+2. 引用短摘录的本地保存、脱敏与删除策略；
+3. 第一批 5–10 名设计伙伴及至少 10 个真实 Workspace 来源。

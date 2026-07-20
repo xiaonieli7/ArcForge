@@ -29,12 +29,13 @@ Goal + Acceptance Criteria + Context + Capability Budget
 - 已验证的动作回执；
 - 明确说明无法完成及其原因。
 
-## 第一阶段场景
+## 产品演进场景
 
-1. 资料文件夹 → 带引用的可交付报告。
-2. Issue → 代码补丁、测试证据和 Diff 审查。
+Core Private Alpha 的唯一英雄场景是：
 
-编码是 ArcForge 的一个认证工作域。Grok Build 是候选 Coding Runtime，不是 ArcForge 的产品或架构中心。
+> 资料文件夹 → 带引用报告 → 审查 → 保存并获得 ApplyReceipt（保存记录）。
+
+`Issue → 代码补丁、测试证据和 Diff` 是下一认证工作域，不属于 Core Private Alpha 的 Go 条件。编码是 ArcForge 的一个可扩展工作域；Grok Build 只是候选 `GrokBuildCodingAdapter`，不是 ArcForge 的产品或架构中心。
 
 ## 核心架构
 
@@ -45,6 +46,7 @@ Work Kernel / Application Core
         ├── AgentBackend Registry
         ├── Artifact / Evidence / Effect
         ├── Policy / Approval / Memory
+        ├── Storage Broker / Event Store
         └── Trusted Execution Broker
                 ├── Files / Workspace
                 ├── Process / Shell
@@ -75,13 +77,33 @@ C:\Users\<user>\.arcforge
 
 ## 当前状态
 
-项目当前处于产品定义和架构冻结阶段，尚未开始生产代码。
+项目当前处于 G0 产品与架构契约收敛评审阶段，尚未冻结，也尚未开始生产代码。
 
+产品与交付范围：
+
+- [MVP PRD V1](docs/product/MVP_PRD_V1.md)
+- [G0 退出检查表](docs/product/G0_EXIT_CHECKLIST.md)
 - [产品愿景](docs/PRODUCT_VISION.md)
-- [目标架构](docs/ARCHITECTURE.md)
-- [ArcForge Home 本地存储规范](docs/ARCFORGE_HOME.md)
-- [阶段路线与验收门](docs/ROADMAP.md)
+- [Codex 桌面产品基准与对齐分析](docs/research/CODEX_PRODUCT_BASELINE_2026-07.md)
+- [Codex Windows 桌面真实走查计划 V1](docs/research/CODEX_WINDOWS_WALKTHROUGH_PLAN_V1.md)
+- [Codex Windows 桌面走查执行包 V1](docs/research/CODEX_WINDOWS_WALKTHROUGH_RUNBOOK_V1.md)
+- [G0 用户研究与英雄场景验证计划 V1](docs/research/USER_RESEARCH_PLAN_V1.md)
+- [G0 三人 Pilot 执行手册 V1](docs/research/G0_PILOT_RUNBOOK_V1.md)
+- [G0 标准报告夹具 V1](fixtures/g0/report-pilot/README.md)
+- [Grok Build Runtime Adapter 接纳评估 V1](docs/runtime/GROK_BUILD_ADAPTER_ASSESSMENT_V1.md)
 - [Research & Report Work Pack V1](docs/work-packs/RESEARCH_REPORT_V1.md)
+- [UI 低保真线框 V1](docs/design/UI_WIREFRAMES_V1.md)
+- [阶段路线与验收门](docs/ROADMAP.md)
+- [G1 Trusted Execution Broker 技术 Spike 计划 V1](docs/engineering/G1_TRUSTED_EXECUTION_SPIKE_PLAN_V1.md)
+
+平台与安全合同：
+
+- [目标架构](docs/ARCHITECTURE.md)
+- [领域模型 V1](docs/specs/DOMAIN_MODEL_V1.md)
+- [桌面/Runtime/Capability 协议 V1](docs/specs/PROTOCOL_V1.md)
+- [安全威胁模型 V1](docs/security/THREAT_MODEL_V1.md)
+- [ArcForge Home 本地存储规范](docs/ARCFORGE_HOME.md)
+- [架构决策记录](docs/adr/README.md)
 
 ## 参考原则
 

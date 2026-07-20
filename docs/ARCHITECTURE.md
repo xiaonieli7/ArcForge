@@ -18,7 +18,8 @@ Application Core / Work Orchestrator
 ├── Artifact / Evidence / Effect
 ├── Policy / Approval / Budget
 ├── Memory Candidate
-└── Event Projection
+├── Event Projection
+└── Storage Broker / DomainStoreWriter
         │
         ├──────── Agent Backend Registry ──────────┐
         │   ├── NativeWorkAdapter                  │
@@ -88,7 +89,7 @@ Workspace
         ├── Evidence
         ├── Effect
         ├── Approval
-        └── Checkpoint
+        └── MemoryCandidate
 ```
 
 ### Workspace
@@ -119,13 +120,18 @@ Workspace
 
 ```text
 Proposed
-→ PolicyChecked
-→ AwaitingApproval
-→ Authorized
-→ Executing
-→ Applied / Failed / Unknown
-→ Reconciled / Compensated
+├── PolicyDenied
+├── AwaitingApproval → Authorized / Rejected / Expired
+└── Authorized → Executing / Canceled / Expired
+
+Executing → Applied / PartiallyApplied / Failed / Unknown
+PartiallyApplied → Compensating / ManualResolutionRequired
+Unknown → Applied / Failed / ManualResolutionRequired
+ManualResolutionRequired → Applied / Failed / AbandonedWithUncertainty
+Applied → Compensating → Compensated / CompensationFailed / Unknown
 ```
+
+`PolicyChecked` 是 PolicyDecision 事实，不是 Effect 状态；`Reconciled` 是对账过程，必须落到上述明确结果。完整状态机以 [Domain Model V1](specs/DOMAIN_MODEL_V1.md) 为准。
 
 通用工作中，很多 Effect 无法像代码一样回滚。产品必须区分：
 
@@ -160,6 +166,30 @@ AgentBackend 只能提交 `ToolIntent`，无权自行提升权限。
 - STDIO MCP Server 的启动本身是高风险进程动作。
 - UI 已校验不代表可信；Rust Core/Broker 必须重新鉴权。
 
+### 6.1 进程信任等级
+
+Task Workspace 只提供变更审查和冲突隔离，不是 Windows 安全 Sandbox。进程按以下等级治理：
+
+```text
+TrustedInProcess
+RestrictedSidecar
+SandboxedThirdParty
+ExecutionDenied
+```
+
+- 内建 Rust 模块可以在受信任进程内运行，但仍通过窄接口访问领域状态。
+- Sidecar 若只能提交结构化 ToolIntent，且没有真实 Workspace、通用网络、Secret 或进程权限，可以作为 RestrictedSidecar。
+- 能直接访问文件系统、Shell、网络或子进程的 Grok Build/STDIO MCP 必须置于经验证的受限 Token、AppContainer、Windows Sandbox 或 VM 等 OS 强制边界；Job Object 只负责生命周期。
+- 不能证明 Broker 不可绕过、又没有 OS 隔离时，`Plan` 也不能作为降级逃生通道，必须禁止启动该 Runtime。
+
+### 6.2 Run Mode 强制规则
+
+V1 只有 `Plan | Execute`。`run_mode` 与 `mode_policy_hash` 必须进入 RunSpec、ToolIntent、PolicyDecision、Authorization 和审计事件。
+
+- Plan 只允许不可变 Snapshot 读取、ArcForge 内部 Plan Artifact，以及绑定有效 DataBoundaryGrant 的 Provider Egress；
+- Plan 必须拒绝真实 Workspace 写入、Process/Shell、STDIO MCP、脚本、Memory Persist 和外部业务系统修改；
+- Execute 也只能写隔离 Task Workspace，真实 Apply 仍是独立 Effect。
+
 ## 7. 隔离 Task Workspace
 
 所有可写 Task 使用独立 Workspace/Overlay：
@@ -190,7 +220,7 @@ Grok Build 只注册编码相关能力：
 进入受控 Code Mode 的门槛：
 
 1. ACP 关键结构化事件完整。
-2. 文件、Shell、网络和 Secret 操作能够经过 Broker，或处于真正隔离的 Sandbox。
+2. 文件、Shell、网络和 Secret 操作能够全部经过不可绕过的 Broker；若 Runtime 仍保留直接环境能力，则必须处于真正的 OS Sandbox。
 3. Sidecar 可取消、崩溃可识别、子进程可回收。
 4. 不解析 TUI、ANSI 或自然语言判断状态。
 5. 固定版本、二进制校验、SBOM、许可证和再分发审查通过。
@@ -198,7 +228,7 @@ Grok Build 只注册编码相关能力：
 
 失败时的顺序：
 
-1. 仅用于 Ask/Plan 或隔离 Coding Workspace；
+1. 只有 Runtime 不持有任何环境直接权限时，才可保留 Plan；隔离 Coding Workspace 本身不构成安全 Sandbox；
 2. 最小受控 Fork；
 3. 替换 Runtime。
 
@@ -208,7 +238,7 @@ Grok Build 只注册编码相关能力：
 
 - Provider 与 Model 分离。
 - 每个 Run 保存实际模型、配置版本、Endpoint 和能力快照。
-- 使用 `Ask / Plan / Tool / Code / Vision / ComputerUse` 认证等级。
+- Run Mode 与模型认证分离。模型使用 `Connectivity Checked / Plan Eligible / Research & Report Certified / Coding Certified` 等 Work Pack 认证等级。
 - 不静默跨 Provider 或数据边界切换。
 
 ### Skill
@@ -234,26 +264,11 @@ Grok Build 只注册编码相关能力：
 
 ## 10. 事件模型
 
-```text
-EventEnvelope
-├── schema_version
-├── event_id / sequence / timestamp
-├── scope: Global | Workspace | Thread | Task | AgentRun
-├── workspace_id / thread_id / task_id / run_id
-├── agent_id / parent_run_id
-├── causation_id / correlation_id
-├── event_type
-├── sensitivity
-└── payload
-```
+EventEnvelope 规范以 [Protocol V1](specs/PROTOCOL_V1.md) 为唯一来源，至少包含 `event_id`、`global_position`、`stream_id`、`aggregate_sequence`、`occurred_at`、`recorded_at`、Scope、Causation、Correlation、Sensitivity 和 Payload。其他文档不得另建字段含义不同的事件信封。
 
 事件需要支持去重、乱序、断流、未知类型和恢复对账。UI 不得把模型文本、终端文本或 MCP 描述当作状态源。
 
-核心状态：
-
-- Task：`Draft / Planning / Ready / Running / WaitingReview / Paused / Succeeded / Failed / Canceled / Unknown`；
-- AgentRun：`Queued / Starting / Running / WaitingApproval / Completed / Failed / Lost`；
-- Effect：`Proposed / Authorized / Executing / Applied / Failed / Compensated / Unknown`。
+Task、AgentRun、Artifact、Evidence、Effect、Approval 和 MemoryCandidate 的完整状态及合法迁移以 Domain Model V1 为唯一规范；本架构文档不维护第二份简化状态表。
 
 ## 11. 多 Agent 演进门
 

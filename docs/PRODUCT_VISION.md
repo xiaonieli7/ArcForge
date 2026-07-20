@@ -25,10 +25,10 @@ ArcForge 只承诺完成可界定、可交付、可验证的数字工作。
 |---|---|---|
 | Understand | 阅读、搜索、比较、分析 | 结论、引用、证据 |
 | Create | 报告、表格、代码补丁、邮件草稿 | 可审查 Artifact |
-| Act | 写文件、运行命令、更新 SaaS | Effect 与 Action Receipt |
+| Act | 写文件、运行命令、更新 SaaS | Effect 与 EffectReceipt |
 | Coordinate | 拆解、委派、等待、汇总 | Work Graph 与汇总结果 |
 
-“Agent 输出了一段话”不自动等于完成工作。任务完成必须满足用户定义的 Acceptance Criteria，并有 Artifact、Evidence 或 Effect Receipt 支撑。
+“Agent 输出了一段话”不自动等于完成工作。任务完成必须满足用户定义的 Acceptance Criteria，并有 Artifact、Evidence 或 EffectReceipt 支撑。`ApplyReceipt` 是 Workspace Apply 的专用 EffectReceipt。
 
 ## 4. 首发用户
 
@@ -42,9 +42,9 @@ ArcForge 只承诺完成可界定、可交付、可验证的数字工作。
 
 典型用户可以是产品经理、分析师、顾问、研究人员、运营人员和开发者。第一版不面向需要完全无人值守自治的普通消费者。
 
-## 5. 第一版英雄场景
+## 5. 产品演进场景
 
-### 5.1 主场景：文件夹到报告
+### 5.1 Core Private Alpha：文件夹到报告
 
 用户选择包含 PDF、Markdown、文本、CSV/XLSX 等材料的 Workspace，并给出目标。ArcForge：
 
@@ -56,7 +56,7 @@ ArcForge 只承诺完成可界定、可交付、可验证的数字工作。
 6. 用户审查后保存到真实 Workspace；
 7. 提议可复用的 Workspace Memory。
 
-### 5.2 第二认证场景：Issue 到代码补丁
+### 5.2 下一认证工作域：Issue 到代码补丁
 
 1. 调查代码与约束；
 2. 形成计划；
@@ -65,7 +65,7 @@ ArcForge 只承诺完成可界定、可交付、可验证的数字工作。
 5. 展示 Diff 与测试 Evidence；
 6. 用户应用、修改或放弃 ChangeSet。
 
-Grok Build 是这一场景的 Candidate Coding Runtime，必须通过协议、安全、取消、恢复和模型兼容认证后才能进入 Code Mode。
+Grok Build 是这一场景的 Candidate Coding Runtime，必须通过协议、安全、取消、恢复和模型兼容认证后才能进入 Code Mode。该场景不属于 Core Private Alpha 的 Go 条件。
 
 ## 6. 产品原则
 
@@ -98,12 +98,12 @@ Artifacts 使用类型化 Renderer：
 - 邮件：正文、收件人和发送前预览；
 - Computer Use：截图、目标控件和待执行动作。
 
-建议执行策略：
+V1 只暴露两种 Run Mode：
 
-- Ask：不调用工作工具；
-- Plan：不改变用户资源和外部业务系统；
-- Research：允许受控读取及明确的数据来源；
-- Execute：允许经过审批的 Effect。
+- `Plan`：零资源变更模式。可以读取用户明确选择的不可变资料快照，并在有效 DataBoundaryGrant 下调用已披露的 Provider；不得修改真实 Workspace、启动 Shell/MCP/第三方能力进程、持久化 Memory 或改变外部业务系统。Provider 请求仍会产生数据传输、费用和服务商日志。
+- `Execute`：可以在隔离 Task Workspace 生成草稿；对真实 Workspace 或外部系统的 `Apply` 仍是独立、可预览、需授权的 Effect，不是 Run Mode。
+
+`Research` 是 Work Pack 内部阶段，`Ask` 是不启动工作执行的交互形态，都不是 V1 Run Mode。
 
 ## 8. 首版范围
 
@@ -114,26 +114,29 @@ Artifacts 使用类型化 Renderer：
 - 结构化 Activity Timeline。
 - Artifact、Evidence、Effect 和 Approval。
 - 隔离 Task Workspace。
-- 一个认证模型与一个自定义 Provider Beta 入口。
+- 一个 Research & Report Certified 模型。
 - 本地资料读取和带引用报告。
 - 任务取消、失败、重启对账和诊断。
 - `%USERPROFILE%\.arcforge` 本地状态中心。
 
 ### Experimental
 
+- 自定义 Provider Beta：配置、Secret 引用、连接测试和能力检测；未认证模型不得执行对应 Work Pack。
 - 按下一 Task 切换模型。
 - 项目/用户 Skills 的发现、查看和显式启用。
-- 少量认证 MCP Server。
-- Grok Build Coding Adapter。
+- MCP 配置、静态校验和 Tool Discovery；连接或执行只有在对应 Broker 能力单独认证后开放。
+- Grok Build Coding Adapter 兼容性 Spike，不作为 Core 产品能力或发布门。
 - 实验性 Checkpoint。
-- 只读多 Agent 调查。
+- 多 Agent 只预留 ID、预算、权限和 Capability Schema，无可见入口。
 
 ### 后置
 
 - 全桌面无约束 Computer Use。
 - 自动发送邮件或修改生产业务系统。
 - 任意第三方 Skill/MCP 自动安装。
+- 未独立认证的 Coding Work Pack 与 Grok Build Code Execute。
 - 后台长期自治。
+- 可见多 Agent、spawn/handoff 和多 Agent 编排。
 - 多 Agent 并行写同一资源。
 - 团队、计费、市场和云同步。
 
@@ -148,9 +151,9 @@ Artifacts 使用类型化 Renderer：
 配套指标：
 
 - Time to First Verified Outcome；
-- Artifact 无需大改接受率；
+- First-review Acceptance Rate（无需大改接受率）；
 - Evidence 覆盖率；
-- 7 天后交付物保留率；
+- D7 Saved Artifact Retention（保存后 7 天保留率）；
 - 用户人工返工时间；
 - 每任务审批次数与等待时间；
 - Provider/Runtime 成本与失败率；
