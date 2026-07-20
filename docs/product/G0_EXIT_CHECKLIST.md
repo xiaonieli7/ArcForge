@@ -38,8 +38,8 @@
 ## 3. 产品证据门
 
 - [ ] 按 [G0 用户研究计划](../research/USER_RESEARCH_PLAN_V1.md)完成 12–15 名 Windows 专业用户的访谈与真实工作观察；
-- [ ] 先按 [三人 Pilot 执行手册](../research/G0_PILOT_RUNBOOK_V1.md)完成工具校准；Pilot 结果不计作 G0 Go；
-- [ ] 标准夹具的排除项、解析失败、10 条金标准和 Citation 审计经双人复核；
+- [x] 已通过 [G0 加速决策](G0_ACCELERATION_DECISION_2026-07-20.md)记录跳过三人外部 Pilot；该决定不计作 G0 产品证据；
+- [ ] 使用标准夹具完成两次内部 Dry Run，排除项、解析失败、10 条金标准和 Citation 审计经双人复核；
 - [ ] 至少 8/12 有效样本每月真实发生资料整合与来源核验任务两次以上；
 - [ ] 至少 8/12 对英雄场景价值评分达到 5/7，并能指出被替代的现有步骤；
 - [ ] 至少 6/12 愿意在 14 天内带第二个真实任务继续使用；
@@ -68,6 +68,7 @@
 - [ ] 完成 DataBoundaryGrant、sealed InvocationSpec、Authorization fencing 和 Effect Outbox 的时序评审；
 - [ ] 完成 Apply 崩溃点与多文件部分成功的对账演练设计；
 - [ ] 完成 Secret canary、路径逃逸、WebView IPC 和 Provider SSRF 测试计划；
+- [ ] 完成 [G0.5 Broker 限界预研](../engineering/G0_5_BROKER_PRE_SPIKE_V1.md)四份设计资产；其结果不得标记为 G1 Go；
 - [ ] [Grok Build Runtime Adapter 接纳评估](../runtime/GROK_BUILD_ADAPTER_ASSESSMENT_V1.md)只批准独立 Spike；未证明 Broker/OS 隔离前不进入 Code Execute；
 - [ ] Windows 安全门未达标时，Shell、STDIO MCP、任意进程和真实写入保持 Feature Disabled。
 
@@ -90,6 +91,8 @@
 - 产品证据已达到最低门，但部分指标仍需 G1/G2 基线；
 - Broker 或 Windows Sandbox 方案仍需 PoC；
 - 自定义 Provider、Skills、MCP、Checkpoint 或 Grok Build 仍未认证。
+
+G0.5 不属于 Conditional Go。它只允许设计与合成推演，不能启动 G1 可执行 Harness 或数据库实现。
 
 ### No-Go
 

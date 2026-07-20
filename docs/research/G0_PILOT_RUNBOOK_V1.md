@@ -1,6 +1,8 @@
 # ArcForge G0 三人 Pilot 执行手册 V1
 
-状态：Ready for execution
+状态：Skipped by product decision on 2026-07-20；保留为未来研究参考
+
+执行变更：依据 [G0 加速决策](../product/G0_ACCELERATION_DECISION_2026-07-20.md)，本轮不招募三人 Pilot，改做两次合成夹具内部 Dry Run。内部 Dry Run 只校准流程和计分，不进入 G0 产品证据分母，也不代表正式用户研究完成。
 
 本手册把 [G0 用户研究与英雄场景验证计划](USER_RESEARCH_PLAN_V1.md)压缩成首轮 3 人 Pilot 的现场流程。Pilot 只用于校准招募、主持、夹具、计时和计分方法，不能替代 12 份有效样本，也不能单独触发 G0 Go。
 

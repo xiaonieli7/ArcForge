@@ -77,12 +77,13 @@ C:\Users\<user>\.arcforge
 
 ## 当前状态
 
-项目当前处于 G0 产品与架构契约收敛评审阶段，尚未冻结，也尚未开始生产代码。
+项目当前处于 G0 产品证据待验证与 G0.5 Mock-only 技术预研阶段，合同尚未冻结，也尚未开始生产代码或真实 Effect 实现。
 
 产品与交付范围：
 
 - [MVP PRD V1](docs/product/MVP_PRD_V1.md)
 - [G0 退出检查表](docs/product/G0_EXIT_CHECKLIST.md)
+- [G0 加速与限界技术预研决策](docs/product/G0_ACCELERATION_DECISION_2026-07-20.md)
 - [产品愿景](docs/PRODUCT_VISION.md)
 - [Codex 桌面产品基准与对齐分析](docs/research/CODEX_PRODUCT_BASELINE_2026-07.md)
 - [Codex Windows 桌面真实走查计划 V1](docs/research/CODEX_WINDOWS_WALKTHROUGH_PLAN_V1.md)
@@ -94,6 +95,11 @@ C:\Users\<user>\.arcforge
 - [Research & Report Work Pack V1](docs/work-packs/RESEARCH_REPORT_V1.md)
 - [UI 低保真线框 V1](docs/design/UI_WIREFRAMES_V1.md)
 - [阶段路线与验收门](docs/ROADMAP.md)
+- [G0.5 Trusted Execution Broker 限界预研 V1](docs/engineering/G0_5_BROKER_PRE_SPIKE_V1.md)
+- [Broker 合同冻结清单 V0](docs/engineering/BROKER_CONTRACT_FREEZE_CHECKLIST_V0.md)
+- [Threat-to-Test Matrix V0](docs/engineering/THREAT_TO_TEST_MATRIX_V0.csv)
+- [Event Store Design V0](docs/engineering/EVENT_STORE_DESIGN_V0.md)
+- [Mock Backend Fixture Catalog V0](docs/engineering/MOCK_BACKEND_FIXTURE_CATALOG_V0.md)
 - [G1 Trusted Execution Broker 技术 Spike 计划 V1](docs/engineering/G1_TRUSTED_EXECUTION_SPIKE_PLAN_V1.md)
 
 平台与安全合同：

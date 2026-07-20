@@ -176,7 +176,10 @@ key quote / researcher interpretation
 
 ## 10. 执行资产
 
-- [三人 Pilot 执行手册](G0_PILOT_RUNBOOK_V1.md)：用于校准筛选、主持、计时和计分，不能替代正式 12 人证据门；
+- [G0 加速决策](../product/G0_ACCELERATION_DECISION_2026-07-20.md)：本轮跳过三人外部 Pilot，改为两次内部 Dry Run；不替代正式 12 人证据门；
+- [三人 Pilot 执行手册](G0_PILOT_RUNBOOK_V1.md)：保留为未来研究参考；
+- [内部 Dry Run 记录表](templates/G0_INTERNAL_DRY_RUN_LOG.csv)：仅校准流程和计分，不进入产品指标；
+- [匿名探索性筛选记录](records/EXPLORATORY_SCREENING_LOG.csv)：只保存无身份信息的筛选结论，不计入样本；
 - [参与者记录表](templates/G0_PILOT_PARTICIPANT_LOG.csv)：保存参与者级基线、ArcForge 指标和理解度结果；
 - [Citation 审计表](templates/G0_CITATION_AUDIT.csv)：保存 Claim、来源支持、Locator 和排除项审计；
 - `fixtures/g0/report-pilot/source`：参与者可见的 11 文件合成 Workspace；

@@ -29,6 +29,14 @@ Go 条件：
 - Provider/Endpoint、外发范围和 Apply 前 Workspace 状态理解率 ≥90%；≥90% 区分 Accepted、Applied 与 Succeeded；
 - 满足 [G0 用户研究计划](research/USER_RESEARCH_PLAN_V1.md)定义的至少一项价值强信号，且无材料越界或错误成功提示。
 
+## G0.5：限界技术预研（与 G0 证据收敛并行，5 个工作日）
+
+依据 [G0 加速决策](product/G0_ACCELERATION_DECISION_2026-07-20.md)，三人外部 Pilot 改为两次合成夹具内部 Dry Run，并允许执行 [G0.5 Broker 限界预研](engineering/G0_5_BROKER_PRE_SPIKE_V1.md)。
+
+允许产出 Broker 合同冻结清单、Threat-to-Test 矩阵、Event Store 设计和 Mock Backend Fixture Catalog。禁止生产代码、真实 LLM/Provider/Secret、真实 Workspace、网络/进程/外部 Effect、Grok Build 接入，以及任何 G0/G1 Go 声明。
+
+G0.5 通过只表示材料可进入 G1 合同评审；正式产品证据门和 G1 启动决定保持不变。
+
 ## G1：Work Kernel 与执行边界 PoC（第 3–7 周）
 
 目标：建立与具体 Runtime 无关的产品骨架。
