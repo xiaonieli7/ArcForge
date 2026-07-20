@@ -69,6 +69,7 @@
 - [ ] 完成 Apply 崩溃点与多文件部分成功的对账演练设计；
 - [ ] 完成 Secret canary、路径逃逸、WebView IPC 和 Provider SSRF 测试计划；
 - [x] 完成 [G0.5 Broker 限界预研](../engineering/G0_5_BROKER_PRE_SPIKE_V1.md)设计资产并达到 `Ready for G1 contract review`；其结果未标记为 G1 Go；
+- [x] 完成 [G1 Broker 合同机器化评审](../engineering/G1_CONTRACT_REVIEW_V1.md)，49 个 closed object Schema、56 个负例和 71 个 Hash 检查通过；结论仅为 `G1 contract review candidate`，BC-09 operation postcondition 仍是冻结阻断项；
 - [ ] [Grok Build Runtime Adapter 接纳评估](../runtime/GROK_BUILD_ADAPTER_ASSESSMENT_V1.md)只批准独立 Spike；未证明 Broker/OS 隔离前不进入 Code Execute；
 - [ ] Windows 安全门未达标时，Shell、STDIO MCP、任意进程和真实写入保持 Feature Disabled。
 

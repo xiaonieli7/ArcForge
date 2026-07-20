@@ -1,0 +1,747 @@
+{
+  "format_version": 0,
+  "base_fixture": "valid-contract-bundle.json",
+  "description": "Reproducible JSON Pointer mutations for closed-schema and cross-contract semantic rejection tests.",
+  "cases": [
+    {
+      "id": "SCHEMA-UNKNOWN-AUTH-FIELD",
+      "description": "An untrusted authorization override must not be ignored.",
+      "mutation": {
+        "op": "add",
+        "path": "/authorization_grants/0/untrusted_override",
+        "value": true
+      },
+      "expected": {
+        "layer": "schema",
+        "keyword": "additionalProperties"
+      }
+    },
+    {
+      "id": "SCHEMA-UNKNOWN-PROTOCOL-MAJOR",
+      "description": "An unsupported authoritative protocol major must fail closed.",
+      "mutation": {
+        "op": "replace",
+        "path": "/tool_intents/0/protocol_major",
+        "value": 2
+      },
+      "expected": {
+        "layer": "schema",
+        "keyword": "const"
+      }
+    },
+    {
+      "id": "SCHEMA-UNKNOWN-SCHEMA-VERSION",
+      "description": "An unsupported authorization schema version must fail closed.",
+      "mutation": {
+        "op": "replace",
+        "path": "/authorization_grants/0/schema_version",
+        "value": 1
+      },
+      "expected": {
+        "layer": "schema",
+        "keyword": "const"
+      }
+    },
+    {
+      "id": "SCHEMA-RAW-SECRET-FIELD",
+      "description": "InvocationSpec cannot serialize a raw secret field.",
+      "mutation": {
+        "op": "add",
+        "path": "/invocation_specs/0/raw_secret",
+        "value": "forbidden-test-marker"
+      },
+      "expected": {
+        "layer": "schema",
+        "keyword": "additionalProperties"
+      }
+    },
+    {
+      "id": "SCHEMA-SECRET-BYTES-FIELD",
+      "description": "Command content metadata cannot smuggle secret bytes.",
+      "mutation": {
+        "op": "add",
+        "path": "/command_envelopes/0/payload/body/secret_bytes",
+        "value": "forbidden-test-marker"
+      },
+      "expected": {
+        "layer": "schema",
+        "keyword": "additionalProperties"
+      }
+    },
+    {
+      "id": "SCHEMA-SECRET-HANDLE-FIELD",
+      "description": "A broker-private secret handle cannot cross the authoritative contract boundary.",
+      "mutation": {
+        "op": "add",
+        "path": "/authorization_grants/0/secret_handle",
+        "value": "forbidden-test-marker"
+      },
+      "expected": {
+        "layer": "schema",
+        "keyword": "additionalProperties"
+      }
+    },
+    {
+      "id": "SCHEMA-MISSING-SPEC-HASH",
+      "description": "An InvocationSpec without its sealed hash is not executable.",
+      "mutation": {
+        "op": "remove",
+        "path": "/invocation_specs/0/spec_hash"
+      },
+      "expected": {
+        "layer": "schema",
+        "keyword": "required"
+      }
+    },
+    {
+      "id": "SCHEMA-MISSING-RESOURCE-HASH",
+      "description": "A ResourceIdentity without its identity hash is incomplete.",
+      "mutation": {
+        "op": "remove",
+        "path": "/resource_identities/0/resource_identity_hash"
+      },
+      "expected": {
+        "layer": "schema",
+        "keyword": "required"
+      }
+    },
+    {
+      "id": "SCHEMA-ACTIVE-ZERO-USES",
+      "description": "An Active AuthorizationGrant must retain its single unused execution.",
+      "mutation": {
+        "op": "replace",
+        "path": "/authorization_grants/0/remaining_uses",
+        "value": "0"
+      },
+      "expected": {
+        "layer": "schema",
+        "keyword": "const"
+      }
+    },
+    {
+      "id": "SCHEMA-ZERO-FENCING-TOKEN",
+      "description": "A fencing token must be a non-zero decimal counter.",
+      "mutation": {
+        "op": "replace",
+        "path": "/authorization_grants/0/fencing_token",
+        "value": "0"
+      },
+      "expected": {
+        "layer": "schema",
+        "keyword": "pattern"
+      }
+    },
+    {
+      "id": "SCHEMA-NTFS-ALTERNATE-STREAM",
+      "description": "An NTFS alternate data stream must be rejected.",
+      "mutation": {
+        "op": "replace",
+        "path": "/resource_identities/0/stream_name",
+        "value": "hidden"
+      },
+      "expected": {
+        "layer": "schema",
+        "keyword": "const"
+      }
+    },
+    {
+      "id": "SCHEMA-REPARSE-CHAIN",
+      "description": "A reparse-point traversal must be rejected.",
+      "mutation": {
+        "op": "add",
+        "path": "/resource_identities/0/reparse_chain/0",
+        "value": "junction"
+      },
+      "expected": {
+        "layer": "schema",
+        "keyword": "maxItems"
+      }
+    },
+    {
+      "id": "SCHEMA-HARDLINK-COUNT",
+      "description": "A caller cannot inject a hardlink count into a new-resource identity.",
+      "mutation": {
+        "op": "add",
+        "path": "/resource_identities/0/link_count",
+        "value": "2"
+      },
+      "expected": {
+        "layer": "schema",
+        "keyword": "additionalProperties"
+      }
+    },
+    {
+      "id": "SCHEMA-ILLEGAL-LEAF-OUTCOME",
+      "description": "A per-resource outcome cannot use a batch aggregate value.",
+      "mutation": {
+        "op": "replace",
+        "path": "/effect_receipts/0/resource_outcomes/0/outcome",
+        "value": "PartiallyApplied"
+      },
+      "expected": {
+        "layer": "schema",
+        "keyword": "enum"
+      }
+    },
+    {
+      "id": "SCHEMA-INCONSISTENT-AGGREGATE",
+      "description": "An Applied leaf cannot be represented by a NotApplied aggregate.",
+      "mutation": {
+        "op": "replace",
+        "path": "/effect_receipts/0/observed_outcome",
+        "value": "NotApplied"
+      },
+      "expected": {
+        "layer": "schema",
+        "keyword": "const"
+      }
+    },
+    {
+      "id": "SCHEMA-UNKNOWN-REQUIRED-FEATURE",
+      "description": "An unknown required feature cannot be silently ignored.",
+      "mutation": {
+        "op": "add",
+        "path": "/approvals/0/required_features/-",
+        "value": "future-unsafe-feature"
+      },
+      "expected": {
+        "layer": "schema",
+        "keyword": "enum"
+      }
+    },
+    {
+      "id": "SEMANTIC-TASK-BINDING",
+      "description": "ToolIntent and InvocationSpec must bind the same task.",
+      "mutation": {
+        "op": "replace",
+        "path": "/tool_intents/0/task_id",
+        "value": "018f0f6c-7b11-7a10-8b01-000000000099"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_TASK_ID"
+      }
+    },
+    {
+      "id": "SEMANTIC-RUN-BINDING",
+      "description": "AuthorizationGrant and InvocationSpec must bind the same run.",
+      "mutation": {
+        "op": "replace",
+        "path": "/authorization_grants/0/run_id",
+        "value": "018f0f6c-7b11-7a10-8b01-000000000099"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_RUN_ID"
+      }
+    },
+    {
+      "id": "SEMANTIC-WORKSPACE-BINDING",
+      "description": "AuthorizationGrant and InvocationSpec must bind the same workspace.",
+      "mutation": {
+        "op": "replace",
+        "path": "/authorization_grants/0/workspace_id",
+        "value": "018f0f6c-7b11-7a10-8b01-000000000099"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_WORKSPACE_ID"
+      }
+    },
+    {
+      "id": "SEMANTIC-EFFECT-BINDING",
+      "description": "EffectReceipt must name the authorized effect.",
+      "mutation": {
+        "op": "replace",
+        "path": "/effect_receipts/0/effect_id",
+        "value": "018f0f6c-7b11-7a10-8b01-000000000099"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_EFFECT_ID"
+      }
+    },
+    {
+      "id": "SEMANTIC-INVOCATION-BINDING",
+      "description": "EffectReceipt must name the sealed invocation.",
+      "mutation": {
+        "op": "replace",
+        "path": "/effect_receipts/0/invocation_id",
+        "value": "018f0f6c-7b11-7a10-8b01-000000000099"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_INVOCATION_ID"
+      }
+    },
+    {
+      "id": "SEMANTIC-SPEC-HASH-BINDING",
+      "description": "Approval must bind the exact sealed InvocationSpec hash.",
+      "mutation": {
+        "op": "replace",
+        "path": "/approvals/0/invocation_spec_hash",
+        "value": "sha256:1212121212121212121212121212121212121212121212121212121212121212"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_SPEC_HASH"
+      }
+    },
+    {
+      "id": "SEMANTIC-PREVIEW-BINDING",
+      "description": "The approved preview must equal the policy Preview constraint.",
+      "mutation": {
+        "op": "replace",
+        "path": "/policy_decisions/0/required_constraints/1/binding_hash",
+        "value": "sha256:1212121212121212121212121212121212121212121212121212121212121212"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_PREVIEW_HASH"
+      }
+    },
+    {
+      "id": "SEMANTIC-POLICY-HASH-BINDING",
+      "description": "Approval must bind the evaluated policy hash.",
+      "mutation": {
+        "op": "replace",
+        "path": "/approvals/0/policy_hash",
+        "value": "sha256:1212121212121212121212121212121212121212121212121212121212121212"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_POLICY_HASH"
+      }
+    },
+    {
+      "id": "SEMANTIC-POLICY-ID-BINDING",
+      "description": "Approval and AuthorizationGrant must name the same PolicyDecision.",
+      "mutation": {
+        "op": "replace",
+        "path": "/approvals/0/policy_decision_id",
+        "value": "018f0f6c-7b11-7a10-8b01-000000000099"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_POLICY_ID"
+      }
+    },
+    {
+      "id": "SEMANTIC-APPROVAL-HASH-BINDING",
+      "description": "AuthorizationGrant must bind the exact Approval hash.",
+      "mutation": {
+        "op": "replace",
+        "path": "/authorization_grants/0/approval_hash",
+        "value": "sha256:1212121212121212121212121212121212121212121212121212121212121212"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_APPROVAL_HASH"
+      }
+    },
+    {
+      "id": "SEMANTIC-IDEMPOTENCY-BINDING",
+      "description": "EffectReceipt must retain the sealed idempotency key.",
+      "mutation": {
+        "op": "replace",
+        "path": "/effect_receipts/0/idempotency_key",
+        "value": "018f0f6c-7b11-7a10-8b01-000000000099"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_IDEMPOTENCY_KEY"
+      }
+    },
+    {
+      "id": "SEMANTIC-CLOCK-EPOCH-BINDING",
+      "description": "Approval lifetime cannot cross the broker clock epoch used by the chain.",
+      "mutation": {
+        "op": "replace",
+        "path": "/approvals/0/lifetime/clock_epoch_id",
+        "value": "018f0f6c-7b11-7a10-8b01-000000000099"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_CLOCK_EPOCH"
+      }
+    },
+    {
+      "id": "SEMANTIC-DATA-GRANT-HASH",
+      "description": "ToolIntent must bind the persisted DataBoundaryGrant hash.",
+      "mutation": {
+        "op": "replace",
+        "path": "/tool_intents/0/data_boundary_grant/grant_hash",
+        "value": "sha256:1212121212121212121212121212121212121212121212121212121212121212"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_DATA_GRANT_HASH"
+      }
+    },
+    {
+      "id": "SEMANTIC-DATA-GRANT-VERSION",
+      "description": "InvocationSpec must bind the persisted DataBoundaryGrant version.",
+      "mutation": {
+        "op": "replace",
+        "path": "/invocation_specs/0/data_boundary_grant/version",
+        "value": "2"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_DATA_GRANT_VERSION"
+      }
+    },
+    {
+      "id": "SEMANTIC-RESOURCE-SET",
+      "description": "Receipt resource operations must exactly equal the sealed InvocationSpec set.",
+      "mutation": {
+        "op": "replace",
+        "path": "/effect_receipts/0/resource_outcomes/0/resource_operation_id",
+        "value": "018f0f6c-7b11-7a10-8b01-000000000099"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_RESOURCE_SET"
+      }
+    },
+    {
+      "id": "SEMANTIC-RESOURCE-HASH",
+      "description": "Authorization resource scope must bind the exact ResourceIdentity hash.",
+      "mutation": {
+        "op": "replace",
+        "path": "/authorization_grants/0/resources/0/resource_identity_hash",
+        "value": "sha256:1212121212121212121212121212121212121212121212121212121212121212"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_RESOURCE_HASH"
+      }
+    },
+    {
+      "id": "SEMANTIC-MODE-POLICY-HASH",
+      "description": "AuthorizationGrant must retain the InvocationSpec mode-policy hash.",
+      "mutation": {
+        "op": "replace",
+        "path": "/authorization_grants/0/mode_policy_hash",
+        "value": "sha256:1212121212121212121212121212121212121212121212121212121212121212"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_MODE_POLICY_HASH"
+      }
+    },
+    {
+      "id": "SEMANTIC-FENCING-SCOPE",
+      "description": "A workspace mutation fence must be scoped to the bound workspace.",
+      "mutation": {
+        "op": "replace",
+        "path": "/authorization_grants/0/fencing_scope",
+        "value": "workspace:018f0f6c-7b11-7a10-8b01-000000000099"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_FENCING_SCOPE"
+      }
+    },
+    {
+      "id": "SEMANTIC-SCOPE-TASK",
+      "description": "Approval scope must bind the same task as the InvocationSpec.",
+      "mutation": {
+        "op": "replace",
+        "path": "/approvals/0/scope/task_id",
+        "value": "018f0f6c-7b11-7a10-8b01-000000000099"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_SCOPE_TASK"
+      }
+    },
+    {
+      "id": "SEMANTIC-EXACT-ARGS-HASH",
+      "description": "The canonical argument ContentRef and exact argument bytes must bind the same byte hash.",
+      "mutation": {
+        "op": "replace",
+        "path": "/invocation_specs/0/exact_args_bytes_sha256",
+        "value": "sha256:1212121212121212121212121212121212121212121212121212121212121212"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_EXACT_ARGS_HASH"
+      }
+    },
+    {
+      "id": "SEMANTIC-RECEIPT-BROKER-EPOCH",
+      "description": "A non-late same-session Receipt must use the AuthorizationGrant Broker epoch; an explicitly late Receipt may be verified in a newer epoch.",
+      "mutation": {
+        "op": "replace",
+        "path": "/effect_receipts/0/receipt_source/verified_by_broker_epoch_id",
+        "value": "018f0f6c-7b11-7a10-8b01-000000000099"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_RECEIPT_BROKER_EPOCH"
+      }
+    },
+    {
+      "id": "SEMANTIC-UINT64-UPPER-BOUND",
+      "description": "Decimal counters cannot exceed the unsigned 64-bit upper bound.",
+      "mutation": {
+        "op": "replace",
+        "path": "/authorization_grants/0/fencing_token",
+        "value": "18446744073709551616"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_UINT64_RANGE"
+      }
+    },
+    {
+      "id": "SCHEMA-UNKNOWN-PREVIEW-FIELD",
+      "description": "Provider-controlled preview markup cannot enter a closed PreviewBinding.",
+      "mutation": {
+        "op": "add",
+        "path": "/previews/0/provider_html",
+        "value": "forbidden-test-marker"
+      },
+      "expected": {
+        "layer": "schema",
+        "keyword": "additionalProperties"
+      }
+    },
+    {
+      "id": "SCHEMA-NON-BROKER-ISSUER",
+      "description": "Only the Broker TCB may issue an AuthorizationGrant.",
+      "mutation": {
+        "op": "replace",
+        "path": "/authorization_grants/0/issued_by/actor_type",
+        "value": "User"
+      },
+      "expected": {
+        "layer": "schema",
+        "keyword": "const"
+      }
+    },
+    {
+      "id": "SEMANTIC-COMMAND-INTENT-CORRELATION",
+      "description": "ToolIntent must preserve the causation CommandEnvelope correlation ID.",
+      "mutation": {
+        "op": "replace",
+        "path": "/tool_intents/0/correlation_id",
+        "value": "018f0f6c-7b11-7a10-8b01-000000000099"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_CORRELATION_ID"
+      }
+    },
+    {
+      "id": "SEMANTIC-COMMAND-SCOPE",
+      "description": "The causation CommandEnvelope task scope must match the sealed InvocationSpec.",
+      "mutation": {
+        "op": "replace",
+        "path": "/command_envelopes/0/scope/task_id",
+        "value": "018f0f6c-7b11-7a10-8b01-000000000099"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_COMMAND_SCOPE"
+      }
+    },
+    {
+      "id": "SEMANTIC-SOURCE-INTENT-HASH",
+      "description": "InvocationSpec must bind its exact source ToolIntent hash on every authorization path.",
+      "mutation": {
+        "op": "replace",
+        "path": "/invocation_specs/0/source_intent_hash",
+        "value": "sha256:1212121212121212121212121212121212121212121212121212121212121212"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_INTENT_HASH"
+      }
+    },
+    {
+      "id": "SEMANTIC-POLICY-DENY-AUTHORIZATION",
+      "description": "A Deny PolicyDecision can never produce an AuthorizationGrant.",
+      "mutation": {
+        "op": "replace",
+        "path": "/policy_decisions/0/decision",
+        "value": "Deny"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_POLICY_DENY_AUTHORIZATION"
+      }
+    },
+    {
+      "id": "SEMANTIC-POLICY-BASIS-MISMATCH",
+      "description": "ApprovedByUser authorization requires a RequireApproval PolicyDecision.",
+      "mutation": {
+        "op": "replace",
+        "path": "/policy_decisions/0/decision",
+        "value": "Allow"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_POLICY_AUTHORIZATION_MISMATCH"
+      }
+    },
+    {
+      "id": "SEMANTIC-APPROVAL-DECISION-STATE",
+      "description": "Approved status cannot carry a Rejected decision record.",
+      "mutation": {
+        "op": "replace",
+        "path": "/approvals/0/decision_record/decision",
+        "value": "Rejected"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_APPROVAL_DECISION_STATE"
+      }
+    },
+    {
+      "id": "SEMANTIC-PREVIEW-RENDERER",
+      "description": "Approval must bind the exact trusted renderer used for the PreviewBinding.",
+      "mutation": {
+        "op": "replace",
+        "path": "/approvals/0/trusted_renderer/renderer_binary_hash",
+        "value": "sha256:3434343434343434343434343434343434343434343434343434343434343434"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_RENDERER"
+      }
+    },
+    {
+      "id": "SEMANTIC-CONTENT-REF-DIGEST",
+      "description": "ContentRef URI digest must equal its sha256 member.",
+      "mutation": {
+        "op": "replace",
+        "path": "/command_envelopes/0/payload/body/content_ref",
+        "value": "arcforge-content:sha256:3434343434343434343434343434343434343434343434343434343434343434"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_CONTENT_REF_HASH"
+      }
+    },
+    {
+      "id": "SEMANTIC-LIFETIME-ARITHMETIC",
+      "description": "Monotonic expiry must equal issuance plus the V0 TTL.",
+      "mutation": {
+        "op": "replace",
+        "path": "/authorization_grants/0/lifetime/expires_monotonic_ticks",
+        "value": "1256001"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_LIFETIME_ARITHMETIC"
+      }
+    },
+    {
+      "id": "SEMANTIC-WINDOWS-RESERVED-NAME",
+      "description": "A Windows reserved DOS device name is not an authorizable resource locator.",
+      "mutations": [
+        {
+          "op": "replace",
+          "path": "/resource_identities/0/relative_locator",
+          "value": "CON"
+        },
+        {
+          "op": "replace",
+          "path": "/resource_identities/0/leaf_name",
+          "value": "CON"
+        }
+      ],
+      "expected": {
+        "layer": "semantic",
+        "code": "E_WINDOWS_RESERVED_NAME"
+      }
+    },
+    {
+      "id": "SEMANTIC-RESOURCE-SET-HASH",
+      "description": "Receipt must bind the InvocationSpec ResourceOperationSet hash.",
+      "mutation": {
+        "op": "replace",
+        "path": "/effect_receipts/0/expected_resource_set_hash",
+        "value": "sha256:3434343434343434343434343434343434343434343434343434343434343434"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_BIND_RESOURCE_SET_HASH"
+      }
+    },
+    {
+      "id": "SEMANTIC-RECEIPT-AFTER-CONTENT",
+      "description": "Applied after-state and content_hash_after must agree.",
+      "mutation": {
+        "op": "replace",
+        "path": "/effect_receipts/0/resource_outcomes/0/resource_identity_after/content_hash",
+        "value": "sha256:3434343434343434343434343434343434343434343434343434343434343434"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_RECEIPT_CONTENT_HASH"
+      }
+    },
+    {
+      "id": "SCHEMA-ENDPOINT-IP-HOST",
+      "description": "Canonical provider origin cannot be an IP literal.",
+      "mutation": {
+        "op": "replace",
+        "path": "/data_boundary_grants/0/canonical_endpoint_origin",
+        "value": "https://127.0.0.1"
+      },
+      "expected": {
+        "layer": "schema",
+        "keyword": "pattern"
+      }
+    },
+    {
+      "id": "SEMANTIC-ENDPOINT-PORT-RANGE",
+      "description": "A syntactically shaped endpoint port must still fit the trusted parser range.",
+      "mutation": {
+        "op": "replace",
+        "path": "/data_boundary_grants/0/canonical_endpoint_origin",
+        "value": "https://api.example.test:70000"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_CANONICAL_ENDPOINT"
+      }
+    },
+    {
+      "id": "SEMANTIC-ENDPOINT-DEFAULT-PORT",
+      "description": "Canonical HTTPS origins must omit the default port.",
+      "mutation": {
+        "op": "replace",
+        "path": "/data_boundary_grants/0/canonical_endpoint_origin",
+        "value": "https://api.example.test:443"
+      },
+      "expected": {
+        "layer": "semantic",
+        "code": "E_CANONICAL_ENDPOINT"
+      }
+    },
+    {
+      "id": "SEMANTIC-ABANDONED-RECEIPT",
+      "description": "A late receipt cannot silently set AbandonedWithUncertainty as a Receipt reconciliation terminal.",
+      "mutations": [
+        {
+          "op": "replace",
+          "path": "/effect_receipts/0/reconciliation_status",
+          "value": "AbandonedWithUncertainty"
+        },
+        {
+          "op": "replace",
+          "path": "/effect_receipts/0/late_observation",
+          "value": true
+        }
+      ],
+      "expected": {
+        "layer": "semantic",
+        "code": "E_RECEIPT_ABANDONED"
+      }
+    }
+  ]
+}

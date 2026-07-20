@@ -42,7 +42,7 @@ event_store global_position
 
 1. Major 不兼容：拒绝写入，可只读打开。
 2. Minor 只能在明确声明的非语义 `extensions` 容器或 DesktopEvent 中增加可选字段/事件。
-3. 未知可选字段只可在上述非权威扩展面忽略但保留；ApplicationCommand、DomainEvent、ToolIntent、InvocationSpec、PolicyDecision、DataBoundaryGrant、Approval、Authorization 和 EffectReceipt 使用封闭 Schema，未知字段直接 `UnsupportedSchema`，不得忽略后继续执行。
+3. 未知可选字段只可在上述非权威扩展面忽略但保留；ApplicationCommand、DomainEvent、ToolIntent、InvocationSpec、PreviewBinding、PolicyDecision、DataBoundaryGrant、Approval、Authorization 和 EffectReceipt 使用封闭 Schema，未知字段直接 `UnsupportedSchema`，不得忽略后继续执行。
 4. 未知且影响状态机的事件进入 `NeedsUpgrade`，不得猜测执行。
 5. Runtime 私有扩展必须在 Adapter 内转换。
 
@@ -441,6 +441,8 @@ risk hints
 
 MCP Metadata 或第三方描述不能直接成为 Policy 事实。
 
+Capability/Operation Descriptor 必须为每个 operation 固定输入、结构化 Preview、Receipt Schema Hash 和 postcondition。`create | replace | delete | DataEgress` 不得共用会接受矛盾 after-state 的泛化 `Applied` 规则；该合同冻结前 operation 保持评审态或 `FeatureDisabled`。
+
 调用阶段：
 
 ```text
@@ -543,11 +545,12 @@ resources[]:
   resource_id
   outcome: Applied | NotApplied | Conflict | StillUnknown
   observed_revision / observed_hash
-  receipt_ref / evidence_ref
+  sanitized_receipt_ref / evidence_ref
 ```
 
 - `Applied` 使 Effect 进入 Applied；`NotApplied` 使 Effect 进入 Failed，并明确未发生目标变化；
 - expected resource set 必须与 sealed InvocationSpec 完全相等，每个资源恰好出现一次；缺失、重复或额外资源使 Receipt 无效并保持 Unknown；
+- 原始 Receipt bytes 只允许在 TCB 内短暂验证、脱敏和 canary 扫描后丢弃；Event/Evidence 只持久化 `SanitizedReceiptRef` 和 Broker attestation；
 - 全部 Applied 才聚合为 Applied；全部 NotApplied 聚合为 Failed；有 Applied 且存在任意非 Applied 聚合为 PartiallyApplied；无 Applied 且存在 StillUnknown 聚合为 Unknown；剩余 Conflict 聚合为 Unknown 并进入人工对账；
 - `PartiallyApplied` 必须逐资源记录结果，不能进入全局成功；`Conflict` 与 `StillUnknown` 保持 Effectful 操作全局阻断，直到安全终结；
 - 人工无法证明结果时只能 `AbandonedWithUncertainty`，不得把旧 Effect 变为可重试；

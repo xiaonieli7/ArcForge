@@ -1,12 +1,14 @@
 # Broker 合同 G0.5 设计决策 V0
 
-状态：Independently reviewed；BC-01 至 BC-08 已完成 G0.5 设计闭合，G1 验证待执行
+状态：Independently reviewed；BC-01 至 BC-08 已完成 G0.5 设计闭合，[机器化合同评审](G1_CONTRACT_REVIEW_V1.md)达到 `G1 contract review candidate`；BC-09 仍阻断 Contract Frozen
 
 本文关闭的是 G0.5 设计歧义，不代表实现已验证或 G1 Contract Frozen。每项决定仍需 G1 测试证据。
 
 ## BC-01 Canonical serialization 与 Hash
 
 决定：安全绑定对象使用 RFC 8785 JCS 的 UTF-8 canonical JSON，加对象类型与版本域分隔后计算 SHA-256。
+
+V0 固定 `canonicalization_version = jcs-rfc8785-restricted-v0`，对象类型、Schema、self-hash 排除字段和派生 Hash 以 [Canonical Hash Registry](../../contracts/v0/canonical-hash-registry.json)为机器可读清单；Hash 字段使用 `sha256:<64 lowercase hex>`。
 
 ```text
 spec_hash = SHA-256(
@@ -27,7 +29,7 @@ spec_hash = SHA-256(
 - 二进制优先使用 `{content_ref, sha256, byte_length}`；确需内嵌时只用 base64url no-padding；最终执行参数另存 exact bytes SHA-256，不能由显示字符串重建；
 - `spec_hash` 字段自身不参与 Hash；未知字段由 BC-07 拒绝；
 - Approval、Preview、PolicyDecision、Authorization、Outbox 和 invoke 都绑定同一 Hash；
-- Preview Hash 绑定结构化 Preview、InvocationSpec Hash 和可信 Renderer 版本，不能 Hash HTML 或 Provider 文本；
+- Preview Hash 绑定 closed structured Preview、InvocationSpec Hash 和可信 Renderer ID/版本/二进制 Hash，不能 Hash HTML、渲染产物或 Provider 文本；
 - 发布固定 test vector，Rust 实现与独立测试实现字节级一致。
 
 G1 验证：属性顺序、Unicode 等价外观但不同码点、长整数、`-0`、非法 surrogate、二进制和参数字节变更。任何跨实现 Hash 不一致即 Stop。
@@ -100,6 +102,7 @@ G1 验证：`..`、UNC、Device Path、ADS、Unicode、8.3、case-sensitive dire
 - Effect 已 `AbandonedWithUncertainty`：追加 `LateEffectReceiptObserved` Evidence 和 Recovery alert，但 Effect/Task 终态不改变，也不产生新 Authorization；
 - Runtime completion 或用户陈述不属于可信 Receipt；
 - 任何 Late Receipt 都不能触发自动重试或把 Task 直接设为 Succeeded。
+- 原始 Receipt bytes 只在 TCB 内短暂用于验证、脱敏和 canary 扫描，随后丢弃；持久化对象只允许 `SanitizedReceiptRef` 与 Broker internal attestation。外部 detached signature 在算法、preimage、密钥信任和轮换合同冻结前保持 `FeatureDisabled`。
 
 G1 验证：每个终态的重复/矛盾/迟到 Receipt，以及 abandon 后 Receipt。任何终态静默改变即 Stop。
 
@@ -113,7 +116,7 @@ resource_identity_before / expected_revision
 operation
 outcome: Applied | NotApplied | Conflict | StillUnknown
 resource_identity_after / content_hash_after
-provider_error_code / receipt_ref / evidence_ref
+provider_error_code / sanitized_receipt_ref / evidence_ref
 ```
 
 逐资源 outcome 收敛为 `Applied | NotApplied | Conflict | StillUnknown`；操作错误若能证明未发生归为 NotApplied，无法证明则 StillUnknown。expected resource set 必须与 sealed InvocationSpec 完全相等，每个资源恰好一次；缺失、重复或额外资源使 Receipt 无效并保持 Unknown。
@@ -171,6 +174,12 @@ monotonic_deadline
 
 G1 验证：canary 全盘/数据库/日志/诊断/备份搜索、过期、跨 Run/Target/Purpose、并发双消费、cancel race、panic 和 crash 注入。任何 canary 持久化或越界即 Stop。
 
+## BC-09 Operation-specific postcondition（G1 冻结阻断项）
+
+机器化评审确认：V0 的 `operation` 仍是开放 `QualifiedName`，通用 `Applied` 结构尚不能区分 create、replace、delete 和 DataEgress 的合法 after-state。G1 必须冻结 Capability/Operation Descriptor、输入/Preview/Receipt Schema Hash 以及逐操作后置条件；在此之前只能保持 `G1 contract review candidate`，不能 Contract Frozen。
+
+停止条件：只改 operation/Preview action 后，矛盾的资源后置状态仍能通过 Schema 与语义校验。
+
 ## 决策状态
 
 | ID | G0.5 设计决定 | 仍需 G1 证明 | 建议状态 |
@@ -183,6 +192,7 @@ G1 验证：canary 全盘/数据库/日志/诊断/备份搜索、过期、跨 Ru
 | BC-06 | per-resource closed outcomes + deterministic aggregation | partial/crash fixtures | Resolved for G0.5 review |
 | BC-07 | closed authoritative schemas + exact negotiation | version/replay fixtures | Resolved for G0.5 review |
 | BC-08 | one-use Broker-private scoped secret handle | canary and crash tests | Resolved for G0.5 review |
+| BC-09 | closed operation descriptor + operation-specific postcondition | create/replace/delete/DataEgress schema and integration fixtures | Open — Contract Frozen blocker |
 
 ## 官方设计依据
 

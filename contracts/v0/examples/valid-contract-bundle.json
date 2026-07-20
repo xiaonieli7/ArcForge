@@ -1,0 +1,600 @@
+{
+  "contract_schema_version": 0,
+  "status": "draft",
+  "protocol_major": 1,
+  "protocol_minor": 0,
+  "command_envelopes": [
+    {
+      "protocol_major": 1,
+      "protocol_minor": 0,
+      "schema_id": "arcforge.command-envelope",
+      "schema_version": 0,
+      "required_features": [
+        "closed-authoritative-schema",
+        "jcs-rfc8785"
+      ],
+      "command_id": "018f0f6c-7b11-7a10-8b01-000000000006",
+      "client_instance_id": "018f0f6c-7b11-7a10-8b01-000000000007",
+      "client_session_id": "018f0f6c-7b11-7a10-8b01-000000000008",
+      "issued_at": "2026-07-20T04:01:00Z",
+      "actor": {
+        "actor_type": "User",
+        "actor_id": "user-001"
+      },
+      "scope": {
+        "scope_type": "Task",
+        "workspace_id": "018f0f6c-7b11-7a10-8b01-000000000001",
+        "thread_id": "018f0f6c-7b11-7a10-8b01-000000000002",
+        "task_id": "018f0f6c-7b11-7a10-8b01-000000000003"
+      },
+      "command_type": "artifact.request_apply",
+      "expected_versions": [
+        {
+          "stream_id": "018f0f6c-7b11-7a10-8b01-000000000003",
+          "aggregate_version": "3"
+        }
+      ],
+      "correlation_id": "018f0f6c-7b11-7a10-8b01-000000000009",
+      "payload": {
+        "schema_id": "arcforge.command-payload.artifact-request-apply",
+        "schema_version": 0,
+        "body": {
+          "content_ref": "arcforge-content:sha256:1313131313131313131313131313131313131313131313131313131313131313",
+          "sha256": "sha256:1313131313131313131313131313131313131313131313131313131313131313",
+          "byte_length": "384"
+        }
+      },
+      "payload_hash": "sha256:bdca0961b25f6174e2b9440e5fd331f37827dc20bb2ea0622bc5d4a4fd308d6c"
+    }
+  ],
+  "tool_intents": [
+    {
+      "protocol_major": 1,
+      "protocol_minor": 0,
+      "schema_id": "arcforge.tool-intent",
+      "schema_version": 0,
+      "required_features": [
+        "closed-authoritative-schema",
+        "jcs-rfc8785",
+        "data-boundary-grant"
+      ],
+      "tool_intent_id": "018f0f6c-7b11-7a10-8b01-00000000000b",
+      "causation_command_id": "018f0f6c-7b11-7a10-8b01-000000000006",
+      "correlation_id": "018f0f6c-7b11-7a10-8b01-000000000009",
+      "backend_instance_id": "backend-instance-001",
+      "backend_event_id": "backend-event-042",
+      "source_sequence": "42",
+      "workspace_id": "018f0f6c-7b11-7a10-8b01-000000000001",
+      "task_id": "018f0f6c-7b11-7a10-8b01-000000000003",
+      "run_id": "018f0f6c-7b11-7a10-8b01-000000000004",
+      "agent_id": "018f0f6c-7b11-7a10-8b01-000000000005",
+      "run_mode": "Execute",
+      "mode_policy_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "data_boundary_grant": {
+        "data_boundary_id": "018f0f6c-7b11-7a10-8b01-00000000000a",
+        "version": "1",
+        "grant_hash": "sha256:fac9e532c32e82d17adaf1c6f9d8d88cde294e88badaccceb15b9a410df198da"
+      },
+      "capability_id": "workspace.apply",
+      "operation": "workspace.file.create",
+      "declared_arguments_schema_id": "arcforge.arguments.workspace-file-create",
+      "declared_arguments_schema_version": 0,
+      "declared_arguments": {
+        "content_ref": "arcforge-content:sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "sha256": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "byte_length": "384"
+      },
+      "resource_proposals": [
+        {
+          "resource_operation_id": "018f0f6c-7b11-7a10-8b01-00000000000d",
+          "resource_identity_id": "018f0f6c-7b11-7a10-8b01-00000000000c",
+          "resource_identity_hash": "sha256:e97afc9ad68afaeb11b322edf95e25708fdeb5d245f80d6ac296772034cf7de0",
+          "requested_operation": "workspace.file.create",
+          "expected_revision": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "requested_content_hash": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        }
+      ],
+      "requested_deadline_ms": "120000",
+      "trace_id": "0123456789abcdef0123456789abcdef",
+      "intent_hash": "sha256:802eb0f91bcda4a749d36a4c5cd0be8f820151d7639e15460628af80d36fd0ea"
+    }
+  ],
+  "data_boundary_grants": [
+    {
+      "protocol_major": 1,
+      "protocol_minor": 0,
+      "schema_id": "arcforge.data-boundary-grant",
+      "schema_version": 0,
+      "required_features": [
+        "closed-authoritative-schema",
+        "jcs-rfc8785",
+        "trusted-monotonic-clock",
+        "data-boundary-grant"
+      ],
+      "data_boundary_id": "018f0f6c-7b11-7a10-8b01-00000000000a",
+      "version": "1",
+      "task_id": "018f0f6c-7b11-7a10-8b01-000000000003",
+      "task_spec_version": "2",
+      "source_set_version": "1",
+      "source_hash_set": [
+        "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+      ],
+      "data_classification": "L1",
+      "extraction_policy_hash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "provider_profile_id": "provider-profile-001",
+      "provider_profile_version": "1",
+      "model_id": "model-report-001",
+      "canonical_endpoint_origin": "https://api.example.test",
+      "redirect_policy_hash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "egress_policy_hash": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "consent_version": "1",
+      "confirmed_by": {
+        "actor_type": "User",
+        "actor_id": "user-001"
+      },
+      "confirmed_at": "2026-07-20T04:00:00Z",
+      "lifetime": {
+        "issued_at_utc_trusted": "2026-07-20T04:00:00Z",
+        "issued_monotonic_ticks": "1000000",
+        "ttl_ms": "600000",
+        "expires_monotonic_ticks": "1600000",
+        "clock_epoch_id": "018f0f6c-7b11-7a10-8b01-000000000015"
+      },
+      "status": "Active",
+      "grant_hash": "sha256:fac9e532c32e82d17adaf1c6f9d8d88cde294e88badaccceb15b9a410df198da"
+    }
+  ],
+  "resource_identities": [
+    {
+      "protocol_major": 1,
+      "protocol_minor": 0,
+      "schema_id": "arcforge.resource-identity",
+      "schema_version": 0,
+      "required_features": [
+        "closed-authoritative-schema",
+        "jcs-rfc8785",
+        "ntfs-file-id-128"
+      ],
+      "resource_identity_id": "018f0f6c-7b11-7a10-8b01-00000000000c",
+      "identity_kind": "New",
+      "workspace_id": "018f0f6c-7b11-7a10-8b01-000000000001",
+      "file_system": "NTFS",
+      "workspace_root": {
+        "volume_serial_number": "0xA1B2C3D4",
+        "file_id_128": "11111111111111111111111111111111"
+      },
+      "parent_directory": {
+        "volume_serial_number": "0xA1B2C3D4",
+        "file_id_128": "22222222222222222222222222222222"
+      },
+      "relative_locator": "deliverables/final-report.docx",
+      "leaf_name": "final-report.docx",
+      "stream_name": "",
+      "reparse_chain": [],
+      "case_sensitive_directory": false,
+      "expected_revision": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "absence_proof_hash": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "absence_observed_at_utc": "2026-07-20T04:01:30Z",
+      "resource_identity_hash": "sha256:e97afc9ad68afaeb11b322edf95e25708fdeb5d245f80d6ac296772034cf7de0"
+    }
+  ],
+  "invocation_specs": [
+    {
+      "protocol_major": 1,
+      "protocol_minor": 0,
+      "schema_id": "arcforge.invocation-spec",
+      "schema_version": 0,
+      "required_features": [
+        "closed-authoritative-schema",
+        "jcs-rfc8785",
+        "exact-argument-bytes",
+        "trusted-monotonic-clock",
+        "ntfs-file-id-128"
+      ],
+      "invocation_id": "018f0f6c-7b11-7a10-8b01-00000000000e",
+      "source_tool_intent_id": "018f0f6c-7b11-7a10-8b01-00000000000b",
+      "source_intent_hash": "sha256:802eb0f91bcda4a749d36a4c5cd0be8f820151d7639e15460628af80d36fd0ea",
+      "effect_id": "018f0f6c-7b11-7a10-8b01-00000000000f",
+      "workspace_id": "018f0f6c-7b11-7a10-8b01-000000000001",
+      "task_id": "018f0f6c-7b11-7a10-8b01-000000000003",
+      "run_id": "018f0f6c-7b11-7a10-8b01-000000000004",
+      "run_mode": "Execute",
+      "mode_policy_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "policy_snapshot_version": "7",
+      "effect_class": "WorkspaceMutation",
+      "data_boundary_grant": {
+        "data_boundary_id": "018f0f6c-7b11-7a10-8b01-00000000000a",
+        "version": "1",
+        "grant_hash": "sha256:fac9e532c32e82d17adaf1c6f9d8d88cde294e88badaccceb15b9a410df198da"
+      },
+      "capability": {
+        "capability_id": "workspace.apply",
+        "capability_version": "1",
+        "capability_descriptor_hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+        "capability_provider_id": "workspace-broker",
+        "capability_provider_version": "1",
+        "provider_binary_hash": "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+      },
+      "operation": "workspace.file.create",
+      "canonicalization_version": "jcs-rfc8785-restricted-v0",
+      "canonical_args": {
+        "content_ref": "arcforge-content:sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "sha256": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+        "byte_length": "384"
+      },
+      "exact_args_bytes_sha256": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "expected_resource_set_hash": "sha256:0a06c469f4d9bdaf9fef6ed7e59d79006ed1cfef846e6bc02d3217f7c536350e",
+      "resources": [
+        {
+          "resource_operation_id": "018f0f6c-7b11-7a10-8b01-00000000000d",
+          "resource_identity_id": "018f0f6c-7b11-7a10-8b01-00000000000c",
+          "resource_identity_hash": "sha256:e97afc9ad68afaeb11b322edf95e25708fdeb5d245f80d6ac296772034cf7de0",
+          "resource_handle_id": "018f0f6c-7b11-7a10-8b01-000000000010",
+          "resource_handle_hash": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+          "operation": "workspace.file.create",
+          "expected_revision": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "expected_content_hash": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        }
+      ],
+      "secret_refs": [],
+      "limits": {
+        "timeout_ms": "120000",
+        "max_output_bytes": "1048576",
+        "max_resources": "1"
+      },
+      "idempotency_key": "018f0f6c-7b11-7a10-8b01-000000000011",
+      "lifetime": {
+        "issued_at_utc_trusted": "2026-07-20T04:02:00Z",
+        "issued_monotonic_ticks": "1120000",
+        "ttl_ms": "300000",
+        "expires_monotonic_ticks": "1420000",
+        "clock_epoch_id": "018f0f6c-7b11-7a10-8b01-000000000015"
+      },
+      "spec_hash": "sha256:292dcd8c77d0ed26b40a95e1fa6b74d4f96005192f28e6ebe24811af00004594"
+    }
+  ],
+  "policy_decisions": [
+    {
+      "protocol_major": 1,
+      "protocol_minor": 0,
+      "schema_id": "arcforge.policy-decision",
+      "schema_version": 0,
+      "required_features": [
+        "closed-authoritative-schema",
+        "jcs-rfc8785",
+        "trusted-monotonic-clock"
+      ],
+      "policy_decision_id": "018f0f6c-7b11-7a10-8b01-000000000012",
+      "policy_version": "7",
+      "policy_hash": "sha256:6666666666666666666666666666666666666666666666666666666666666666",
+      "invocation_spec_hash": "sha256:292dcd8c77d0ed26b40a95e1fa6b74d4f96005192f28e6ebe24811af00004594",
+      "preview_id": "018f0f6c-7b11-7a10-8b01-000000000019",
+      "preview_hash": "sha256:d633c73f36c435acfcc5fae74517e6e578437daf03d022d8b4d85719fd555659",
+      "trusted_renderer": {
+        "renderer_id": "arcforge.trusted-preview",
+        "renderer_version": "0.1.0",
+        "renderer_binary_hash": "sha256:1212121212121212121212121212121212121212121212121212121212121212"
+      },
+      "effect_class": "WorkspaceMutation",
+      "risk_level": "High",
+      "decision": "RequireApproval",
+      "reason_codes": [
+        "NewFile",
+        "WorkspaceWrite"
+      ],
+      "required_constraints": [
+        {
+          "constraint_type": "ResourceRevision",
+          "binding_hash": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        },
+        {
+          "constraint_type": "Preview",
+          "binding_hash": "sha256:d633c73f36c435acfcc5fae74517e6e578437daf03d022d8b4d85719fd555659"
+        }
+      ],
+      "evaluated_resource_versions": [
+        {
+          "resource_identity_id": "018f0f6c-7b11-7a10-8b01-00000000000c",
+          "resource_identity_hash": "sha256:e97afc9ad68afaeb11b322edf95e25708fdeb5d245f80d6ac296772034cf7de0",
+          "resource_revision": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        }
+      ],
+      "lifetime": {
+        "issued_at_utc_trusted": "2026-07-20T04:02:01Z",
+        "issued_monotonic_ticks": "1121000",
+        "ttl_ms": "300000",
+        "expires_monotonic_ticks": "1421000",
+        "clock_epoch_id": "018f0f6c-7b11-7a10-8b01-000000000015"
+      },
+      "policy_decision_hash": "sha256:24b1ce83a98d02a10192bb236e66dbce3594cf501bafe1028790828b6b70a4e5"
+    }
+  ],
+  "previews": [
+    {
+      "protocol_major": 1,
+      "protocol_minor": 0,
+      "schema_id": "arcforge.preview-binding",
+      "schema_version": 0,
+      "required_features": [
+        "closed-authoritative-schema",
+        "jcs-rfc8785",
+        "exact-argument-bytes",
+        "trusted-preview-renderer"
+      ],
+      "preview_id": "018f0f6c-7b11-7a10-8b01-000000000019",
+      "invocation_id": "018f0f6c-7b11-7a10-8b01-00000000000e",
+      "invocation_spec_hash": "sha256:292dcd8c77d0ed26b40a95e1fa6b74d4f96005192f28e6ebe24811af00004594",
+      "effect_class": "WorkspaceMutation",
+      "operation": "workspace.file.create",
+      "canonical_args_sha256": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "exact_args_bytes_sha256": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+      "resources": [
+        {
+          "resource_operation_id": "018f0f6c-7b11-7a10-8b01-00000000000d",
+          "resource_identity_id": "018f0f6c-7b11-7a10-8b01-00000000000c",
+          "action": "Create",
+          "display_locator": "deliverables/final-report.docx",
+          "expected_revision": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "proposed_content_hash": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+        }
+      ],
+      "risk_level": "High",
+      "reversibility": "Reversible",
+      "warnings": [
+        "NewFile",
+        "WorkspaceWrite"
+      ],
+      "trusted_renderer": {
+        "renderer_id": "arcforge.trusted-preview",
+        "renderer_version": "0.1.0",
+        "renderer_binary_hash": "sha256:1212121212121212121212121212121212121212121212121212121212121212"
+      },
+      "preview_hash": "sha256:d633c73f36c435acfcc5fae74517e6e578437daf03d022d8b4d85719fd555659"
+    }
+  ],
+  "approvals": [
+    {
+      "protocol_major": 1,
+      "protocol_minor": 0,
+      "schema_id": "arcforge.approval",
+      "schema_version": 0,
+      "required_features": [
+        "closed-authoritative-schema",
+        "jcs-rfc8785",
+        "trusted-monotonic-clock",
+        "one-use-authorization"
+      ],
+      "approval_id": "018f0f6c-7b11-7a10-8b01-000000000013",
+      "approval_version": "1",
+      "effect_id": "018f0f6c-7b11-7a10-8b01-00000000000f",
+      "scope": {
+        "scope_type": "TaskRun",
+        "workspace_id": "018f0f6c-7b11-7a10-8b01-000000000001",
+        "thread_id": "018f0f6c-7b11-7a10-8b01-000000000002",
+        "task_id": "018f0f6c-7b11-7a10-8b01-000000000003",
+        "run_id": "018f0f6c-7b11-7a10-8b01-000000000004"
+      },
+      "intent_hash": "sha256:802eb0f91bcda4a749d36a4c5cd0be8f820151d7639e15460628af80d36fd0ea",
+      "invocation_spec_hash": "sha256:292dcd8c77d0ed26b40a95e1fa6b74d4f96005192f28e6ebe24811af00004594",
+      "preview_id": "018f0f6c-7b11-7a10-8b01-000000000019",
+      "preview_hash": "sha256:d633c73f36c435acfcc5fae74517e6e578437daf03d022d8b4d85719fd555659",
+      "trusted_renderer": {
+        "renderer_id": "arcforge.trusted-preview",
+        "renderer_version": "0.1.0",
+        "renderer_binary_hash": "sha256:1212121212121212121212121212121212121212121212121212121212121212"
+      },
+      "policy_decision_id": "018f0f6c-7b11-7a10-8b01-000000000012",
+      "policy_version": "7",
+      "policy_hash": "sha256:6666666666666666666666666666666666666666666666666666666666666666",
+      "risk_level": "High",
+      "reversibility": "Reversible",
+      "resource_versions": [
+        {
+          "resource_identity_id": "018f0f6c-7b11-7a10-8b01-00000000000c",
+          "resource_identity_hash": "sha256:e97afc9ad68afaeb11b322edf95e25708fdeb5d245f80d6ac296772034cf7de0",
+          "resource_revision": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        }
+      ],
+      "max_uses": "1",
+      "lifetime": {
+        "issued_at_utc_trusted": "2026-07-20T04:02:15Z",
+        "issued_monotonic_ticks": "1135000",
+        "ttl_ms": "180000",
+        "expires_monotonic_ticks": "1315000",
+        "clock_epoch_id": "018f0f6c-7b11-7a10-8b01-000000000015"
+      },
+      "status": "Approved",
+      "decision_record": {
+        "decision": "Approved",
+        "decided_by": {
+          "actor_type": "User",
+          "actor_id": "user-001"
+        },
+        "decided_at_utc": "2026-07-20T04:02:15Z",
+        "reason_codes": [
+          "PreviewConfirmed"
+        ]
+      },
+      "approval_hash": "sha256:c79d0115b3aa96f25656f5a170dc08bd3b02555a6fa031afde6c543b29a98406"
+    }
+  ],
+  "authorization_grants": [
+    {
+      "protocol_major": 1,
+      "protocol_minor": 0,
+      "schema_id": "arcforge.authorization-grant",
+      "schema_version": 0,
+      "required_features": [
+        "closed-authoritative-schema",
+        "jcs-rfc8785",
+        "trusted-monotonic-clock",
+        "one-use-authorization",
+        "durable-fencing"
+      ],
+      "authorization_id": "018f0f6c-7b11-7a10-8b01-000000000014",
+      "authorization_basis": "ApprovedByUser",
+      "approval_id": "018f0f6c-7b11-7a10-8b01-000000000013",
+      "approval_hash": "sha256:c79d0115b3aa96f25656f5a170dc08bd3b02555a6fa031afde6c543b29a98406",
+      "effect_id": "018f0f6c-7b11-7a10-8b01-00000000000f",
+      "invocation_id": "018f0f6c-7b11-7a10-8b01-00000000000e",
+      "invocation_spec_hash": "sha256:292dcd8c77d0ed26b40a95e1fa6b74d4f96005192f28e6ebe24811af00004594",
+      "preview_id": "018f0f6c-7b11-7a10-8b01-000000000019",
+      "preview_hash": "sha256:d633c73f36c435acfcc5fae74517e6e578437daf03d022d8b4d85719fd555659",
+      "trusted_renderer": {
+        "renderer_id": "arcforge.trusted-preview",
+        "renderer_version": "0.1.0",
+        "renderer_binary_hash": "sha256:1212121212121212121212121212121212121212121212121212121212121212"
+      },
+      "policy_decision_id": "018f0f6c-7b11-7a10-8b01-000000000012",
+      "policy_decision_hash": "sha256:24b1ce83a98d02a10192bb236e66dbce3594cf501bafe1028790828b6b70a4e5",
+      "scope": {
+        "scope_type": "TaskRun",
+        "workspace_id": "018f0f6c-7b11-7a10-8b01-000000000001",
+        "thread_id": "018f0f6c-7b11-7a10-8b01-000000000002",
+        "task_id": "018f0f6c-7b11-7a10-8b01-000000000003",
+        "run_id": "018f0f6c-7b11-7a10-8b01-000000000004"
+      },
+      "workspace_id": "018f0f6c-7b11-7a10-8b01-000000000001",
+      "task_id": "018f0f6c-7b11-7a10-8b01-000000000003",
+      "run_id": "018f0f6c-7b11-7a10-8b01-000000000004",
+      "run_mode": "Execute",
+      "mode_policy_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "effect_class": "WorkspaceMutation",
+      "capability": {
+        "capability_id": "workspace.apply",
+        "capability_version": "1",
+        "capability_descriptor_hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+        "capability_provider_id": "workspace-broker",
+        "capability_provider_version": "1",
+        "provider_binary_hash": "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+      },
+      "resources": [
+        {
+          "resource_operation_id": "018f0f6c-7b11-7a10-8b01-00000000000d",
+          "resource_identity_id": "018f0f6c-7b11-7a10-8b01-00000000000c",
+          "resource_identity_hash": "sha256:e97afc9ad68afaeb11b322edf95e25708fdeb5d245f80d6ac296772034cf7de0",
+          "resource_handle_id": "018f0f6c-7b11-7a10-8b01-000000000010",
+          "resource_handle_hash": "sha256:4444444444444444444444444444444444444444444444444444444444444444",
+          "operation": "workspace.file.create",
+          "expected_revision": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+        }
+      ],
+      "secret_ref_scope": [],
+      "idempotency_key": "018f0f6c-7b11-7a10-8b01-000000000011",
+      "max_uses": "1",
+      "remaining_uses": "1",
+      "fencing_scope": "workspace:018f0f6c-7b11-7a10-8b01-000000000001",
+      "fencing_token": "42",
+      "broker_epoch_id": "018f0f6c-7b11-7a10-8b01-000000000016",
+      "lifetime": {
+        "issued_at_utc_trusted": "2026-07-20T04:02:16Z",
+        "issued_monotonic_ticks": "1136000",
+        "ttl_ms": "120000",
+        "expires_monotonic_ticks": "1256000",
+        "clock_epoch_id": "018f0f6c-7b11-7a10-8b01-000000000015"
+      },
+      "status": "Active",
+      "issued_by": {
+        "actor_type": "Broker",
+        "actor_id": "execution-broker-001"
+      },
+      "authorization_hash": "sha256:be1fe9607f4c37fd095fd74e5091030b49792d4863f816d5160accb74278eba4"
+    }
+  ],
+  "effect_receipts": [
+    {
+      "protocol_major": 1,
+      "protocol_minor": 0,
+      "schema_id": "arcforge.effect-receipt",
+      "schema_version": 0,
+      "required_features": [
+        "closed-authoritative-schema",
+        "jcs-rfc8785",
+        "per-resource-receipts",
+        "late-receipt-reconciliation"
+      ],
+      "receipt_id": "018f0f6c-7b11-7a10-8b01-000000000017",
+      "effect_id": "018f0f6c-7b11-7a10-8b01-00000000000f",
+      "invocation_id": "018f0f6c-7b11-7a10-8b01-00000000000e",
+      "invocation_spec_hash": "sha256:292dcd8c77d0ed26b40a95e1fa6b74d4f96005192f28e6ebe24811af00004594",
+      "authorization_id": "018f0f6c-7b11-7a10-8b01-000000000014",
+      "authorization_hash": "sha256:be1fe9607f4c37fd095fd74e5091030b49792d4863f816d5160accb74278eba4",
+      "idempotency_key": "018f0f6c-7b11-7a10-8b01-000000000011",
+      "provider_operation_id": "workspace-apply-0001",
+      "started_at_utc": "2026-07-20T04:02:20Z",
+      "finished_at_utc": "2026-07-20T04:02:21Z",
+      "received_at_utc_trusted": "2026-07-20T04:02:21Z",
+      "expected_resource_set_hash": "sha256:0a06c469f4d9bdaf9fef6ed7e59d79006ed1cfef846e6bc02d3217f7c536350e",
+      "observed_outcome": "Applied",
+      "resource_outcomes": [
+        {
+          "resource_operation_id": "018f0f6c-7b11-7a10-8b01-00000000000d",
+          "resource_identity_before": {
+            "state": "Absent",
+            "absence_proof_hash": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+            "observed_at_utc": "2026-07-20T04:02:20Z"
+          },
+          "expected_revision": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "operation": "workspace.file.create",
+          "outcome": "Applied",
+          "resource_identity_after": {
+            "state": "Present",
+            "ntfs_identity": {
+              "volume_serial_number": "0xA1B2C3D4",
+              "file_id_128": "33333333333333333333333333333333"
+            },
+            "revision": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "content_hash": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+            "byte_length": "8421",
+            "observed_at_utc": "2026-07-20T04:02:21Z",
+            "last_write_at_utc": "2026-07-20T04:02:21Z"
+          },
+          "content_hash_after": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+          "sanitized_receipt_ref": {
+            "content": {
+              "content_ref": "arcforge-content:sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "sha256": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+              "byte_length": "512"
+            },
+            "redaction_policy_hash": "sha256:1414141414141414141414141414141414141414141414141414141414141414",
+            "scanner_id": "arcforge.canary-scanner",
+            "scanner_version": "1",
+            "canary_scan_status": "Clean",
+            "scan_attestation_hash": "sha256:1515151515151515151515151515151515151515151515151515151515151515"
+          },
+          "evidence_refs": [
+            {
+              "evidence_id": "018f0f6c-7b11-7a10-8b01-000000000018",
+              "evidence_hash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+            }
+          ],
+          "observed_at_utc": "2026-07-20T04:02:21Z"
+        }
+      ],
+      "receipt_source": {
+        "source_type": "WorkspaceBroker",
+        "source_id": "workspace-broker",
+        "source_version": "1",
+        "verification_method": "BrokerInternalAttestation",
+        "verified_by_broker_epoch_id": "018f0f6c-7b11-7a10-8b01-000000000016",
+        "attestation_hash": "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+      },
+      "sanitized_receipt": {
+        "content": {
+          "content_ref": "arcforge-content:sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "sha256": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          "byte_length": "512"
+        },
+        "redaction_policy_hash": "sha256:1414141414141414141414141414141414141414141414141414141414141414",
+        "scanner_id": "arcforge.canary-scanner",
+        "scanner_version": "1",
+        "canary_scan_status": "Clean",
+        "scan_attestation_hash": "sha256:1515151515151515151515151515151515151515151515151515151515151515"
+      },
+      "late_observation": false,
+      "reconciliation_status": "Verified",
+      "receipt_hash": "sha256:a8491ee6682e7792acfcfd2475cfc52778ba1e0482547ea367081c4034a2b1cd"
+    }
+  ]
+}

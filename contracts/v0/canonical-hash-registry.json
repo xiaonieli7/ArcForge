@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "registry_id": "arcforge.canonical-hash-registry",
+  "registry_version": "0",
+  "status": "G1 contract review draft; not Contract Frozen",
+  "canonicalization_version": "jcs-rfc8785-restricted-v0",
+  "hash_format": "sha256:<64 lowercase hexadecimal characters>",
+  "entries": {
+    "ToolIntent": {
+      "kind": "self_hash",
+      "schema_id": "arcforge.tool-intent",
+      "domain_object_type": "ToolIntent",
+      "schema_version": "0",
+      "self_hash_field": "intent_hash",
+      "omit_top_level_fields": ["intent_hash"]
+    },
+    "DataBoundaryGrant": {
+      "kind": "self_hash",
+      "schema_id": "arcforge.data-boundary-grant",
+      "domain_object_type": "DataBoundaryGrant",
+      "schema_version": "0",
+      "self_hash_field": "grant_hash",
+      "omit_top_level_fields": ["grant_hash"]
+    },
+    "ResourceIdentity": {
+      "kind": "self_hash",
+      "schema_id": "arcforge.resource-identity",
+      "domain_object_type": "ResourceIdentity",
+      "schema_version": "0",
+      "self_hash_field": "resource_identity_hash",
+      "omit_top_level_fields": ["resource_identity_hash"]
+    },
+    "InvocationSpec": {
+      "kind": "self_hash",
+      "schema_id": "arcforge.invocation-spec",
+      "domain_object_type": "InvocationSpec",
+      "schema_version": "0",
+      "self_hash_field": "spec_hash",
+      "omit_top_level_fields": ["spec_hash"]
+    },
+    "PolicyDecision": {
+      "kind": "self_hash",
+      "schema_id": "arcforge.policy-decision",
+      "domain_object_type": "PolicyDecision",
+      "schema_version": "0",
+      "self_hash_field": "policy_decision_hash",
+      "omit_top_level_fields": ["policy_decision_hash"]
+    },
+    "Approval": {
+      "kind": "self_hash",
+      "schema_id": "arcforge.approval",
+      "domain_object_type": "Approval",
+      "schema_version": "0",
+      "self_hash_field": "approval_hash",
+      "omit_top_level_fields": ["approval_hash"]
+    },
+    "AuthorizationGrant": {
+      "kind": "self_hash",
+      "schema_id": "arcforge.authorization-grant",
+      "domain_object_type": "AuthorizationGrant",
+      "schema_version": "0",
+      "self_hash_field": "authorization_hash",
+      "omit_top_level_fields": ["authorization_hash"]
+    },
+    "EffectReceipt": {
+      "kind": "self_hash",
+      "schema_id": "arcforge.effect-receipt",
+      "domain_object_type": "EffectReceipt",
+      "schema_version": "0",
+      "self_hash_field": "receipt_hash",
+      "omit_top_level_fields": ["receipt_hash"]
+    },
+    "PreviewBinding": {
+      "kind": "self_hash",
+      "schema_id": "arcforge.preview-binding",
+      "domain_object_type": "PreviewBinding",
+      "schema_version": "0",
+      "self_hash_field": "preview_hash",
+      "omit_top_level_fields": ["preview_hash"]
+    },
+    "ResourceOperationSet": {
+      "kind": "derived_hash",
+      "schema_id": "arcforge.derived.resource-operation-set",
+      "domain_object_type": "ResourceOperationSet",
+      "schema_version": "0",
+      "output_hash_field": "expected_resource_set_hash",
+      "omit_top_level_fields": [],
+      "input_contract": "{resources:[InvocationSpec.ResourceBinding...]} sorted by resource_operation_id"
+    },
+    "CommandPayloadRef": {
+      "kind": "derived_hash",
+      "schema_id": "arcforge.command-payload-ref",
+      "domain_object_type": "CommandPayloadRef",
+      "schema_version": "0",
+      "output_hash_field": "payload_hash",
+      "omit_top_level_fields": [],
+      "input_contract": "CommandEnvelope.payload including schema_id, schema_version, and body"
+    }
+  },
+  "excluded_non_self_hash_fields": {
+    "CommandEnvelope.payload_hash": "This is governed by the derived CommandPayloadRef registry entry; it hashes CommandEnvelope.payload and is not an envelope self-hash."
+  }
+}

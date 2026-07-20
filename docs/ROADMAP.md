@@ -31,13 +31,13 @@ Go 条件：
 
 ## G0.5：限界技术预研（与 G0 证据收敛并行，5 个工作日）
 
-状态：Completed on 2026-07-20 — Ready for G1 contract review；正式 G0 产品证据仍未完成。
+状态：Completed on 2026-07-20 — [机器化合同资产](engineering/G1_CONTRACT_REVIEW_V1.md)达到 `G1 contract review candidate`；正式 G0 产品证据仍未完成，G1 未启动。
 
 依据 [G0 加速决策](product/G0_ACCELERATION_DECISION_2026-07-20.md)，三人外部 Pilot 改为两次合成夹具内部 Dry Run，并允许执行 [G0.5 Broker 限界预研](engineering/G0_5_BROKER_PRE_SPIKE_V1.md)。
 
 允许产出 Broker 合同冻结清单、Threat-to-Test 矩阵、Event Store 设计和 Mock Backend Fixture Catalog。禁止生产代码、真实 LLM/Provider/Secret、真实 Workspace、网络/进程/外部 Effect、Grok Build 接入，以及任何 G0/G1 Go 声明。
 
-G0.5 通过只表示材料可进入 G1 合同评审；正式产品证据门和 G1 启动决定保持不变。
+G0.5 与机器化合同评审通过只表示 G1 有一套可复验的起始合同；正式产品证据门、独立实现证据和 G1 启动决定保持不变。
 
 ## G1：Work Kernel 与执行边界 PoC（第 3–7 周）
 

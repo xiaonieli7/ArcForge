@@ -77,7 +77,7 @@ C:\Users\<user>\.arcforge
 
 ## 当前状态
 
-项目当前处于 G0 产品证据待验证阶段；G0.5 Mock-only 技术预研已完成并达到 `Ready for G1 contract review`。合同尚未冻结，也尚未开始生产代码或真实 Effect 实现。
+项目当前处于 G0 产品证据待验证阶段；G0.5 Mock-only 技术预研与机器化合同评审资产已完成，当前结论为 `G1 contract review candidate`。这不是 G1 Go；合同尚未冻结，也尚未开始生产代码或真实 Effect 实现。
 
 产品与交付范围：
 
@@ -98,6 +98,8 @@ C:\Users\<user>\.arcforge
 - [G0.5 Trusted Execution Broker 限界预研 V1](docs/engineering/G0_5_BROKER_PRE_SPIKE_V1.md)
 - [Broker 合同冻结清单 V0](docs/engineering/BROKER_CONTRACT_FREEZE_CHECKLIST_V0.md)
 - [Broker 合同 G0.5 设计决策 V0](docs/engineering/BROKER_CONTRACT_DECISIONS_V0.md)
+- [G1 Broker 合同机器化评审 V1](docs/engineering/G1_CONTRACT_REVIEW_V1.md)
+- [Broker Contract V0 机器合同与校验入口](contracts/v0/README.md)
 - [Threat-to-Test Matrix V0](docs/engineering/THREAT_TO_TEST_MATRIX_V0.csv)
 - [Event Store Design V0](docs/engineering/EVENT_STORE_DESIGN_V0.md)
 - [Mock Backend Fixture Catalog V0](docs/engineering/MOCK_BACKEND_FIXTURE_CATALOG_V0.md)

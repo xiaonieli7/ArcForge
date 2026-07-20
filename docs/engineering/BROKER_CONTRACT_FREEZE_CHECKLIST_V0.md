@@ -1,6 +1,6 @@
 # Broker 合同冻结清单 V0
 
-状态：G0.5 review resolved；仍为 Draft，尚未 Contract Frozen
+状态：G0.5 review resolved；机器化合同达到 `G1 contract review candidate`；仍为 Draft，尚未 Contract Frozen
 
 本文不重新定义领域状态机。状态与不变量以 [Domain Model](../specs/DOMAIN_MODEL_V1.md)为唯一规范，命令和跨进程语义以 [Protocol](../specs/PROTOCOL_V1.md)为唯一规范，安全门以 [Threat Model](../security/THREAT_MODEL_V1.md)为准。
 
@@ -92,7 +92,7 @@ AuthorizationGrant 还必须绑定：
 
 ### 2.7 EffectReceipt 与 ObservedOutcome
 
-EffectReceipt 至少包含 effect/invocation/authorization/idempotency ID、provider operation ID、开始/结束时间、逐资源 outcome、资源前后身份/hash、receipt source、raw receipt ContentRef/hash 和 reconciliation status。
+EffectReceipt 至少包含 effect/invocation/authorization/idempotency ID、provider operation ID、开始/结束时间、逐资源 outcome、资源前后身份/hash、receipt source、`SanitizedReceiptRef`、Broker attestation 和 reconciliation status。原始 Receipt bytes 不持久化。
 
 ObservedOutcome 使用封闭联合类型：
 
@@ -128,5 +128,6 @@ Agent/Provider 的 completion 文本不能生成 Applied。迟到 Receipt 只能
 | BC-06 | Multi-resource receipt | 封闭 leaf outcome 与确定性领域映射 | Partial 被显示为 Applied | Core | Resolved for G0.5 review |
 | BC-07 | Schema negotiation | 权威对象 closed schema；未知关键版本 fail closed | 未知 schema 被容错执行 | Core | Resolved for G0.5 review |
 | BC-08 | Secret handle lifetime | Broker-private one-use handle 与可审计 zeroization | handle 跨 Run 或重放可用 | Security | Resolved for G0.5 review |
+| BC-09 | Operation-specific postcondition | 冻结 Capability/Operation Descriptor、输入/Preview/Receipt Schema 与 create/replace/delete/DataEgress 后置条件 | 改写 operation 后仍能以矛盾 after-state 通过 Applied | Contracts/Core | Open — Contract Frozen blocker |
 
-详细设计与 G1 验证义务见 [Broker Contract Decisions V0](BROKER_CONTRACT_DECISIONS_V0.md)。八项已完成 G0.5 设计闭合；状态仍为 Draft，只能输出 `Ready for G1 contract review`，不能输出 Contract Frozen。
+详细设计与 G1 验证义务见 [Broker Contract Decisions V0](BROKER_CONTRACT_DECISIONS_V0.md)和[机器化合同评审](G1_CONTRACT_REVIEW_V1.md)。BC-01 至 BC-08 已完成 G0.5 设计闭合；独立机器化审查新增 BC-09 冻结阻断项。当前只能输出 `G1 contract review candidate`，不能输出 Contract Frozen。
