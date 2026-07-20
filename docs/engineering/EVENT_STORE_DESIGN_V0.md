@@ -50,18 +50,34 @@ created_at_trusted TEXT NOT NULL
 ```text
 authorization_id TEXT PRIMARY KEY
 effect_id TEXT UNIQUE NOT NULL
+invocation_id TEXT UNIQUE NOT NULL
 invocation_spec_hash TEXT NOT NULL
+idempotency_key TEXT UNIQUE NOT NULL
 policy_decision_id TEXT NOT NULL
 approval_id TEXT
 fencing_scope TEXT NOT NULL
-fencing_token INTEGER NOT NULL
+fencing_token_decimal TEXT NOT NULL
+broker_epoch_id TEXT NOT NULL
 remaining_uses INTEGER NOT NULL
+issued_at_utc_trusted TEXT NOT NULL
+clock_epoch_id TEXT NOT NULL
+expires_monotonic_ticks TEXT NOT NULL
 expires_at_trusted TEXT NOT NULL
 state TEXT NOT NULL
-UNIQUE(fencing_scope, fencing_token)
+UNIQUE(fencing_scope, fencing_token_decimal)
 ```
 
-Ledger 是执行控制数据，不是 Effect 领域状态来源。其行必须能追溯 `effect.authorized` Event。
+Ledger 是执行控制数据，不是 Effect 领域状态来源。其行必须能追溯 `effect.authorized` Event。V1 明确一个 Effect 只绑定一个 Invocation 和一次、单次消费的 Authorization；任何 Retry 创建新 AgentRun/Effect/Invocation/Authorization，因此 `effect_id` 与 `invocation_id` 保持唯一。
+
+### `fencing_counters`
+
+```text
+fencing_scope TEXT PRIMARY KEY
+last_token_decimal TEXT NOT NULL
+updated_global_position INTEGER NOT NULL
+```
+
+T2 在同一事务读取并递增 durable high-water token，永不回退或复用。WorkspaceMutation 使用 `workspace:{workspace_id}`；ProviderEgress 使用 `task:{task_id}:provider:{provider_profile_id}`。Authorization fencing 与下述 worker `claim_generation` 是不同控制面。
 
 ### `effect_outbox`
 
@@ -74,12 +90,13 @@ invocation_spec_hash TEXT NOT NULL
 state TEXT NOT NULL
 claim_owner TEXT
 claim_generation INTEGER NOT NULL
+broker_epoch_id TEXT NOT NULL
 claim_expires_at_trusted TEXT
 attempt_count INTEGER NOT NULL
 last_error_code TEXT
 ```
 
-Outbox 不允许对 Executing/Unknown 自动重发。只有可证明未开始且新 fencing claim 成功的记录可以重新派发。
+Outbox 不允许对 Executing/Unknown 自动重发。只有可证明未开始、没有 `effect.execution_started` Event、旧 worker 已终止或隔离且新 `claim_generation` 成功的记录可以重新派发。Claim generation 不能替代 Authorization fencing。
 
 ### `projection_checkpoints`
 

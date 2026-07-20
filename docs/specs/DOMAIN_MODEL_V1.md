@@ -85,7 +85,8 @@ invocation_id / command_id / event_id
 ### 3.3 时间与排序
 
 - 时间统一保存为 UTC RFC3339；
-- 时间戳只用于审计和展示；
+- UTC 时间戳只用于审计、展示和跨重启异常检测，不能单独延长或恢复 Authorization；
+- Approval、Authorization、DataBoundaryGrant、Secret Handle 和调用 Deadline 的安全有效期由 Broker 可信单调时钟、`clock_epoch_id` 与 TTL 强制；Broker 重启或无法证明 suspend/resume 语义时 fail closed；
 - 排序使用 Event Store 的 `global_position` 和实体流的 `aggregate_sequence`。
 
 ## 4. TaskSpec 与 AcceptanceCriterion

@@ -1,6 +1,6 @@
 # Broker 合同冻结清单 V0
 
-状态：Draft for G0.5 review；尚未冻结
+状态：G0.5 review resolved；仍为 Draft，尚未 Contract Frozen
 
 本文不重新定义领域状态机。状态与不变量以 [Domain Model](../specs/DOMAIN_MODEL_V1.md)为唯一规范，命令和跨进程语义以 [Protocol](../specs/PROTOCOL_V1.md)为唯一规范，安全门以 [Threat Model](../security/THREAT_MODEL_V1.md)为准。
 
@@ -9,11 +9,11 @@
 | 接口 | 信任级别 | 允许输入 | 允许输出 | 禁止能力 | 规范来源 | 状态 |
 |---|---|---|---|---|---|---|
 | `AgentBackend` | Untrusted | `RunSpec`、不可变 Snapshot Handle、用户输入 | `BackendEvent`、`ToolIntent`、Artifact/Evidence Proposal | Raw Secret、真实路径、Capability Token、领域写入 | Protocol §6 | Ready for review |
-| `ExecutionBroker` | TCB | ToolIntent、Policy/资源快照、Capability Descriptor | sealed InvocationSpec、Preview、Authorization、EffectReceipt/Evidence | 依据 Agent 文本判成功、授权后改参数 | Protocol §7–10 | Open items |
-| `EventStore/DomainStoreWriter` | TCB single writer | ApplicationCommand、Expected Version、Domain transaction | CommandReceipt、DomainEvent、Projection input | UI/Backend 直写、未知 Schema 猜测 | Protocol §3–4/§8 | Open items |
-| `WorkspaceBroker` | TCB capability | Opaque Selection/Snapshot/Resource Handle | Snapshot、ChangeSet、Apply Journal、逐资源 Receipt | WebView 路径、静默覆盖、路径逃逸 | Protocol §3/§7/§11 | Open items |
-| `ProviderEgress` | TCB capability | DataBoundaryGrant、canonical Endpoint、sealed payload refs | Provider Receipt、Usage、脱敏 Evidence | 通用网络、Redirect 扩权、无 Grant 外发 | Protocol §5/§7 | Open items |
-| `SecretResolver` | TCB capability | `secret_ref`、Purpose、Target、Run/Invocation scope | 短期 Secret Handle 或 Broker 内部使用结果 | 返回 Raw Secret、写日志/Args/Env/Event | Protocol §3.5 | Open items |
+| `ExecutionBroker` | TCB | ToolIntent、Policy/资源快照、Capability Descriptor | sealed InvocationSpec、Preview、Authorization、EffectReceipt/Evidence | 依据 Agent 文本判成功、授权后改参数 | Protocol §7–10 | Resolved for G0.5 review |
+| `EventStore/DomainStoreWriter` | TCB single writer | ApplicationCommand、Expected Version、Domain transaction | CommandReceipt、DomainEvent、Projection input | UI/Backend 直写、未知 Schema 猜测 | Protocol §3–4/§8 | Resolved for G0.5 review |
+| `WorkspaceBroker` | TCB capability | Opaque Selection/Snapshot/Resource Handle | Snapshot、ChangeSet、Apply Journal、逐资源 Receipt | WebView 路径、静默覆盖、路径逃逸 | Protocol §3/§7/§11 | Resolved for G0.5 review |
+| `ProviderEgress` | TCB capability | DataBoundaryGrant、canonical Endpoint、sealed payload refs | Provider Receipt、Usage、脱敏 Evidence | 通用网络、Redirect 扩权、无 Grant 外发 | Protocol §5/§7 | Resolved for G0.5 review |
+| `SecretResolver` | TCB capability | `secret_ref`、Purpose、Target、Run/Invocation scope | 短期 Secret Handle 或 Broker 内部使用结果 | 返回 Raw Secret、写日志/Args/Env/Event | Protocol §3.5 | Resolved for G0.5 review |
 
 ProcessBroker、MCP、Browser/Computer Use 和真实 ExternalBusinessMutation 不进入 G0.5；这里只保留 Effect 分类和 `FeatureDisabled` 行为。
 
@@ -120,13 +120,13 @@ Agent/Provider 的 completion 文本不能生成 Applied。迟到 Receipt 只能
 
 | ID | 问题 | 所需决定 | Stop 条件 | Owner | 状态 |
 |---|---|---|---|---|---|
-| BC-01 | Canonical serialization/hash | 字段顺序、Unicode、数字和二进制规范 | 同一 spec 跨进程 hash 不一致 | Architecture | Open |
-| BC-02 | Trusted clock | expiry、deadline、clock rollback 处理 | UI/Backend 时间可延长授权 | Security | Open |
-| BC-03 | Fencing issuance | scope、单调序列和崩溃恢复 | 旧 token 可执行新 Effect | Storage | Open |
-| BC-04 | Windows resource identity | Volume/File ID、reparse chain、revision/hash | 路径别名可绕过授权 | Windows | Open |
-| BC-05 | Late receipt | 已人工放弃后的保留与投影规则 | 迟到 receipt 静默变成功 | Core | Open |
-| BC-06 | Multi-resource receipt | 逐资源 schema 与批次聚合规则 | Partial 被显示为 Applied | Core | Open |
-| BC-07 | Schema negotiation | 未知 command/event/backend schema 行为 | 未知 schema 被容错执行 | Core | Open |
-| BC-08 | Secret handle lifetime | purpose/target/run 绑定与清零证明 | handle 跨 Run 或重放可用 | Security | Open |
+| BC-01 | Canonical serialization/hash | JCS closed schema、域分离 SHA-256、exact bytes hash | 同一 spec 跨进程 hash 不一致 | Architecture | Resolved for G0.5 review |
+| BC-02 | Trusted clock | Broker epoch、monotonic TTL、UTC rollback fail-closed | UI/Backend 时间可延长授权 | Security | Resolved for G0.5 review |
+| BC-03 | Fencing issuance | durable per-scope counter；与 claim generation 分离 | 旧 token 可执行新 Effect | Storage | Resolved for G0.5 review |
+| BC-04 | Windows resource identity | NTFS Handle Volume/File ID、reparse/hardlink fail-closed | 路径别名可绕过授权 | Windows | Resolved for G0.5 review |
+| BC-05 | Late receipt | late observation append；只允许显式 reconciliation | 迟到 receipt 静默变成功 | Core | Resolved for G0.5 review |
+| BC-06 | Multi-resource receipt | 封闭 leaf outcome 与确定性领域映射 | Partial 被显示为 Applied | Core | Resolved for G0.5 review |
+| BC-07 | Schema negotiation | 权威对象 closed schema；未知关键版本 fail closed | 未知 schema 被容错执行 | Core | Resolved for G0.5 review |
+| BC-08 | Secret handle lifetime | Broker-private one-use handle 与可审计 zeroization | handle 跨 Run 或重放可用 | Security | Resolved for G0.5 review |
 
-所有 BC 项关闭前状态保持 Draft。G0.5 只能输出 `Ready for G1 contract review`，不能输出 Contract Frozen。
+详细设计与 G1 验证义务见 [Broker Contract Decisions V0](BROKER_CONTRACT_DECISIONS_V0.md)。八项已完成 G0.5 设计闭合；状态仍为 Draft，只能输出 `Ready for G1 contract review`，不能输出 Contract Frozen。

@@ -43,6 +43,19 @@
 
 未达到退出门时，停止 G0.5，不扩大实现。达到退出门只表示材料可进入 G1 评审，仍需正式产品证据和 G0 决策。
 
+### 退出记录，2026-07-20
+
+| 退出项 | 证据 | 状态 |
+|---|---|---|
+| 两次 Dry Run 与重复计分 | [第二编码总结](../research/internal-dry-runs/SECONDARY_CODING_SUMMARY.md) | 满足：正控/负控完成，分歧 0.0%，无 canary 泄漏 |
+| Broker 合同来源与 P0 | [冻结清单](../engineering/BROKER_CONTRACT_FREEZE_CHECKLIST_V0.md)与[设计决策](../engineering/BROKER_CONTRACT_DECISIONS_V0.md) | 满足：BC-01 至 BC-08 设计闭合，G1 验证保留 |
+| Threat-to-Test | [38 条矩阵](../engineering/THREAT_TO_TEST_MATRIX_V0.csv) | 满足：每项安全主题有 planned test |
+| 事务边界 | [Event Store Design](../engineering/EVENT_STORE_DESIGN_V0.md) | 满足：Prepared/T2、Ledger、fencing 与 Outbox 同事务 |
+| 恢复路径 | Event Store Design / Broker Decisions | 满足：Unknown、Partial、Late Receipt、Duplicate 均 fail closed |
+| 无真实 Effect | Git diff 与执行记录 | 满足：只新增文档、CSV 和合成报告 |
+
+G0.5 结论：`Ready for G1 contract review`。这不是 G0 Go、G1 Go 或 Contract Frozen。
+
 ## 后续恢复用户证据
 
 正式研究仍按 [G0 用户研究计划](../research/USER_RESEARCH_PLAN_V1.md)执行 12 份有效样本。若团队决定永久放弃正式研究，必须另立产品风险接受记录，并删除所有“已验证用户价值”表述。

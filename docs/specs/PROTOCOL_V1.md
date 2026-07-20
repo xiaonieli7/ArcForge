@@ -31,6 +31,7 @@ Application Core
 protocol major/minor
 schema registry digest
 feature flags
+required features
 backend/capability manifest
 ARCFORGE_HOME format/migration state
 client_session_id
@@ -40,8 +41,8 @@ event_store global_position
 兼容规则：
 
 1. Major 不兼容：拒绝写入，可只读打开。
-2. Minor 只能增加可选字段或事件。
-3. 未知可选字段忽略但保留。
+2. Minor 只能在明确声明的非语义 `extensions` 容器或 DesktopEvent 中增加可选字段/事件。
+3. 未知可选字段只可在上述非权威扩展面忽略但保留；ApplicationCommand、DomainEvent、ToolIntent、InvocationSpec、PolicyDecision、DataBoundaryGrant、Approval、Authorization 和 EffectReceipt 使用封闭 Schema，未知字段直接 `UnsupportedSchema`，不得忽略后继续执行。
 4. 未知且影响状态机的事件进入 `NeedsUpgrade`，不得猜测执行。
 5. Runtime 私有扩展必须在 Adapter 内转换。
 
@@ -540,14 +541,15 @@ Applied | NotApplied | PartiallyApplied | Conflict | StillUnknown
 
 resources[]:
   resource_id
-  outcome
+  outcome: Applied | NotApplied | Conflict | StillUnknown
   observed_revision / observed_hash
   receipt_ref / evidence_ref
 ```
 
 - `Applied` 使 Effect 进入 Applied；`NotApplied` 使 Effect 进入 Failed，并明确未发生目标变化；
-- `PartiallyApplied` 必须逐资源记录结果，不能进入全局成功；
-- `Conflict` 与 `StillUnknown` 保持 Effectful 操作全局阻断，直到安全终结；
+- expected resource set 必须与 sealed InvocationSpec 完全相等，每个资源恰好出现一次；缺失、重复或额外资源使 Receipt 无效并保持 Unknown；
+- 全部 Applied 才聚合为 Applied；全部 NotApplied 聚合为 Failed；有 Applied 且存在任意非 Applied 聚合为 PartiallyApplied；无 Applied 且存在 StillUnknown 聚合为 Unknown；剩余 Conflict 聚合为 Unknown 并进入人工对账；
+- `PartiallyApplied` 必须逐资源记录结果，不能进入全局成功；`Conflict` 与 `StillUnknown` 保持 Effectful 操作全局阻断，直到安全终结；
 - 人工无法证明结果时只能 `AbandonedWithUncertainty`，不得把旧 Effect 变为可重试；
 - Task 完成对账后可以从 Unknown 进入 WaitingReview、Failed、Canceled 或 Ready，但不得直接回到 Running。
 

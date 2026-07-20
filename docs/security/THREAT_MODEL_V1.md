@@ -248,7 +248,7 @@ XSS 能调用高风险 IPC 是 Stop Ship。
 ## 15. Event、日志与诊断
 
 - Event 有 Schema、Sequence、Causation、Correlation 和 Sensitivity；
-- Approval、Policy、Effect Prepared/Started/EffectReceipt 必须持久化；
+- Approval、Policy、Effect Prepared/Started/EffectReceipt 必须持久化；V1 的 `Prepared` 精确定义为同一 SQLite 事务中已提交的 `effect.authorized` DomainEvent、Authorization Ledger 与 Effect Outbox，不增加第二套领域状态；
 - 普通日志不含 Prompt、文档摘录、Secret 和完整绝对路径；
 - Audit/Security 与普通 App Log 分开；
 - 诊断包由用户主动创建，可预览和删减，不自动上传；
@@ -261,7 +261,7 @@ XSS 能调用高风险 IPC 是 Stop Ship。
 Intent
 → PolicyDecision
 → ApprovalGrant
-→ Prepared（持久化）
+→ Prepared（`effect.authorized` Event + Authorization Ledger + Effect Outbox 同事务持久化）
 → Execute
 → EffectReceipt | Unknown（持久化）
 → Reconcile
