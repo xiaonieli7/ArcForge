@@ -203,13 +203,13 @@ function parseSkillUrl(value: string) {
 
 function fixedSkillsRelativePathFromAbsolute(value: string) {
   const normalized = normalizeComparablePath(value);
-  const marker = "/.liveagent/skills/";
+  const marker = "/.arcforge/skills/";
   const index = normalized.indexOf(marker);
   if (index < 0) return null;
   return normalized.slice(index + marker.length);
 }
 
-// Uploaded attachments are staged under ~/.liveagent/uploads (outside the
+// Uploaded attachments are staged under ~/.arcforge/uploads (outside the
 // workspace). Tools may read them; every mutating intent is rejected.
 //
 // Staging paths are recognized by marker substring, mirroring the fixed
@@ -219,7 +219,7 @@ function fixedSkillsRelativePathFromAbsolute(value: string) {
 // Windows drive letters, symlinked homes). The deliberate looseness — any
 // absolute path containing the marker is treated as staged — only ever grants
 // read access; mutating intents are rejected for everything it matches.
-const UPLOAD_STAGING_MARKER = "/.liveagent/uploads/";
+const UPLOAD_STAGING_MARKER = "/.arcforge/uploads/";
 const UPLOAD_STAGING_READ_INTENTS = new Set<PathIntent>(["read", "list", "search", "image"]);
 
 function uploadStagingSplitFromAbsolute(value: string) {
@@ -232,7 +232,7 @@ function uploadStagingSplitFromAbsolute(value: string) {
     };
   }
   // The bare staging root (no trailing separator) must resolve too, so List
-  // on ~/.liveagent/uploads can enumerate batch directories.
+  // on ~/.arcforge/uploads can enumerate batch directories.
   if (normalized.endsWith(UPLOAD_STAGING_MARKER.slice(0, -1))) {
     return { root: normalized, relativePath: "" };
   }
@@ -495,7 +495,7 @@ export class ToolPathResolver {
     }
 
     if (raw.startsWith("~")) {
-      // "~/.liveagent/skills/..." is recognizable without knowing the home
+      // "~/.arcforge/skills/..." is recognizable without knowing the home
       // directory; resolve it as a Skill path before attempting ~ expansion.
       const fixedSkillRel = fixedSkillsRelativePathFromAbsolute(raw);
       if (fixedSkillRel !== null) {

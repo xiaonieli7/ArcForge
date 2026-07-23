@@ -11,6 +11,7 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use tauri::Emitter;
 
+use crate::runtime::app_paths::app_storage_dir;
 use crate::runtime::managed_process_journal as journal;
 use crate::runtime::platform::{expand_tilde_path, strip_windows_verbatim_prefix};
 use crate::runtime::process::{
@@ -66,7 +67,7 @@ pub(crate) struct ManagedProcessRegistry {
     journal: Mutex<Option<Connection>>,
     revision: AtomicU64,
     notifier: Mutex<Option<ManagedProcessNotifier>>,
-    /// This LiveAgent instance's identity, stamped onto journal rows so a
+    /// This ArcForge instance's identity, stamped onto journal rows so a
     /// concurrently running sibling instance never reaps our live children.
     owner_pid: u32,
     owner_started_at: i64,
@@ -167,14 +168,6 @@ fn now_ms() -> u128 {
         .duration_since(UNIX_EPOCH)
         .unwrap_or_default()
         .as_millis()
-}
-
-fn app_storage_dir() -> Result<PathBuf, String> {
-    let home =
-        dirs::home_dir().ok_or_else(|| "Failed to locate the user home directory".to_string())?;
-    let dir = home.join(format!(".{}", env!("CARGO_PKG_NAME")));
-    fs::create_dir_all(&dir).map_err(|err| format!("Failed to create app storage dir: {err}"))?;
-    Ok(dir)
 }
 
 fn process_log_dir() -> Result<PathBuf, String> {
@@ -725,7 +718,7 @@ impl ManagedProcessRegistry {
         let mut drop_ids = Vec::new();
         let mut restored = Vec::new();
         for row in rows {
-            // A row owned by a still-running sibling LiveAgent instance is
+            // A row owned by a still-running sibling ArcForge instance is
             // that instance's live child, not crash residue — leave it alone.
             let owner_alive = row.owner_pid != 0
                 && row.owner_pid != self.owner_pid
@@ -919,7 +912,7 @@ mod tests {
 
     fn temp_workdir(tag: &str) -> PathBuf {
         let dir = std::env::temp_dir().join(format!(
-            "liveagent-managed-process-{tag}-{}-{}",
+            "arcforge-managed-process-{tag}-{}-{}",
             std::process::id(),
             now_ms()
         ));

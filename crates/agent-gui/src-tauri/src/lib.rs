@@ -26,7 +26,7 @@ struct TerminalExitRequestedEvent {
 }
 
 pub fn app_version() -> &'static str {
-    env!("LIVEAGENT_APP_VERSION")
+    env!("ARCFORGE_APP_VERSION")
 }
 
 macro_rules! app_invoke_handler {

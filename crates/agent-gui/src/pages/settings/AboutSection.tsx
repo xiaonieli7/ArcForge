@@ -25,7 +25,7 @@ export function AboutSection() {
               {t("settings.aboutCurrentVersion")}
             </div>
             <div className="mt-1 text-2xl font-semibold leading-none tabular-nums">
-              v{__LIVEAGENT_APP_VERSION__}
+              v{__ARCFORGE_APP_VERSION__}
             </div>
           </div>
           <div className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-muted/45 px-2.5 py-1 text-xs font-medium">

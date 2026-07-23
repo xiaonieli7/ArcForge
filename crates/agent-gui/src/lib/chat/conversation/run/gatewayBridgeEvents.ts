@@ -169,9 +169,9 @@ export function createGatewayBridgeEventController(
       queueEvent({
         type: "token",
         text: summary.content,
-        provider: "liveagent",
+        provider: "arcforge",
         model: "summary",
-        api: "liveagent-compaction",
+        api: "arcforge-compaction",
         conversation_id: params.conversationId,
         checkpoint: {
           summaryId: summary.id,

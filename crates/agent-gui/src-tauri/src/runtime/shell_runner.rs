@@ -332,7 +332,7 @@ fn is_windows_system32_dir(dir: &Path) -> bool {
 /// Git Bash 解析（对标 Claude Code）：env 覆盖 → PATH → Git for Windows 默认安装路径。
 #[cfg(windows)]
 fn find_git_bash() -> Option<PathBuf> {
-    for var in ["LIVEAGENT_GIT_BASH_PATH", "CLAUDE_CODE_GIT_BASH_PATH"] {
+    for var in ["ARCFORGE_GIT_BASH_PATH", "CLAUDE_CODE_GIT_BASH_PATH"] {
         if let Ok(raw) = std::env::var(var) {
             let trimmed = raw.trim().trim_matches('"');
             if !trimmed.is_empty() {
@@ -579,7 +579,7 @@ where
             stdio_factory().map_err(|err| format!("Failed to prepare shell stdio: {err}"))?;
         let mut c = Command::new(&candidate.program);
         c.args(&candidate.args);
-        // 系统代理 env 先注入，调用方 envs（如 LIVEAGENT_HOOK_*）后写保持更高优先级。
+        // 系统代理 env 先注入，调用方 envs（如 ARCFORGE_HOOK_*）后写保持更高优先级。
         for (key, value) in &system_proxy_envs {
             c.env(key, value);
         }
@@ -761,7 +761,7 @@ long-running Windows commands so ArcForge can capture logs and stop the process 
             stderr_str.push_str(
                 "ArcForge warning: command exited, but stdout/stderr remained open after exit. \
 This usually means a background process inherited the tool pipes. Redirect long-running \
-process output to a log file, for example: `nohup command > /tmp/liveagent-task.log 2>&1 < /dev/null &`.",
+process output to a log file, for example: `nohup command > /tmp/arcforge-task.log 2>&1 < /dev/null &`.",
             );
         }
     }
@@ -870,26 +870,26 @@ mod tests {
 
     #[cfg(windows)]
     #[test]
-    fn find_git_bash_env_override_prefers_liveagent_var() {
+    fn find_git_bash_env_override_prefers_arcforge_var() {
         // 单个测试函数串行覆盖所有 env 场景，避免并行 env 竞态。
         let dir = tempfile::tempdir().expect("tempdir");
-        let liveagent_bash = dir.path().join("liveagent-bash.exe");
+        let arcforge_bash = dir.path().join("arcforge-bash.exe");
         let claude_bash = dir.path().join("claude-bash.exe");
-        fs::write(&liveagent_bash, b"").unwrap();
+        fs::write(&arcforge_bash, b"").unwrap();
         fs::write(&claude_bash, b"").unwrap();
 
-        std::env::set_var("LIVEAGENT_GIT_BASH_PATH", &liveagent_bash);
+        std::env::set_var("ARCFORGE_GIT_BASH_PATH", &arcforge_bash);
         std::env::set_var("CLAUDE_CODE_GIT_BASH_PATH", &claude_bash);
-        assert_eq!(super::find_git_bash(), Some(liveagent_bash.clone()));
+        assert_eq!(super::find_git_bash(), Some(arcforge_bash.clone()));
 
-        // LIVEAGENT 指向不存在的文件时回退 CLAUDE_CODE。
+        // ARCFORGE 指向不存在的文件时回退 CLAUDE_CODE。
         std::env::set_var(
-            "LIVEAGENT_GIT_BASH_PATH",
+            "ARCFORGE_GIT_BASH_PATH",
             dir.path().join("missing-bash.exe"),
         );
         assert_eq!(super::find_git_bash(), Some(claude_bash.clone()));
 
-        std::env::remove_var("LIVEAGENT_GIT_BASH_PATH");
+        std::env::remove_var("ARCFORGE_GIT_BASH_PATH");
         std::env::remove_var("CLAUDE_CODE_GIT_BASH_PATH");
     }
 
@@ -910,7 +910,7 @@ mod tests {
         let registry = ShellRunRegistry::default();
         let token = registry.register("cancel-test");
         let temp_dir = std::env::temp_dir().join(format!(
-            "liveagent-shell-cancel-test-{}",
+            "arcforge-shell-cancel-test-{}",
             std::process::id()
         ));
         let _ = fs::create_dir_all(&temp_dir);
@@ -953,7 +953,7 @@ mod tests {
     #[test]
     fn run_shell_script_returns_when_background_process_keeps_stdio_open() {
         let temp_dir = std::env::temp_dir().join(format!(
-            "liveagent-shell-background-stdio-test-{}",
+            "arcforge-shell-background-stdio-test-{}",
             std::process::id()
         ));
         let _ = fs::create_dir_all(&temp_dir);
@@ -986,11 +986,11 @@ mod tests {
     #[test]
     fn run_shell_script_accepts_absolute_cwd_outside_workdir() {
         let workdir = std::env::temp_dir().join(format!(
-            "liveagent-shell-abs-cwd-workdir-{}",
+            "arcforge-shell-abs-cwd-workdir-{}",
             std::process::id()
         ));
         let external = std::env::temp_dir().join(format!(
-            "liveagent-shell-abs-cwd-external-{}",
+            "arcforge-shell-abs-cwd-external-{}",
             std::process::id()
         ));
         let _ = fs::create_dir_all(&workdir);
@@ -1024,12 +1024,12 @@ mod tests {
     #[test]
     fn run_shell_script_rejects_missing_absolute_cwd() {
         let workdir = std::env::temp_dir().join(format!(
-            "liveagent-shell-abs-cwd-missing-{}",
+            "arcforge-shell-abs-cwd-missing-{}",
             std::process::id()
         ));
         let _ = fs::create_dir_all(&workdir);
         let missing = std::env::temp_dir()
-            .join(format!("liveagent-missing-cwd-{}", std::process::id()))
+            .join(format!("arcforge-missing-cwd-{}", std::process::id()))
             .join("nope");
 
         let error = run_shell_script(

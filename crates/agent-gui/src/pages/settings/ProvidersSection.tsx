@@ -135,7 +135,7 @@ function ProviderBrandIcon({ type }: { type: ProviderId }) {
 }
 
 const REDACTED_API_KEY_DISPLAY = "API Key";
-const CHERRY_DATA_PATH_STORAGE_KEY = "liveagent.cherryStudioDataPath";
+const CHERRY_DATA_PATH_STORAGE_KEY = "arcforge.cherryStudioDataPath";
 
 // A local rescan usually returns within a frame, which makes the refresh
 // feedback flash for a single frame. Hold the loading state for one full

@@ -4,9 +4,9 @@ fn main() {
         .join("..")
         .join("package.json");
     println!("cargo:rerun-if-changed={}", package_json.display());
-    println!("cargo:rerun-if-env-changed=LIVEAGENT_APP_VERSION");
+    println!("cargo:rerun-if-env-changed=ARCFORGE_APP_VERSION");
 
-    let app_version = std::env::var("LIVEAGENT_APP_VERSION")
+    let app_version = std::env::var("ARCFORGE_APP_VERSION")
         .ok()
         .map(|version| version.trim().to_owned())
         .filter(|version| !version.is_empty())
@@ -23,7 +23,7 @@ fn main() {
                 .trim()
                 .to_owned()
         });
-    println!("cargo:rustc-env=LIVEAGENT_APP_VERSION={app_version}");
+    println!("cargo:rustc-env=ARCFORGE_APP_VERSION={app_version}");
 
     // v1/v2 proto 共用 agent-gateway 目录为 include 根，import 路径与 Go 侧 buf 模块一致；
     // v2 经该路径 import v1 复用其消息。

@@ -25,7 +25,7 @@ pub async fn settings_list_ccswitch_providers() -> Result<CcsProvidersResponse, 
         let candidates = ccswitch_db_candidates();
         let path = candidates.iter().find(|path| path.exists());
         let providers = match path {
-            Some(path) => list_ccswitch_liveagent_providers_from_db(path)?,
+            Some(path) => list_ccswitch_arcforge_providers_from_db(path)?,
             None => Vec::new(),
         };
         let message = if providers.is_empty() {
@@ -111,7 +111,7 @@ fn expand_home_prefix(path: &str) -> PathBuf {
     PathBuf::from(path)
 }
 
-fn list_ccswitch_liveagent_providers_from_db(
+fn list_ccswitch_arcforge_providers_from_db(
     path: &std::path::Path,
 ) -> Result<Vec<CcsProviderImportItem>, String> {
     if !path.exists() {

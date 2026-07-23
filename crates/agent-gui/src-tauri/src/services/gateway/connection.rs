@@ -541,7 +541,7 @@ pub(crate) fn fallback_agent_id() -> String {
         .ok()
         .or_else(|| std::env::var("COMPUTERNAME").ok())
         .filter(|value| !value.trim().is_empty())
-        .unwrap_or_else(|| "liveagent-desktop".to_string())
+        .unwrap_or_else(|| "arcforge-desktop".to_string())
 }
 
 pub(crate) fn set_disconnected_status(

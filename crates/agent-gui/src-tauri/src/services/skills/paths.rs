@@ -3,16 +3,9 @@
 use std::fs;
 use std::path::{Component, Path, PathBuf};
 
-const MAX_SKILL_NAME_LENGTH: usize = 64;
+pub use crate::runtime::app_paths::app_storage_dir;
 
-pub fn app_storage_dir() -> Result<PathBuf, String> {
-    let home =
-        dirs::home_dir().ok_or_else(|| "Failed to locate the user home directory".to_string())?;
-    let dir = home.join(format!(".{}", env!("CARGO_PKG_NAME")));
-    fs::create_dir_all(&dir)
-        .map_err(|e| format!("Failed to create the application directory: {e}"))?;
-    Ok(dir)
-}
+const MAX_SKILL_NAME_LENGTH: usize = 64;
 
 pub fn skills_root_dir() -> Result<PathBuf, String> {
     let dir = app_storage_dir()?.join("skills");

@@ -361,7 +361,7 @@ func TestTunnelHTMLRewriteInjectsShimAndDropsContentLength(t *testing.T) {
 	if resp.Header.Get("Content-Length") == "999" {
 		t.Fatal("stale Content-Length must be dropped for rewritten responses")
 	}
-	if !strings.Contains(string(body), "data-liveagent-tunnel-shim") {
+	if !strings.Contains(string(body), "data-arcforge-tunnel-shim") {
 		t.Fatalf("shim not injected: %q", body)
 	}
 	if !strings.Contains(string(body), "/t/"+slug+"/about") {

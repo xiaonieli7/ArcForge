@@ -147,7 +147,7 @@ export function buildSkillAccessDeniedMessage(params: {
     `${params.operation} is blocked: ${target} is not enabled for this conversation.`,
     allowedText,
     "Enable the Skill in the chat Skills selector before reading, searching, or running files from it.",
-    "Do not bypass this with Bash, absolute paths, find /, or ~/.liveagent/skills.",
+    "Do not bypass this with Bash, absolute paths, find /, or ~/.arcforge/skills.",
   ].join(" ");
 }
 

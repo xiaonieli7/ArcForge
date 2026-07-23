@@ -138,8 +138,8 @@ test("compaction checkpoint creates a summarized segment and carries summary int
   });
 
   const checkpoint = assistant("Compressed facts", 3, {
-    api: "liveagent-compaction",
-    provider: "liveagent",
+    api: "arcforge-compaction",
+    provider: "arcforge",
     model: "summary",
     responseId: "summary-1",
     promptVersion: "summary-v2",
@@ -200,8 +200,8 @@ test("uploaded file metadata is stripped from request context but preserved for 
     role: "user",
     content: "Please inspect file.txt\n\nSelected files are available...",
     timestamp: 1,
-    liveAgentDisplayContent: "Please inspect file.txt",
-    liveAgentAttachments: [
+    arcForgeDisplayContent: "Please inspect file.txt",
+    arcForgeAttachments: [
       {
         relativePath: "file.txt",
         fileName: "file.txt",
@@ -218,8 +218,8 @@ test("uploaded file metadata is stripped from request context but preserved for 
   assert.equal(state.historyRenderItems[0].attachments[0].relativePath, "file.txt");
 
   const requestContext = conversationState.buildRequestContext(state);
-  assert.equal(requestContext.messages[0].liveAgentDisplayContent, undefined);
-  assert.equal(requestContext.messages[0].liveAgentAttachments, undefined);
+  assert.equal(requestContext.messages[0].arcForgeDisplayContent, undefined);
+  assert.equal(requestContext.messages[0].arcForgeAttachments, undefined);
   assert.equal(requestContext.messages[0].content, uploadedMessage.content);
 });
 
@@ -380,8 +380,8 @@ test("incremental append: compaction checkpoint compacts prior items and appends
     messages: [user("q1", 1), assistant("a1", 2), user("q2", 3), assistant("a2", 4)],
   });
   const checkpoint = assistant("Compressed", 5, {
-    api: "liveagent-compaction",
-    provider: "liveagent",
+    api: "arcforge-compaction",
+    provider: "arcforge",
     model: "summary",
     responseId: "summary-x",
   });
@@ -415,8 +415,8 @@ test("incremental append: first post-checkpoint batch does not duplicate the sum
     messages: [user("q1", 1), assistant("a1", 2)],
   });
   const checkpoint = assistant("Compressed", 3, {
-    api: "liveagent-compaction",
-    provider: "liveagent",
+    api: "arcforge-compaction",
+    provider: "arcforge",
     model: "summary",
     responseId: "summary-empty-segment",
   });
@@ -494,8 +494,8 @@ test("mergeHydratedConversationState keeps re-homed warm keys stable across hydr
     messages: [user("q1", 1), assistant("a1", 2)],
   });
   const checkpoint = assistant("Compressed", 3, {
-    api: "liveagent-compaction",
-    provider: "liveagent",
+    api: "arcforge-compaction",
+    provider: "arcforge",
     model: "summary",
     responseId: "summary-h",
   });

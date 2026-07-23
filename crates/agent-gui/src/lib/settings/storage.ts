@@ -21,7 +21,7 @@ import {
 } from "./index";
 import { buildGatewaySettingsSyncPayload, buildGatewaySettingsSyncUpdatePayload } from "./sync";
 
-const LOCAL_UI_SETTINGS_STORAGE_KEY = "liveagent.ui-settings.v1";
+const LOCAL_UI_SETTINGS_STORAGE_KEY = "arcforge.ui-settings.v1";
 
 type PersistedSettingsResponse = {
   providers?: unknown | null;

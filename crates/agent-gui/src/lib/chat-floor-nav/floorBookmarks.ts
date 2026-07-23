@@ -3,7 +3,7 @@
 // messageId[] } }。收藏按稳定消息 id（`user-${uuid}`，随会话存 SQLite）记录，
 // 因此重启后仍能对上。localStorage 不可用时收藏静默降级为仅本次运行有效。
 
-const STORAGE_KEY = "liveagent.floor-bookmarks.v1";
+const STORAGE_KEY = "arcforge.floor-bookmarks.v1";
 /** 防止无限增长：仅保留最近写入的这么多个会话的收藏。 */
 const MAX_CONVERSATIONS = 200;
 

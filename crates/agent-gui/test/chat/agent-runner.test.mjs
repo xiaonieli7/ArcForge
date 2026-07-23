@@ -12,7 +12,7 @@ const powerActivityModulePath = path.join(rootDir, "src/lib/system/powerActivity
 const streamQueue = [];
 const streamSideEffects = [];
 const observedStreamContexts = [];
-const HOSTED_SEARCH_PROBE_HEADER = "x-liveagent-hosted-search-probe";
+const HOSTED_SEARCH_PROBE_HEADER = "x-arcforge-hosted-search-probe";
 
 function createUsage() {
   return {
@@ -323,7 +323,7 @@ const loader = createTsModuleLoader({
     [llmModulePath]: llmMock,
     [proxyModulePath]: {
       async prepareProxyRequest(_providerId, baseUrl) {
-        return { baseUrl, headers: { "x-liveagent-test": "1" } };
+        return { baseUrl, headers: { "x-arcforge-test": "1" } };
       },
     },
     [powerActivityModulePath]: {
@@ -390,7 +390,7 @@ function createBaseParams(overrides = {}) {
           },
         ],
       },
-      workdir: "/tmp/liveagent-test",
+      workdir: "/tmp/arcforge-test",
       sessionId: "session-1",
       tools: [
         {
@@ -1729,7 +1729,7 @@ test("runAssistantWithTools bridges recovered DSML provider web_search without a
 
 test("runAssistantWithTools silently bridges structured DSML web_search tool calls", async () => {
   const webSearchCall = createToolCall("dsml-tool-call-structured-search", "web_search", {
-    query: "LiveAgent DeepSeek structured DSML search",
+    query: "ArcForge DeepSeek structured DSML search",
   });
   resetFakeStreams(
     createAssistant(
@@ -1772,7 +1772,7 @@ test("runAssistantWithTools silently bridges structured DSML web_search tool cal
   assert.equal(beforeNextTurnSnapshots[0].toolResults[0].isError, false);
   assert.match(
     beforeNextTurnSnapshots[0].toolResults[0].content[0].text,
-    /LiveAgent DeepSeek structured DSML search/,
+    /ArcForge DeepSeek structured DSML search/,
   );
   assert.deepEqual(
     result.emittedMessages.map((message) => message.role),

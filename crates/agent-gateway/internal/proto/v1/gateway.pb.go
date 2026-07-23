@@ -3558,7 +3558,7 @@ type ManagedProcessRecord struct {
 	FinishedAt    *int64                 `protobuf:"varint,9,opt,name=finished_at,json=finishedAt,proto3,oneof" json:"finished_at,omitempty"` // unix ms
 	ExitCode      *int32                 `protobuf:"varint,10,opt,name=exit_code,json=exitCode,proto3,oneof" json:"exit_code,omitempty"`      // absent for restored/pid-managed entries
 	Running       bool                   `protobuf:"varint,11,opt,name=running,proto3" json:"running,omitempty"`
-	Isolated      bool                   `protobuf:"varint,12,opt,name=isolated,proto3" json:"isolated,omitempty"` // survives LiveAgent exit
+	Isolated      bool                   `protobuf:"varint,12,opt,name=isolated,proto3" json:"isolated,omitempty"` // survives ArcForge exit
 	Restored      bool                   `protobuf:"varint,13,opt,name=restored,proto3" json:"restored,omitempty"` // recovered after restart; managed by pid
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache

@@ -104,7 +104,7 @@ function MarkdownImageFallback(props: MarkdownImageFallbackProps) {
   return (
     <span
       className="text-xs italic text-muted-foreground"
-      data-liveagent-markdown-image="text-fallback"
+      data-arcforge-markdown-image="text-fallback"
       title={label}
     >
       {label}

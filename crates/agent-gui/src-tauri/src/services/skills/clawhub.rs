@@ -138,7 +138,7 @@ pub(crate) fn fetch_clawhub_json(path: &str, params: &[(&str, String)]) -> Resul
     let client = crate::services::system_proxy::blocking_client_builder()
         .map_err(|e| format!("Failed to create ClawHub HTTP client: {e}"))?
         .timeout(Duration::from_secs(30))
-        .user_agent("liveagent-skillsmanager")
+        .user_agent("arcforge-skillsmanager")
         .build()
         .map_err(|e| format!("Failed to create ClawHub HTTP client: {e}"))?;
     let response = client

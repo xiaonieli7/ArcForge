@@ -55,16 +55,16 @@ const GATEWAY_CHAT_CONVERSATION_BUSY_MESSAGE =
 
 const gatewayBridgeRequestRegistry = (() => {
   const root = globalThis as typeof globalThis & {
-    __LIVEAGENT_GATEWAY_BRIDGE_REQUESTS__?: GatewayBridgeRequestRegistry;
+    __ARCFORGE_GATEWAY_BRIDGE_REQUESTS__?: GatewayBridgeRequestRegistry;
   };
-  root.__LIVEAGENT_GATEWAY_BRIDGE_REQUESTS__ ??= {
+  root.__ARCFORGE_GATEWAY_BRIDGE_REQUESTS__ ??= {
     activeRequests: new Map<string, ActiveGatewayBridgeRequest>(),
     pendingRequestIds: new Set<string>(),
     pendingClientRequestIds: new Set<string>(),
     pendingConversationIds: new Set<string>(),
   };
-  root.__LIVEAGENT_GATEWAY_BRIDGE_REQUESTS__.pendingConversationIds ??= new Set<string>();
-  return root.__LIVEAGENT_GATEWAY_BRIDGE_REQUESTS__;
+  root.__ARCFORGE_GATEWAY_BRIDGE_REQUESTS__.pendingConversationIds ??= new Set<string>();
+  return root.__ARCFORGE_GATEWAY_BRIDGE_REQUESTS__;
 })();
 
 function asErrorMessage(error: unknown, fallback: string) {

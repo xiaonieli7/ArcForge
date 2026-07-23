@@ -255,8 +255,8 @@ test("local proxy preserves explicit user-agent and content-type values for the 
       "CONTENT-TYPE": "application/custom+json",
     }),
     {
-      "x-liveagent-upstream-user-agent": "custom-agent/1.0",
-      "x-liveagent-upstream-content-type": "application/custom+json",
+      "x-arcforge-upstream-user-agent": "custom-agent/1.0",
+      "x-arcforge-upstream-content-type": "application/custom+json",
     },
   );
 });

@@ -297,15 +297,15 @@ export function buildToolsSuffix(
         ? [
             `- Current platform: ${platformLabel}. Bash runs through Git Bash with POSIX semantics; pwsh, Windows PowerShell, and cmd are fallbacks used only when Git Bash is not installed.`,
             "- Write POSIX/bash-compatible commands by default: `export`, `&&`, `/dev/null`, forward-slash paths.",
-            "- Background commands using `&` must redirect stdout and stderr before detaching, for example `nohup command > /tmp/liveagent-task.log 2>&1 < /dev/null &`.",
-            "- If a Bash result header reports `shell_family: powershell` or `shell_family: cmd`, Git Bash is missing: switch to PowerShell syntax and suggest installing Git for Windows or setting `LIVEAGENT_GIT_BASH_PATH`.",
+            "- Background commands using `&` must redirect stdout and stderr before detaching, for example `nohup command > /tmp/arcforge-task.log 2>&1 < /dev/null &`.",
+            "- If a Bash result header reports `shell_family: powershell` or `shell_family: cmd`, Git Bash is missing: switch to PowerShell syntax and suggest installing Git for Windows or setting `ARCFORGE_GIT_BASH_PATH`.",
           ]
         : [
             `- Current platform: ${platformLabel}. Bash runs through POSIX shells.`,
             runtimePlatform === "macos"
               ? "- macOS prefers zsh, then Bash, then sh. Use POSIX/zsh-compatible commands."
               : "- Linux prefers Bash, then zsh, then sh. Use POSIX/bash-compatible commands.",
-            "- Background commands using `&` must redirect stdout and stderr before detaching, for example `nohup command > /tmp/liveagent-task.log 2>&1 < /dev/null &`.",
+            "- Background commands using `&` must redirect stdout and stderr before detaching, for example `nohup command > /tmp/arcforge-task.log 2>&1 < /dev/null &`.",
           ];
     sections.push(
       [
@@ -316,9 +316,9 @@ export function buildToolsSuffix(
         "- Passing an absolute Skill script path inside the command is also accepted as long as the referenced Skill is enabled in this conversation.",
         "- For endpoint tests with curl, include an explicit timeout such as `--max-time 30` so a stalled local server or upstream request cannot hold the whole turn indefinitely.",
         "- Use ManagedProcess instead of Bash for dev servers, watchers, preview servers, or anything that should keep running.",
-        "- For reading, listing, or searching Skill content, always use Read/List/Glob/Grep with skill:// paths — Bash cat/ls/find/grep/rg/sed/awk against ~/.liveagent/skills is still routed back to the file tools.",
+        "- For reading, listing, or searching Skill content, always use Read/List/Glob/Grep with skill:// paths — Bash cat/ls/find/grep/rg/sed/awk against ~/.arcforge/skills is still routed back to the file tools.",
         "- Do not guess `skills/` paths inside the workspace; if a Skill is needed, enable it in the chat Skills selector first.",
-        "- Do not cd into ~/.liveagent/skills or workspace skills/ guesses.",
+        "- Do not cd into ~/.arcforge/skills or workspace skills/ guesses.",
       ].join("\n"),
     );
   }

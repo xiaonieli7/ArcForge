@@ -2,6 +2,8 @@
   <img src=".tmp/arcforge-brand/lockup.png" width="820" alt="ArcForge — Local-first desktop Work Agent for Windows professionals" />
 </p>
 
+<img src=".tmp/arcforge-brand/app.png" width="820" alt="ArcForge — Local-first desktop Work Agent for Windows professionals" />
+
 <p align="center">
   <strong>面向 Windows 专业用户的本地优先桌面 Work Agent</strong>
 </p>
@@ -33,8 +35,8 @@
 
 ArcForge 不只是一个聊天窗口。它让 Agent 在你可见、可控的边界内读取上下文、调用工具、生成文件并验证结果，把一次对话推进为真正完成的工作。
 
-| 本地优先 | 开放扩展 | 桌面与远程 |
-|---|---|---|
+| 本地优先                       | 开放扩展                         | 桌面与远程                                 |
+| -------------------------- | ---------------------------- | ------------------------------------- |
 | 工作区、会话与工具执行以本机为中心，桌面端可独立运行 | 通过 Skills、MCP 和多模型协议组合自己的工作流 | 日常在 Windows 桌面使用，需要时通过 Gateway 从浏览器访问 |
 
 典型闭环：
@@ -101,13 +103,13 @@ ArcForge 目前是快速迭代中的开发预览版：
 
 ### 环境要求
 
-| 依赖 | 用途 |
-|---|---|
-| Windows 10/11 x64 + WebView2 | 运行桌面客户端 |
-| Visual Studio Build Tools（Desktop development with C++） | Windows / MSVC 编译 |
-| Rust stable + `x86_64-pc-windows-msvc` | Tauri 后端 |
-| Node.js 22 + pnpm 10 | 前端与构建工具 |
-| Python 3.10+ | 构建 Office Runtime sidecar |
+| 依赖                                       | 用途                        |
+| ---------------------------------------- | ------------------------- |
+| Windows 10/11 x64 + WebView2             | 运行桌面客户端                   |
+| Visual Studio Build Tools（Desktop development with C++） | Windows / MSVC 编译         |
+| Rust stable + `x86_64-pc-windows-msvc`   | Tauri 后端                  |
+| Node.js 22 + pnpm 10                     | 前端与构建工具                   |
+| Python 3.10+                             | 构建 Office Runtime sidecar |
 
 仓库的 Node、pnpm、Go、Protobuf 和 Buf 版本记录在 [`mise.toml`](mise.toml) 中；如果已安装 [mise](https://mise.jdx.dev/)，可运行 `mise install` 准备这些工具。
 
@@ -152,7 +154,7 @@ docker run -d \
   --name arcforge-gateway \
   --restart unless-stopped \
   -p 3000:8080 \
-  -e LIVEAGENT_GATEWAY_TOKEN=replace-with-a-strong-token \
+  -e ARCFORGE_GATEWAY_TOKEN=replace-with-a-strong-token \
   arcforge-gateway:local
 ```
 
@@ -187,14 +189,14 @@ docker run -d \
 
 ### 技术栈
 
-| 组件 | 技术 |
-|---|---|
-| 桌面 UI | Tauri 2、React 19、TypeScript、Vite 8、Tailwind CSS |
-| 桌面后端 | Rust、Tokio、SQLite |
-| 内容渲染 | Streamdown、KaTeX、Mermaid、Monaco Editor |
-| Agent 与模型 | `pi-agent-core`、`pi-ai`、多协议 Provider Adapter |
-| Gateway | Go、HTTP、WebSocket、Protobuf |
-| Gateway WebUI | React、TypeScript、Vite |
+| 组件            | 技术                                       |
+| ------------- | ---------------------------------------- |
+| 桌面 UI         | Tauri 2、React 19、TypeScript、Vite 8、Tailwind CSS |
+| 桌面后端          | Rust、Tokio、SQLite                        |
+| 内容渲染          | Streamdown、KaTeX、Mermaid、Monaco Editor   |
+| Agent 与模型     | `pi-agent-core`、`pi-ai`、多协议 Provider Adapter |
+| Gateway       | Go、HTTP、WebSocket、Protobuf               |
+| Gateway WebUI | React、TypeScript、Vite                    |
 
 ### 仓库结构
 

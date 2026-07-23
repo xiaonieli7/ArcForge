@@ -1519,7 +1519,7 @@ export type ManagedProcessRecord = Message<"liveagent.gateway.v1.ManagedProcessR
   running: boolean;
 
   /**
-   * survives LiveAgent exit
+   * survives ArcForge exit
    *
    * @generated from field: bool isolated = 12;
    */

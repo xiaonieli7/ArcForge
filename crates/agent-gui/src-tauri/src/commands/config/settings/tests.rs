@@ -982,7 +982,7 @@ mod tests {
             &mut conn,
             json!({
                 "executionMode": "tools",
-                "workdir": "/tmp/liveagent-default-project",
+                "workdir": "/tmp/arcforge-default-project",
                 "selectedSystemTools": [],
                 "archivedWorkspaceProjectPaths": [
                     " /tmp/project-a ",
@@ -991,7 +991,7 @@ mod tests {
                     42
                 ]
             }),
-            "/tmp/liveagent-default-project",
+            "/tmp/arcforge-default-project",
         )
         .expect("save system");
 
@@ -1014,7 +1014,7 @@ mod tests {
                 "workdir": "",
                 "selectedSystemTools": []
             }),
-            "/tmp/liveagent-default-project",
+            "/tmp/arcforge-default-project",
         )
         .expect("save system");
 
@@ -1028,13 +1028,13 @@ mod tests {
                 "missingWorkspaceProjectPaths": [],
                 "archivedWorkspaceProjectPaths": [],
                 "systemProxy": default_system_proxy_json(),
-                "workdir": "/tmp/liveagent-default-project",
+                "workdir": "/tmp/arcforge-default-project",
                 "selectedSystemTools": [],
                 "workspaceProjects": [
                     {
                         "id": DEFAULT_WORKSPACE_PROJECT_ID,
                         "name": DEFAULT_WORKSPACE_PROJECT_NAME,
-                        "path": "/tmp/liveagent-default-project",
+                        "path": "/tmp/arcforge-default-project",
                         "kind": "managed",
                         "createdAt": 1,
                         "updatedAt": 1
@@ -1051,13 +1051,13 @@ mod tests {
             &mut conn,
             json!({
                 "executionMode": "tools",
-                "workdir": "/tmp/liveagent-default-project",
+                "workdir": "/tmp/arcforge-default-project",
                 "selectedSystemTools": [],
                 "workspaceProjects": [
                     {
                         "id": DEFAULT_WORKSPACE_PROJECT_ID,
                         "name": DEFAULT_WORKSPACE_PROJECT_NAME,
-                        "path": "/tmp/liveagent-default-project",
+                        "path": "/tmp/arcforge-default-project",
                         "kind": "managed",
                         "createdAt": 10,
                         "updatedAt": 20,
@@ -1066,7 +1066,7 @@ mod tests {
                     }
                 ]
             }),
-            "/tmp/liveagent-default-project",
+            "/tmp/arcforge-default-project",
         )
         .expect("save system");
 
@@ -1080,13 +1080,13 @@ mod tests {
                 "missingWorkspaceProjectPaths": [],
                 "archivedWorkspaceProjectPaths": [],
                 "systemProxy": default_system_proxy_json(),
-                "workdir": "/tmp/liveagent-default-project",
+                "workdir": "/tmp/arcforge-default-project",
                 "selectedSystemTools": [],
                 "workspaceProjects": [
                     {
                         "id": DEFAULT_WORKSPACE_PROJECT_ID,
                         "name": DEFAULT_WORKSPACE_PROJECT_NAME,
-                        "path": "/tmp/liveagent-default-project",
+                        "path": "/tmp/arcforge-default-project",
                         "kind": "managed",
                         "createdAt": 1,
                         "updatedAt": 1,
@@ -1101,7 +1101,7 @@ mod tests {
     #[test]
     fn load_system_with_defaults_returns_agent_mode_and_default_project() {
         let conn = open_memory_db();
-        let loaded = load_system_with_defaults(&conn, "/tmp/liveagent-default-project")
+        let loaded = load_system_with_defaults(&conn, "/tmp/arcforge-default-project")
             .expect("load system");
 
         assert_eq!(
@@ -1113,13 +1113,13 @@ mod tests {
                 "missingWorkspaceProjectPaths": [],
                 "archivedWorkspaceProjectPaths": [],
                 "systemProxy": default_system_proxy_json(),
-                "workdir": "/tmp/liveagent-default-project",
+                "workdir": "/tmp/arcforge-default-project",
                 "selectedSystemTools": [],
                 "workspaceProjects": [
                     {
                         "id": DEFAULT_WORKSPACE_PROJECT_ID,
                         "name": DEFAULT_WORKSPACE_PROJECT_NAME,
-                        "path": "/tmp/liveagent-default-project",
+                        "path": "/tmp/arcforge-default-project",
                         "kind": "managed",
                         "createdAt": 1,
                         "updatedAt": 1

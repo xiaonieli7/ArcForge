@@ -278,7 +278,7 @@ test("fetchModelsFromApi retries claude_code with official anthropic headers", a
 test("gateway WebUI forwards the system proxy choice to desktop model fetching", async () => {
   const previousDocument = globalThis.document;
   const previousWindow = globalThis.window;
-  globalThis.document = { documentElement: { dataset: { liveagentWebui: "gateway" } } };
+  globalThis.document = { documentElement: { dataset: { arcforgeWebui: "gateway" } } };
   globalThis.window = {
     localStorage: {
       getItem(key) {

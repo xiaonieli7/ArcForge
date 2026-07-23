@@ -683,7 +683,7 @@ test("GatewayWebSocketClient sends skill manage payloads", async () => {
         skill_manage_resp: {
           result_json: JSON.stringify({
             action: "list",
-            rootDir: "/Users/me/.liveagent/skills",
+            rootDir: "/Users/me/.arcforge/skills",
             skills: [],
           }),
         },
@@ -693,7 +693,7 @@ test("GatewayWebSocketClient sends skill manage payloads", async () => {
 
   assert.deepEqual(await skillPromise, {
     action: "list",
-    rootDir: "/Users/me/.liveagent/skills",
+    rootDir: "/Users/me/.arcforge/skills",
     skills: [],
   });
   resetGatewayWebSocketClient();

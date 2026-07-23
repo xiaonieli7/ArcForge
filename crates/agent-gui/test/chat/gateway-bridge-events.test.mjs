@@ -279,9 +279,9 @@ test("gateway bridge checkpoint emits compaction summary payload", () => {
       event: {
         type: "token",
         text: "Compacted facts",
-        provider: "liveagent",
+        provider: "arcforge",
         model: "summary",
-        api: "liveagent-compaction",
+        api: "arcforge-compaction",
         conversation_id: "conversation-1",
         checkpoint: {
           summaryId: "summary-1",

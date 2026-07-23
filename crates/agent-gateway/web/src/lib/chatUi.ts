@@ -90,7 +90,7 @@ type StoredMessage = {
   usage?: unknown;
   timestamp?: unknown;
   summaryMeta?: unknown;
-  liveAgentHistoryRef?: unknown;
+  arcForgeHistoryRef?: unknown;
 };
 
 function readMessageTimestamp(value: unknown): number | undefined {
@@ -441,7 +441,7 @@ export function normalizeCheckpointEntry(params: {
     coveredMessageCountCandidate > 0
       ? Math.floor(coveredMessageCountCandidate)
       : 0;
-  const providerId = readString(generatedByRecord.providerId).trim() || "liveagent";
+  const providerId = readString(generatedByRecord.providerId).trim() || "arcforge";
   const model = readString(generatedByRecord.model).trim() || "summary";
   const promptVersion = readString(generatedByRecord.promptVersion).trim() || undefined;
   const timestamp =
@@ -465,8 +465,8 @@ export function normalizeCheckpointEntry(params: {
 export function isCheckpointTokenEvent(event: Extract<ChatEvent, { type: "token" }>) {
   return Boolean(
     event.checkpoint ||
-      event.api === "liveagent-compaction" ||
-      (event.provider === "liveagent" && event.model === "summary"),
+      event.api === "arcforge-compaction" ||
+      (event.provider === "arcforge" && event.model === "summary"),
   );
 }
 
@@ -725,7 +725,7 @@ export function parseHistoryMessagesJson(raw: string): ChatEntry[] {
       const userRecord = asUploadedFilesUserMessage(message);
       const text = getUserMessageDisplayText(userRecord);
       const attachments = getUserMessageAttachments(userRecord);
-      const messageRef = readHistoryMessageRef(userRecord.liveAgentHistoryRef);
+      const messageRef = readHistoryMessageRef(userRecord.arcForgeHistoryRef);
       if (text.trim() || attachments.length > 0) {
         const baseId = messageRef ? `hu:${messageRef.messageId}` : `hu:~${hashText(text)}`;
         const occurrence = usedUserIds.get(baseId) ?? 0;

@@ -127,11 +127,11 @@ test("getUsageTotalTokens derives from parts without double-counting reasoning",
 });
 
 test("compaction checkpoint messages are never observed-usage anchors", () => {
-  const checkpoint = assistant("summary body", usage(99_999), { api: "liveagent-compaction" });
+  const checkpoint = assistant("summary body", usage(99_999), { api: "arcforge-compaction" });
   assert.equal(getMessageObservedTokens(checkpoint), undefined);
 
   const legacyCheckpoint = assistant("summary body", usage(99_999), {
-    provider: "liveagent",
+    provider: "arcforge",
     model: "summary",
   });
   assert.equal(getMessageObservedTokens(legacyCheckpoint), undefined);

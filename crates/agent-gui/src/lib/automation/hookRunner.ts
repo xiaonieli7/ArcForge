@@ -61,10 +61,10 @@ async function runHook(
       timeout_ms: hook.timeoutMs ?? null,
       scope_id: scopeId,
       context: {
-        LIVEAGENT_HOOK_EVENT: event,
-        LIVEAGENT_HOOK_NAME: hook.name,
-        LIVEAGENT_CONVERSATION_ID: conversationId,
-        LIVEAGENT_WORKDIR: workdir?.trim() ?? "",
+        ARCFORGE_HOOK_EVENT: event,
+        ARCFORGE_HOOK_NAME: hook.name,
+        ARCFORGE_CONVERSATION_ID: conversationId,
+        ARCFORGE_WORKDIR: workdir?.trim() ?? "",
       },
     });
     return;

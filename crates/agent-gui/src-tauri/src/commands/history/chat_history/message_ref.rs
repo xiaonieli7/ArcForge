@@ -48,12 +48,12 @@ pub(crate) fn history_message_content_hash(message: &Value) -> String {
         .and_then(|object| object.get("role"))
         .and_then(Value::as_str)
         .unwrap_or_default();
-    let mut parts = vec!["liveagent-history-ref-v1".to_string()];
+    let mut parts = vec!["arcforge-history-ref-v1".to_string()];
     append_hash_part(&mut parts, role);
 
     if role == "user" {
         let display_text = object
-            .and_then(|object| object.get("liveAgentDisplayContent"))
+            .and_then(|object| object.get("arcForgeDisplayContent"))
             .and_then(Value::as_str)
             .map(str::to_string)
             .unwrap_or_else(|| {
@@ -62,7 +62,7 @@ pub(crate) fn history_message_content_hash(message: &Value) -> String {
         append_hash_part(&mut parts, display_text);
 
         let attachments = object
-            .and_then(|object| object.get("liveAgentAttachments"))
+            .and_then(|object| object.get("arcForgeAttachments"))
             .and_then(Value::as_array);
         let valid_attachments = attachments
             .map(|attachments| {

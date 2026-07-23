@@ -3,7 +3,7 @@ import test from "node:test";
 
 import { createTsModuleLoader } from "../helpers/load-ts-module.mjs";
 
-const STORAGE_KEY = "liveagent.globalShortcuts.v1";
+const STORAGE_KEY = "arcforge.globalShortcuts.v1";
 
 function createMemoryLocalStorage(initial = {}) {
   const store = new Map(Object.entries(initial));

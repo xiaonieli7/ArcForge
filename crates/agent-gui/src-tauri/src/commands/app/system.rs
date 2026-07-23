@@ -8,6 +8,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use crate::runtime::app_paths::app_storage_dir;
 use crate::runtime::platform::expand_tilde_path;
 use crate::services::power_activity::PowerActivityManager;
 pub use crate::services::skills::{
@@ -76,15 +77,6 @@ pub struct SystemUploadedNativeAttachmentResponse {
 #[serde(rename_all = "camelCase")]
 pub struct SystemCreateProjectFolderResponse {
     pub path: String,
-}
-
-fn app_storage_dir() -> Result<PathBuf, String> {
-    let home =
-        dirs::home_dir().ok_or_else(|| "Failed to locate the user home directory".to_string())?;
-    let dir = home.join(format!(".{}", env!("CARGO_PKG_NAME")));
-    fs::create_dir_all(&dir)
-        .map_err(|e| format!("Failed to create the application directory: {e}"))?;
-    Ok(dir)
 }
 
 fn debug_root_dir() -> Result<PathBuf, String> {
@@ -487,7 +479,7 @@ fn rel_to_workdir_forward_slash(workdir: &Path, abs: &Path) -> Result<String, St
         .map_err(|_| format!("路径超出工作目录：{}", abs.display()))
 }
 
-/// 上传暂存区基目录（`~/.liveagent/uploads`）。上传的附件是会话资产而非
+/// 上传暂存区基目录（`~/.arcforge/uploads`）。上传的附件是会话资产而非
 /// 工作区文件：落到应用存储域，避免污染工作区的 git 状态与文件树。
 ///
 /// 返回的是逻辑路径（不 canonicalize）：落盘、展示与消息里持久化的
@@ -505,7 +497,7 @@ fn upload_staging_base() -> Result<PathBuf, String> {
 }
 
 /// 单测进程专用暂存根：所有暂存相关测试都写进系统临时目录，绝不触碰
-/// 真实的 `~/.liveagent/uploads`。Unix 上刻意让暂存根经过一层 symlink，
+/// 真实的 `~/.arcforge/uploads`。Unix 上刻意让暂存根经过一层 symlink，
 /// 使走完整命令链的测试必然覆盖"逻辑路径 ≠ canonical 路径"的比较场景
 /// （对应 Windows 的 `\\?\` verbatim 前缀与 symlink home 的发行版）。
 #[cfg(test)]
@@ -518,7 +510,7 @@ fn test_upload_staging_base() -> &'static Path {
             .unwrap_or_default()
             .as_nanos();
         let root = std::env::temp_dir().join(format!(
-            "liveagent-upload-staging-test-{}-{unique}",
+            "arcforge-upload-staging-test-{}-{unique}",
             std::process::id()
         ));
         let real = root.join("real");
@@ -685,7 +677,7 @@ fn canonicalize_uploaded_attachment_path(
     absolute_path: Option<&str>,
 ) -> Result<PathBuf, String> {
     // 附件读取只认 absolute_path：新方案下工作区内文件原地引用、暂存区
-    // 文件落 ~/.liveagent/uploads，两者的入口都是导入时返回的绝对路径。
+    // 文件落 ~/.arcforge/uploads，两者的入口都是导入时返回的绝对路径。
     // 旧版本仅持久化 workdir 相对路径的附件不再兼容，需重新上传。
     let raw_absolute_path = absolute_path
         .map(str::trim)
@@ -1605,7 +1597,7 @@ mod tests {
             .unwrap_or_default()
             .as_nanos();
         let workdir = std::env::temp_dir().join(format!(
-            "liveagent-upload-multiple-test-{}-{unique}",
+            "arcforge-upload-multiple-test-{}-{unique}",
             std::process::id()
         ));
         fs::create_dir_all(&workdir).expect("create test workdir");
@@ -1667,7 +1659,7 @@ mod tests {
             .unwrap_or_default()
             .as_nanos();
         let workdir = std::env::temp_dir().join(format!(
-            "liveagent-upload-base64-test-{}-{unique}",
+            "arcforge-upload-base64-test-{}-{unique}",
             std::process::id()
         ));
         fs::create_dir_all(&workdir).expect("create test workdir");
@@ -1850,7 +1842,7 @@ mod tests {
             .unwrap_or_default()
             .as_nanos();
         let temp_root = std::env::temp_dir().join(format!(
-            "liveagent-upload-paths-test-{}-{unique}",
+            "arcforge-upload-paths-test-{}-{unique}",
             std::process::id()
         ));
         let workdir = temp_root.join("workspace");

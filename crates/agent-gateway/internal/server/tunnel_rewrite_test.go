@@ -107,7 +107,7 @@ func TestRewriteTunnelHTMLBodyPrefixesRootRelativeAttributes(t *testing.T) {
 	output := string(body)
 
 	assertContains(t, output, `href="/t/test-slug/styles.css"`)
-	assertContains(t, output, `data-liveagent-tunnel-shim`)
+	assertContains(t, output, `data-arcforge-tunnel-shim`)
 	assertContains(t, output, `src="/t/test-slug/app.js"`)
 	assertContains(t, output, `action="/t/test-slug/api/messages"`)
 	assertContains(t, output, `href="/t/test-slug/api/health?check=1#ready"`)
@@ -199,7 +199,7 @@ func TestRewriteTunnelHTMLBodyUsesHTMLParsingBoundaries(t *testing.T) {
 
 	assertContains(t, output, `style="background: url(&#39;/t/test-slug/images/bg.png&#39;)"`)
 	assertContains(t, output, `<script>const markup = '<a href="/api/not-real">';</script>`)
-	assertContains(t, output, `data-liveagent-tunnel-shim`)
+	assertContains(t, output, `data-arcforge-tunnel-shim`)
 	assertNotContains(t, output, `/t/test-slug/api/not-real`)
 }
 
@@ -215,7 +215,7 @@ func TestRewriteTunnelHTMLBodyInjectsRuntimeShimBeforeFirstScript(t *testing.T) 
 		t.Fatal("rewriteTunnelResponseBody() did not inject runtime shim")
 	}
 	output := string(body)
-	shimIndex := strings.Index(output, `data-liveagent-tunnel-shim`)
+	shimIndex := strings.Index(output, `data-arcforge-tunnel-shim`)
 	appIndex := strings.Index(output, `new WebSocket`)
 	if shimIndex < 0 || appIndex < 0 || shimIndex > appIndex {
 		t.Fatalf("runtime shim was not injected before app script:\n%s", output)

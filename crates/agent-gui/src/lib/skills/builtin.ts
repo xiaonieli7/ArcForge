@@ -1,5 +1,5 @@
 const ALWAYS_ENABLED_SKILL_NAMES = ["skills-creator", "skills-installer"] as const;
-const RENAMED_SKILL_NAMES = new Map([["liveagent-code-review", "arcforge-code-review"]]);
+const RENAMED_SKILL_NAMES = new Map([["arcforge-code-review", "arcforge-code-review"]]);
 
 const alwaysEnabledSkillNameSet = new Set<string>(ALWAYS_ENABLED_SKILL_NAMES);
 

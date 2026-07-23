@@ -28,7 +28,7 @@ const fileB = {
 };
 const fileC = {
   relativePath: "uploads/report.docx",
-  absolutePath: "/Users/me/.liveagent/uploads/1/report.docx",
+  absolutePath: "/Users/me/.arcforge/uploads/1/report.docx",
   fileName: "report.docx",
   kind: "word",
   sizeBytes: 4096,
@@ -247,23 +247,23 @@ test("uploaded file helpers preserve office and archive attachment kinds", () =>
     fileC,
     {
       relativePath: "uploads/workbook.xlsx",
-      absolutePath: "/Users/me/.liveagent/uploads/1/workbook.xlsx",
+      absolutePath: "/Users/me/.arcforge/uploads/1/workbook.xlsx",
       fileName: "workbook.xlsx",
       kind: "spreadsheet",
       sizeBytes: 8192,
     },
     {
       relativePath: "uploads/assets.zip",
-      absolutePath: "/Users/me/.liveagent/uploads/1/assets.zip",
+      absolutePath: "/Users/me/.arcforge/uploads/1/assets.zip",
       fileName: "assets.zip",
       kind: "archive",
       sizeBytes: 16384,
     },
   ]);
   assert.ok(message);
-  assert.match(message.content, /\/\.liveagent\/uploads\/1\/report\.docx \(word\)/);
-  assert.match(message.content, /\/\.liveagent\/uploads\/1\/workbook\.xlsx \(spreadsheet\)/);
-  assert.match(message.content, /\/\.liveagent\/uploads\/1\/assets\.zip \(archive\)/);
+  assert.match(message.content, /\/\.arcforge\/uploads\/1\/report\.docx \(word\)/);
+  assert.match(message.content, /\/\.arcforge\/uploads\/1\/workbook\.xlsx \(spreadsheet\)/);
+  assert.match(message.content, /\/\.arcforge\/uploads\/1\/assets\.zip \(archive\)/);
   assert.deepEqual(
     uploadedFiles.getUserMessageAttachments(message).map((file) => file.kind),
     ["word", "spreadsheet", "archive"],
@@ -298,7 +298,7 @@ test("pasted text uploads preserve display metadata and parse display references
   const pastedFile = uploadedFiles.withPastedTextDisplayMetadata(
     {
       relativePath: "uploads/pasted-text-1.txt",
-      absolutePath: "/Users/me/.liveagent/uploads/1/pasted-text-1.txt",
+      absolutePath: "/Users/me/.arcforge/uploads/1/pasted-text-1.txt",
       fileName: "pasted-text-1.txt",
       kind: "text",
       sizeBytes: 12345,
@@ -394,7 +394,7 @@ test("UI message builder preserves provider hosted search blocks", () => {
           id: "search-1",
           provider: "codex",
           status: "completed",
-          queries: ["LiveAgent web search"],
+          queries: ["ArcForge web search"],
           sources: [
             {
               url: "https://example.com/result",
@@ -426,7 +426,7 @@ test("UI message builder preserves provider hosted search blocks", () => {
       id: "search-1",
       provider: "codex",
       status: "completed",
-      queries: ["LiveAgent web search"],
+      queries: ["ArcForge web search"],
       sources: [
         {
           url: "https://example.com/result",
@@ -444,7 +444,7 @@ test("UI message builder hides provider-native web_search tool traces when hoste
     type: "toolCall",
     id: "dsml-tool-call-search-1",
     name: "web_search",
-    arguments: { query: "LiveAgent DeepSeek search" },
+    arguments: { query: "ArcForge DeepSeek search" },
   };
   const messages = [
     { role: "user", content: "search", timestamp: 1 },
@@ -457,7 +457,7 @@ test("UI message builder hides provider-native web_search tool traces when hoste
           id: "search-1",
           provider: "claude_code",
           status: "completed",
-          queries: ["LiveAgent DeepSeek search"],
+          queries: ["ArcForge DeepSeek search"],
           sources: [{ url: "https://example.com/result", title: "Result" }],
         },
         webSearchCall,

@@ -41,7 +41,7 @@ type HostedSearchFetchProbeController = {
 const activeFetchProbes = new Set<FetchProbe>();
 let originalFetch: typeof globalThis.fetch | null = null;
 
-export const HOSTED_SEARCH_PROBE_HEADER = "x-liveagent-hosted-search-probe";
+export const HOSTED_SEARCH_PROBE_HEADER = "x-arcforge-hosted-search-probe";
 
 export function createHostedSearchProbeId(providerId: ProviderId) {
   return `hosted-search-${providerId}-${createUuid()}`;

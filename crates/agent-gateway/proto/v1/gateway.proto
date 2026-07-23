@@ -348,7 +348,7 @@ message ManagedProcessRecord {
   optional int64 finished_at = 9;   // unix ms
   optional int32 exit_code = 10;    // absent for restored/pid-managed entries
   bool running = 11;
-  bool isolated = 12;               // survives LiveAgent exit
+  bool isolated = 12;               // survives ArcForge exit
   bool restored = 13;               // recovered after restart; managed by pid
 }
 

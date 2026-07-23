@@ -11,7 +11,7 @@ import "streamdown/styles.css";
 import "./styles.css";
 
 // 渲染前写入 WebUI 运行时标记（isGatewayWebuiRuntime 的唯一权威写入点）。
-document.documentElement.dataset.liveagentWebui = GATEWAY_WEBUI_MARKER;
+document.documentElement.dataset.arcforgeWebui = GATEWAY_WEBUI_MARKER;
 
 const dashboardPaths = new Set(["/dashboard", "/status-board", "/observatory"]);
 const Root = dashboardPaths.has(window.location.pathname) ? StatusDashboardPage : App;

@@ -189,7 +189,7 @@ func TestAmendTunnelCSPNonceStripped(t *testing.T) {
 	if headers.Get("Content-Security-Policy-Report-Only") != "" {
 		t.Fatal("report-only policy must be stripped alongside")
 	}
-	if headers.Get("X-Liveagent-Tunnel-Csp") != "stripped" {
+	if headers.Get("X-Arcforge-Tunnel-Csp") != "stripped" {
 		t.Fatal("stripped marker header missing")
 	}
 }

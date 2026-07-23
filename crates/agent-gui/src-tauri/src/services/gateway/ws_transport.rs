@@ -292,12 +292,12 @@ mod tests {
     fn build_ws_url_preserves_base_path_and_strips_query() {
         assert_eq!(
             build_ws_url(
-                " https://gateway.example.com/liveagent/?token=x#frag ",
+                " https://gateway.example.com/arcforge/?token=x#frag ",
                 443,
                 GATEWAY_WS_AGENT_PATH
             )
             .expect("build ws url with base path"),
-            "wss://gateway.example.com/liveagent/ws/v2/agent"
+            "wss://gateway.example.com/arcforge/ws/v2/agent"
         );
     }
 

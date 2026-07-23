@@ -1,3 +1,4 @@
+pub mod app_paths;
 pub mod managed_process;
 pub mod managed_process_journal;
 pub mod platform;

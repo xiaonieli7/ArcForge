@@ -7,7 +7,7 @@
 //! failing the edit (Claude Code runs a cascade of increasingly lenient
 //! "replacers"; Codex CLI's `apply_patch` locates context with
 //! exact → rstrip → trim passes). This module implements the same idea for
-//! LiveAgent's exact-string Edit tool.
+//! ArcForge's exact-string Edit tool.
 //!
 //! Passes run strictest first, and the first pass that yields at least one
 //! match wins, so a stricter interpretation always takes precedence:

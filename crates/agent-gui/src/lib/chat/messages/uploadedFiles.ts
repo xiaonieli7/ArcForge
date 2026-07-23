@@ -21,8 +21,8 @@ const UPLOADED_READABLE_FILE_KINDS = new Set<string>([
   "archive",
 ]);
 
-const DISPLAY_CONTENT_FIELD = "liveAgentDisplayContent";
-const ATTACHMENTS_FIELD = "liveAgentAttachments";
+const DISPLAY_CONTENT_FIELD = "arcForgeDisplayContent";
+const ATTACHMENTS_FIELD = "arcForgeAttachments";
 
 function createUserMessageId() {
   return `user-${createUuid()}`;

@@ -28,7 +28,7 @@ pub async fn fetch_provider_models(
     api_key: &str,
     use_system_proxy: bool,
 ) -> Result<String, String> {
-    // 与本地反代的 x-liveagent-use-system-proxy 语义一致：勾选时代理配置异常
+    // 与本地反代的 x-arcforge-use-system-proxy 语义一致：勾选时代理配置异常
     // fail fast，绝不静默降级；未勾选一律直连（忽略环境代理）。
     let client = if use_system_proxy {
         crate::services::system_proxy::cached_client()

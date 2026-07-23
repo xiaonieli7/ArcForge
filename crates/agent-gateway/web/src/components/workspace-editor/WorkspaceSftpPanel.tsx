@@ -81,8 +81,8 @@ type RenameEntryDialogState = {
   currentName: string;
 };
 
-const SFTP_DRAG_MIME = "application/x-liveagent-sftp";
-const SFTP_DRAG_TEXT_PREFIX = "liveagent-sftp:";
+const SFTP_DRAG_MIME = "application/x-arcforge-sftp";
+const SFTP_DRAG_TEXT_PREFIX = "arcforge-sftp:";
 const INITIAL_LOCAL_PATH = "";
 const INITIAL_REMOTE_PATH = ".";
 const TERMINAL_TRANSFER_STATUSES = new Set(["completed", "failed", "cancelled"]);

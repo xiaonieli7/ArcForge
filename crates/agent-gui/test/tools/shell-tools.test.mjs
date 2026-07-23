@@ -217,7 +217,7 @@ test("Bash tool rejects background commands that keep stdio attached", async () 
 
   assert.equal(result.isError, true);
   assert.match(result.content[0].text, /Background Bash commands must detach stdout and stderr/);
-  assert.match(result.content[0].text, /nohup command > \/tmp\/liveagent-task\.log 2>&1/);
+  assert.match(result.content[0].text, /nohup command > \/tmp\/arcforge-task\.log 2>&1/);
   assert.deepEqual(calls, []);
 });
 
@@ -344,7 +344,7 @@ test("Bash tool allows detached background commands on Windows", async () => {
   });
 
   const result = await bundle.executeToolCall(
-    createBashCall("nohup deno run main.ts > /tmp/liveagent-test.log 2>&1 < /dev/null &"),
+    createBashCall("nohup deno run main.ts > /tmp/arcforge-test.log 2>&1 < /dev/null &"),
   );
 
   assert.equal(result.isError, false);
@@ -391,7 +391,7 @@ test("Bash tool hints about missing Git Bash when Windows falls back to PowerShe
 
   assert.equal(result.isError, true);
   assert.match(result.content[0].text, /Git Bash was not found/);
-  assert.match(result.content[0].text, /LIVEAGENT_GIT_BASH_PATH/);
+  assert.match(result.content[0].text, /ARCFORGE_GIT_BASH_PATH/);
 });
 
 test("Bash tool does not hint about Git Bash when a Windows failure ran under Git Bash", async () => {
@@ -441,7 +441,7 @@ test("Bash tool allows background commands with detached stdio", async () => {
   });
 
   const result = await bundle.executeToolCall(
-    createBashCall("nohup deno run main.ts > /tmp/liveagent-test.log 2>&1 < /dev/null &"),
+    createBashCall("nohup deno run main.ts > /tmp/arcforge-test.log 2>&1 < /dev/null &"),
   );
 
   assert.equal(result.isError, false);
@@ -489,7 +489,7 @@ test("ManagedProcess starts foreground commands through process manager", async 
               cwd: "/repo/app",
               shell: "zsh",
               pid: 123,
-              log_path: "/Users/me/.liveagent/process-logs/proc-1.log",
+              log_path: "/Users/me/.arcforge/process-logs/proc-1.log",
               started_at: 10,
               finished_at: null,
               exit_code: null,
@@ -667,7 +667,7 @@ test("Bash tool can execute from the fixed Skills root with relative cwd", async
     workdir: "/repo",
     providerId: "claude_code",
     skillsRootEnabled: true,
-    skillsRootDir: "/Users/me/.liveagent/skills",
+    skillsRootDir: "/Users/me/.arcforge/skills",
   });
 
   assert.match(JSON.stringify(bundle.tools[0].parameters), /skill:\/\//);
@@ -686,7 +686,7 @@ test("Bash tool can execute from the fixed Skills root with relative cwd", async
   assert.equal(result.isError, false);
   assert.match(result.content[0].text, /cwd: skill:\/\/metaphysics-steward\/scripts/);
   assert.equal(calls[0].args.workdir, "/repo");
-  assert.equal(calls[0].args.cwd, "/Users/me/.liveagent/skills/metaphysics-steward/scripts");
+  assert.equal(calls[0].args.cwd, "/Users/me/.arcforge/skills/metaphysics-steward/scripts");
 });
 
 test("Bash tool allows enabled Skill scripts by direct absolute path without cd", async () => {
@@ -719,7 +719,7 @@ test("Bash tool allows enabled Skill scripts by direct absolute path without cd"
     workdir: "/repo",
     providerId: "claude_code",
     skillsRootEnabled: true,
-    skillsRootDir: "/Users/me/.liveagent/skills",
+    skillsRootDir: "/Users/me/.arcforge/skills",
     skillAccessPolicy: {
       allowedSkillNames: ["metaphysics-steward"],
       allowedSkillBaseDirs: ["metaphysics-steward"],
@@ -727,7 +727,7 @@ test("Bash tool allows enabled Skill scripts by direct absolute path without cd"
   });
 
   const command =
-    "python3 /Users/me/.liveagent/skills/metaphysics-steward/scripts/steward.py --mode qimen";
+    "python3 /Users/me/.arcforge/skills/metaphysics-steward/scripts/steward.py --mode qimen";
   const result = await bundle.executeToolCall({
     type: "toolCall",
     id: "call-absolute-skill-script",
@@ -762,7 +762,7 @@ test("Bash tool enforces enabled Skill allowlist for skill cwd", async () => {
     workdir: "/repo",
     providerId: "claude_code",
     skillsRootEnabled: true,
-    skillsRootDir: "/Users/me/.liveagent/skills",
+    skillsRootDir: "/Users/me/.arcforge/skills",
     skillAccessPolicy: {
       allowedSkillNames: ["skills-creator"],
       allowedSkillBaseDirs: ["skills-creator"],
@@ -803,7 +803,7 @@ test("Bash tool blocks absolute Skills root access from workspace commands", asy
     workdir: "/repo",
     providerId: "claude_code",
     skillsRootEnabled: true,
-    skillsRootDir: "/Users/me/.liveagent/skills",
+    skillsRootDir: "/Users/me/.arcforge/skills",
     skillAccessPolicy: {
       allowedSkillNames: ["metaphysics-steward"],
       allowedSkillBaseDirs: ["metaphysics-steward"],
@@ -816,7 +816,7 @@ test("Bash tool blocks absolute Skills root access from workspace commands", asy
     name: "Bash",
     arguments: {
       command:
-        "cd /Users/me/.liveagent/skills/metaphysics-steward/scripts && python3 steward.py --mode qimen",
+        "cd /Users/me/.arcforge/skills/metaphysics-steward/scripts && python3 steward.py --mode qimen",
       timeout_ms: 1000,
     },
   });
@@ -850,13 +850,13 @@ test("Bash tool blocks fixed Skills root access even when Skills are disabled", 
     id: "blocked-disabled-skill-bash",
     name: "Bash",
     arguments: {
-      command: "cat ~/.liveagent/skills/metaphysics-steward/SKILL.md",
+      command: "cat ~/.arcforge/skills/metaphysics-steward/SKILL.md",
       timeout_ms: 1000,
     },
   });
 
   assert.equal(result.isError, true);
-  assert.match(result.content[0].text, /Bash cannot read or search ~\/\.liveagent\/skills/);
+  assert.match(result.content[0].text, /Bash cannot read or search ~\/\.arcforge\/skills/);
   assert.deepEqual(calls, []);
 });
 
@@ -878,7 +878,7 @@ test("Bash tool blocks workspace skills guesses before shell execution", async (
     workdir: "/repo",
     providerId: "claude_code",
     skillsRootEnabled: true,
-    skillsRootDir: "/Users/me/.liveagent/skills",
+    skillsRootDir: "/Users/me/.arcforge/skills",
   });
 
   const result = await bundle.executeToolCall({

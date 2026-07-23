@@ -156,8 +156,8 @@ function createEmptySegment(index: number, timestamp = Date.now()): StoredContex
 export function isCompactionAssistantMessage(message: Message): message is AssistantMessage {
   return (
     message.role === "assistant" &&
-    (message.api === "liveagent-compaction" ||
-      (message.provider === "liveagent" && message.model === "summary"))
+    (message.api === "arcforge-compaction" ||
+      (message.provider === "arcforge" && message.model === "summary"))
   );
 }
 
@@ -281,7 +281,7 @@ function hashFnv1a32(input: string) {
 }
 
 export function getHistoryMessageContentHash(message: Message): string {
-  const parts = ["liveagent-history-ref-v1"];
+  const parts = ["arcforge-history-ref-v1"];
   appendHashPart(parts, message.role);
   if (message.role === "user") {
     appendHashPart(parts, getUserMessageDisplayText(message as Message & Record<string, unknown>));
@@ -506,7 +506,7 @@ function createSummaryFromAssistant(
         providerId:
           typeof assistant.provider === "string" && assistant.provider.trim()
             ? assistant.provider.trim()
-            : "liveagent",
+            : "arcforge",
         model:
           typeof assistant.model === "string" && assistant.model.trim()
             ? assistant.model.trim()

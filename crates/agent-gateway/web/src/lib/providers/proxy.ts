@@ -3,13 +3,13 @@ import { invoke } from "@tauri-apps/api/core";
 import type { ProviderId } from "../settings";
 import { readHeaderValue } from "./customHeaders";
 
-export const LIVEAGENT_PROXY_TOKEN_HEADER = "x-liveagent-proxy-token";
-export const LIVEAGENT_UPSTREAM_ORIGIN_HEADER = "x-liveagent-upstream-origin";
-export const LIVEAGENT_UPSTREAM_USER_AGENT_HEADER = "x-liveagent-upstream-user-agent";
-export const LIVEAGENT_UPSTREAM_CONTENT_TYPE_HEADER = "x-liveagent-upstream-content-type";
+export const ARCFORGE_PROXY_TOKEN_HEADER = "x-arcforge-proxy-token";
+export const ARCFORGE_UPSTREAM_ORIGIN_HEADER = "x-arcforge-upstream-origin";
+export const ARCFORGE_UPSTREAM_USER_AGENT_HEADER = "x-arcforge-upstream-user-agent";
+export const ARCFORGE_UPSTREAM_CONTENT_TYPE_HEADER = "x-arcforge-upstream-content-type";
 // 布尔标记头：声明该请求经系统代理出网。代理地址/凭据只存于桌面 Rust 侧，
-// 由本地反代按此头选择带代理的 client（x-liveagent-* 头不会转发给上游）。
-export const LIVEAGENT_USE_SYSTEM_PROXY_HEADER = "x-liveagent-use-system-proxy";
+// 由本地反代按此头选择带代理的 client（x-arcforge-* 头不会转发给上游）。
+export const ARCFORGE_USE_SYSTEM_PROXY_HEADER = "x-arcforge-use-system-proxy";
 
 type ProxyServerInfo = {
   baseUrl: string;
@@ -27,8 +27,8 @@ export function buildUpstreamHeaderOverrideHeaders(
   const userAgent = readHeaderValue(headers, "user-agent");
   const contentType = readHeaderValue(headers, "content-type");
   return {
-    ...(userAgent !== undefined ? { [LIVEAGENT_UPSTREAM_USER_AGENT_HEADER]: userAgent } : {}),
-    ...(contentType !== undefined ? { [LIVEAGENT_UPSTREAM_CONTENT_TYPE_HEADER]: contentType } : {}),
+    ...(userAgent !== undefined ? { [ARCFORGE_UPSTREAM_USER_AGENT_HEADER]: userAgent } : {}),
+    ...(contentType !== undefined ? { [ARCFORGE_UPSTREAM_CONTENT_TYPE_HEADER]: contentType } : {}),
   };
 }
 
@@ -172,9 +172,9 @@ export async function prepareUpstreamProxyRequest(
   return {
     url: `${proxyServerInfo.baseUrl}/proxy/${HUB_PROXY_ROUTE}${pathname}${parsed.search}`,
     headers: {
-      [LIVEAGENT_UPSTREAM_ORIGIN_HEADER]: parsed.origin,
-      [LIVEAGENT_PROXY_TOKEN_HEADER]: proxyServerInfo.token,
-      [LIVEAGENT_USE_SYSTEM_PROXY_HEADER]: "1",
+      [ARCFORGE_UPSTREAM_ORIGIN_HEADER]: parsed.origin,
+      [ARCFORGE_PROXY_TOKEN_HEADER]: proxyServerInfo.token,
+      [ARCFORGE_USE_SYSTEM_PROXY_HEADER]: "1",
     },
   };
 }
@@ -197,9 +197,9 @@ export async function prepareProxyRequest(
     headers: {
       ...headers,
       ...buildUpstreamHeaderOverrideHeaders(headers),
-      [LIVEAGENT_UPSTREAM_ORIGIN_HEADER]: upstreamOrigin,
-      [LIVEAGENT_PROXY_TOKEN_HEADER]: proxyServerInfo.token,
-      ...(options?.useSystemProxy ? { [LIVEAGENT_USE_SYSTEM_PROXY_HEADER]: "1" } : {}),
+      [ARCFORGE_UPSTREAM_ORIGIN_HEADER]: upstreamOrigin,
+      [ARCFORGE_PROXY_TOKEN_HEADER]: proxyServerInfo.token,
+      ...(options?.useSystemProxy ? { [ARCFORGE_USE_SYSTEM_PROXY_HEADER]: "1" } : {}),
     },
   };
 }

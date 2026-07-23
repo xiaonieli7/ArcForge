@@ -102,7 +102,7 @@ where
     let client = crate::services::system_proxy::blocking_client_builder()
         .map_err(|e| format!("Failed to create HTTP client: {e}"))?
         .timeout(Duration::from_secs(30))
-        .user_agent("liveagent-skill-installer")
+        .user_agent("arcforge-skill-installer")
         .build()
         .map_err(|e| format!("Failed to create HTTP client: {e}"))?;
     let mut response = client

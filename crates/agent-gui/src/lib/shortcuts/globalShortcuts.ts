@@ -29,7 +29,7 @@ export interface GlobalShortcutFailure {
   error: string;
 }
 
-const STORAGE_KEY = "liveagent.globalShortcuts.v1";
+const STORAGE_KEY = "arcforge.globalShortcuts.v1";
 
 export const SHORTCUT_MODIFIER_ORDER = ["Ctrl", "Shift", "Alt", "Super"] as const;
 export type ShortcutModifier = (typeof SHORTCUT_MODIFIER_ORDER)[number];

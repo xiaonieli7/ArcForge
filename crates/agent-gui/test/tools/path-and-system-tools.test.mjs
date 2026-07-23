@@ -192,7 +192,7 @@ test("ToolPathResolver resolves enabled Skill paths and gates external paths by 
   const resolver = new pathUtils.ToolPathResolver({
     workdir: "/workspace/project",
     skillsRootEnabled: true,
-    skillsRootDir: "/Users/me/.liveagent/skills",
+    skillsRootDir: "/Users/me/.arcforge/skills",
     skillAccessPolicy: {
       allowedSkillNames: ["skills-creator"],
       allowedSkillBaseDirs: ["skills-creator"],
@@ -206,13 +206,13 @@ test("ToolPathResolver resolves enabled Skill paths and gates external paths by 
   });
   assert.equal(skillUrl.scope, "skill");
   assert.equal(skillUrl.relativePath, "skills-creator/SKILL.md");
-  assert.equal(skillUrl.absolutePath, "/Users/me/.liveagent/skills/skills-creator/SKILL.md");
+  assert.equal(skillUrl.absolutePath, "/Users/me/.arcforge/skills/skills-creator/SKILL.md");
   assert.equal(skillUrl.displayPath, "skill://skills-creator/SKILL.md");
-  assert.equal(skillUrl.root, "/Users/me/.liveagent/skills");
+  assert.equal(skillUrl.root, "/Users/me/.arcforge/skills");
   assert.ok(!("pathRef" in skillUrl));
 
   const absoluteSkill = await resolver.resolvePath(
-    "/Users/me/.liveagent/skills/skills-creator/SKILL.md",
+    "/Users/me/.arcforge/skills/skills-creator/SKILL.md",
     {
       label: "Read.path",
       intent: "read",
@@ -233,7 +233,7 @@ test("ToolPathResolver resolves enabled Skill paths and gates external paths by 
   );
 
   const stagedUpload = await resolver.resolvePath(
-    "/Users/me/.liveagent/uploads/1721550000000/report.pdf",
+    "/Users/me/.arcforge/uploads/1721550000000/report.pdf",
     {
       label: "Read.path",
       intent: "read",
@@ -241,12 +241,12 @@ test("ToolPathResolver resolves enabled Skill paths and gates external paths by 
     },
   );
   assert.equal(stagedUpload.scope, "uploads");
-  assert.equal(stagedUpload.root, "/Users/me/.liveagent/uploads");
+  assert.equal(stagedUpload.root, "/Users/me/.arcforge/uploads");
   assert.equal(stagedUpload.relativePath, "1721550000000/report.pdf");
   assert.equal(stagedUpload.displayPath, "uploads/1721550000000/report.pdf");
 
   const stagedUploadDir = await resolver.resolvePath(
-    "C:\\Users\\Me\\.liveagent\\uploads\\1721550000000",
+    "C:\\Users\\Me\\.arcforge\\uploads\\1721550000000",
     {
       label: "List.path",
       intent: "list",
@@ -256,20 +256,20 @@ test("ToolPathResolver resolves enabled Skill paths and gates external paths by 
   assert.equal(stagedUploadDir.scope, "uploads");
   assert.equal(stagedUploadDir.relativePath, "1721550000000");
 
-  const stagedUploadRoot = await resolver.resolvePath("/Users/me/.liveagent/uploads", {
+  const stagedUploadRoot = await resolver.resolvePath("/Users/me/.arcforge/uploads", {
     label: "List.path",
     intent: "list",
     required: true,
   });
   assert.equal(stagedUploadRoot.scope, "uploads");
-  assert.equal(stagedUploadRoot.root, "/Users/me/.liveagent/uploads");
-  assert.equal(stagedUploadRoot.absolutePath, "/Users/me/.liveagent/uploads");
+  assert.equal(stagedUploadRoot.root, "/Users/me/.arcforge/uploads");
+  assert.equal(stagedUploadRoot.absolutePath, "/Users/me/.arcforge/uploads");
   assert.equal(stagedUploadRoot.relativePath, undefined);
   assert.equal(stagedUploadRoot.displayPath, "uploads");
 
   await assert.rejects(
     () =>
-      resolver.resolvePath("/Users/me/.liveagent/uploads", {
+      resolver.resolvePath("/Users/me/.arcforge/uploads", {
         label: "Write.path",
         intent: "write",
         required: true,
@@ -279,7 +279,7 @@ test("ToolPathResolver resolves enabled Skill paths and gates external paths by 
 
   await assert.rejects(
     () =>
-      resolver.resolvePath("/Users/me/.liveagent/uploads/1721550000000/report.pdf", {
+      resolver.resolvePath("/Users/me/.arcforge/uploads/1721550000000/report.pdf", {
         label: "Write.path",
         intent: "write",
         required: true,
@@ -288,7 +288,7 @@ test("ToolPathResolver resolves enabled Skill paths and gates external paths by 
   );
   await assert.rejects(
     () =>
-      resolver.resolvePath("/Users/me/.liveagent/uploads/1721550000000/report.pdf", {
+      resolver.resolvePath("/Users/me/.arcforge/uploads/1721550000000/report.pdf", {
         label: "Delete.path",
         intent: "delete",
         required: true,
@@ -321,7 +321,7 @@ test("ToolPathResolver teaches the skill:// shape when the skill path is empty",
   const resolver = new pathUtils.ToolPathResolver({
     workdir: "/workspace/project",
     skillsRootEnabled: true,
-    skillsRootDir: "/Users/me/.liveagent/skills",
+    skillsRootDir: "/Users/me/.arcforge/skills",
   });
 
   await assert.rejects(
@@ -342,18 +342,18 @@ test("ToolPathResolver teaches the skill:// shape when the skill path is empty",
   });
   assert.equal(skillsRoot.scope, "skill");
   assert.equal(skillsRoot.relativePath, undefined);
-  assert.equal(skillsRoot.root, "/Users/me/.liveagent/skills");
+  assert.equal(skillsRoot.root, "/Users/me/.arcforge/skills");
 });
 
 test("ToolPathResolver prefers the skill scope when the skills root nests inside the workspace", async () => {
   const resolver = new pathUtils.ToolPathResolver({
     workdir: "/workspace/project",
     skillsRootEnabled: true,
-    skillsRootDir: "/workspace/project/.liveagent/skills",
+    skillsRootDir: "/workspace/project/.arcforge/skills",
   });
 
   const nestedSkill = await resolver.resolvePath(
-    "/workspace/project/.liveagent/skills/demo/SKILL.md",
+    "/workspace/project/.arcforge/skills/demo/SKILL.md",
     {
       label: "Read.path",
       intent: "read",
@@ -362,7 +362,7 @@ test("ToolPathResolver prefers the skill scope when the skills root nests inside
   );
   assert.equal(nestedSkill.scope, "skill");
   assert.equal(nestedSkill.relativePath, "demo/SKILL.md");
-  assert.equal(nestedSkill.root, "/workspace/project/.liveagent/skills");
+  assert.equal(nestedSkill.root, "/workspace/project/.arcforge/skills");
   assert.equal(nestedSkill.displayPath, "skill://demo/SKILL.md");
 
   const workspaceFile = await resolver.resolvePath("/workspace/project/src/App.tsx", {
@@ -418,9 +418,9 @@ test("ToolPathResolver expands ~ only with an injected home directory", async ()
   const fixedSkills = new pathUtils.ToolPathResolver({
     workdir: "/workspace/project",
     skillsRootEnabled: true,
-    skillsRootDir: "/Users/me/.liveagent/skills",
+    skillsRootDir: "/Users/me/.arcforge/skills",
   });
-  const skillViaHome = await fixedSkills.resolvePath("~/.liveagent/skills/demo/SKILL.md", {
+  const skillViaHome = await fixedSkills.resolvePath("~/.arcforge/skills/demo/SKILL.md", {
     label: "Read.path",
     intent: "read",
     required: true,
@@ -434,7 +434,7 @@ test("ToolPathResolver still accepts legacy workspace:/skill: prefixed inputs", 
   const resolver = new pathUtils.ToolPathResolver({
     workdir: "/workspace/project",
     skillsRootEnabled: true,
-    skillsRootDir: "/Users/me/.liveagent/skills",
+    skillsRootDir: "/Users/me/.arcforge/skills",
   });
 
   const workspaceRef = await resolver.resolvePath("workspace:src/App.tsx", {
@@ -477,7 +477,7 @@ test("builtin agent skills stay selected and sort first", () => {
   assert.equal(skillBuiltinHelpers.isUserSelectableSkillName("arcforge-code-review"), true);
   assert.deepEqual(
     skillBuiltinHelpers.mergeAlwaysEnabledSkillNames([
-      "liveagent-code-review",
+      "arcforge-code-review",
       "arcforge-code-review",
     ]),
     ["skills-creator", "skills-installer", "arcforge-code-review"],
@@ -516,7 +516,7 @@ test("file tools can read enabled Skill files via skill URLs", async () => {
   const bundle = fsTools.createFsTools({
     workdir: "/workspace",
     skillsRootEnabled: true,
-    skillsRootDir: "/Users/me/.liveagent/skills",
+    skillsRootDir: "/Users/me/.arcforge/skills",
     fileState: fileToolState.createFileToolState(),
   });
 
@@ -547,7 +547,7 @@ test("file tools can read enabled Skill files via skill URLs", async () => {
     {
       command: "fs_read_text",
       args: {
-        workdir: "/Users/me/.liveagent/skills",
+        workdir: "/Users/me/.arcforge/skills",
         path: "skills-creator/SKILL.md",
         start_line: undefined,
         limit: 20,
@@ -616,7 +616,7 @@ test("file tools enforce enabled Skill allowlist for skill URLs", async () => {
   const bundle = fsTools.createFsTools({
     workdir: "/workspace",
     skillsRootEnabled: true,
-    skillsRootDir: "/Users/me/.liveagent/skills",
+    skillsRootDir: "/Users/me/.arcforge/skills",
     skillAccessPolicy: {
       allowedSkillNames: ["skills-creator"],
       allowedSkillBaseDirs: ["skills-creator"],
@@ -685,7 +685,7 @@ test("file tools allow direct mutations inside enabled Skills when mutation is g
   const bundle = fsTools.createFsTools({
     workdir: "/workspace",
     skillsRootEnabled: true,
-    skillsRootDir: "/Users/me/.liveagent/skills",
+    skillsRootDir: "/Users/me/.arcforge/skills",
     skillAccessPolicy: {
       allowedSkillNames: ["demo"],
       allowedSkillBaseDirs: ["demo"],
@@ -711,14 +711,14 @@ test("file tools allow direct mutations inside enabled Skills when mutation is g
     {
       command: "fs_path_status",
       args: {
-        workdir: "/Users/me/.liveagent/skills",
+        workdir: "/Users/me/.arcforge/skills",
         path: "demo/SKILL.md",
       },
     },
     {
       command: "fs_write_text",
       args: {
-        workdir: "/Users/me/.liveagent/skills",
+        workdir: "/Users/me/.arcforge/skills",
         path: "demo/SKILL.md",
         content: "---\nname: demo\ndescription: Demo\n---\n",
         mode: "rewrite",
@@ -1251,7 +1251,7 @@ test("file tools block direct mutations inside backend-verified built-in Skills"
   const bundle = fsTools.createFsTools({
     workdir: "/workspace",
     skillsRootEnabled: true,
-    skillsRootDir: "/Users/me/.liveagent/skills",
+    skillsRootDir: "/Users/me/.arcforge/skills",
     skillAccessPolicy: {
       allowedSkillNames: ["arcforge-code-review"],
       allowedSkillBaseDirs: ["arcforge-code-review"],
@@ -1307,7 +1307,7 @@ test("file tools normalize absolute enabled Skill paths", async () => {
   const bundle = fsTools.createFsTools({
     workdir: "/workspace",
     skillsRootEnabled: true,
-    skillsRootDir: "/Users/me/.liveagent/skills",
+    skillsRootDir: "/Users/me/.arcforge/skills",
     fileState: fileToolState.createFileToolState(),
   });
 
@@ -1316,7 +1316,7 @@ test("file tools normalize absolute enabled Skill paths", async () => {
     id: "absolute-skill-read",
     name: "Read",
     arguments: {
-      path: "/Users/me/.liveagent/skills/skills-installer/SKILL.md",
+      path: "/Users/me/.arcforge/skills/skills-installer/SKILL.md",
     },
   });
 
@@ -1328,7 +1328,7 @@ test("file tools normalize absolute enabled Skill paths", async () => {
     {
       command: "fs_read_text",
       args: {
-        workdir: "/Users/me/.liveagent/skills",
+        workdir: "/Users/me/.arcforge/skills",
         path: "skills-installer/SKILL.md",
         start_line: undefined,
         limit: undefined,
@@ -1358,7 +1358,7 @@ test("file tool runtime string errors surface the backend message with the displ
   const bundle = fsTools.createFsTools({
     workdir: "/workspace",
     skillsRootEnabled: true,
-    skillsRootDir: "/Users/me/.liveagent/skills",
+    skillsRootDir: "/Users/me/.arcforge/skills",
     fileState: fileToolState.createFileToolState(),
   });
 
@@ -1381,7 +1381,7 @@ test("file tool runtime string errors surface the backend message with the displ
     {
       command: "fs_read_text",
       args: {
-        workdir: "/Users/me/.liveagent/skills",
+        workdir: "/Users/me/.arcforge/skills",
         path: "demo/missing.md",
         start_line: undefined,
         limit: undefined,
@@ -1685,7 +1685,7 @@ test("SkillsManager read accepts explicit skill entry paths", async () => {
           assert.equal(command, "system_manage_skill");
           return {
             action: "read",
-            rootDir: "/Users/me/.liveagent/skills",
+            rootDir: "/Users/me/.arcforge/skills",
             path: args.payload.path,
             content: "line one\nline two\n",
             truncated: false,
@@ -1748,11 +1748,11 @@ test("SkillsManager install resolves local relative sources against the workspac
           assert.equal(command, "system_manage_skill");
           return {
             action: "install",
-            rootDir: "/Users/me/.liveagent/skills",
+            rootDir: "/Users/me/.arcforge/skills",
             installed: [
               {
                 name: "chart-image",
-                target: "/Users/me/.liveagent/skills/chart-image",
+                target: "/Users/me/.arcforge/skills/chart-image",
                 backup: null,
                 skillFile: "chart-image/SKILL.md",
               },
@@ -1799,14 +1799,14 @@ test("SkillsManager clawhub_install forwards owner handle for slug disambiguatio
           assert.equal(command, "system_manage_skill");
           return {
             action: "clawhub_install",
-            rootDir: "/Users/me/.liveagent/skills",
+            rootDir: "/Users/me/.arcforge/skills",
             clawhubSlug: "example-skill",
             clawhubDownloadUrl:
               "https://clawhub.ai/api/v1/download?slug=example-skill&tag=latest&ownerHandle=acme",
             installed: [
               {
                 name: "example-skill",
-                target: "/Users/me/.liveagent/skills/example-skill",
+                target: "/Users/me/.arcforge/skills/example-skill",
                 backup: null,
                 skillFile: "example-skill/SKILL.md",
               },
@@ -1992,11 +1992,11 @@ test("SkillsManager management can auto-enable installed Skills without exposing
           if (action === "install") {
             return {
               action: "install",
-              rootDir: "/Users/me/.liveagent/skills",
+              rootDir: "/Users/me/.arcforge/skills",
               installed: [
                 {
                   name: "new-skill",
-                  target: "/Users/me/.liveagent/skills/new-skill",
+                  target: "/Users/me/.arcforge/skills/new-skill",
                   backup: null,
                   skillFile: "new-skill/SKILL.md",
                 },
@@ -2007,7 +2007,7 @@ test("SkillsManager management can auto-enable installed Skills without exposing
             assert.equal(args.payload.path, "new-skill/SKILL.md");
             return {
               action: "read",
-              rootDir: "/Users/me/.liveagent/skills",
+              rootDir: "/Users/me/.arcforge/skills",
               path: "new-skill/SKILL.md",
               content: "---\nname: new-skill\ndescription: New Skill\n---\n",
               truncated: false,
@@ -2018,33 +2018,33 @@ test("SkillsManager management can auto-enable installed Skills without exposing
           if (action === "list") {
             return {
               action: "list",
-              rootDir: "/Users/me/.liveagent/skills",
+              rootDir: "/Users/me/.arcforge/skills",
               skills: [
                 {
                   name: "skills-creator",
                   description: "Create Skills",
-                  target: "/Users/me/.liveagent/skills/skills-creator",
+                  target: "/Users/me/.arcforge/skills/skills-creator",
                   skillFile: "skills-creator/SKILL.md",
                   baseDir: "skills-creator",
                 },
                 {
                   name: "skills-installer",
                   description: "Install Skills",
-                  target: "/Users/me/.liveagent/skills/skills-installer",
+                  target: "/Users/me/.arcforge/skills/skills-installer",
                   skillFile: "skills-installer/SKILL.md",
                   baseDir: "skills-installer",
                 },
                 {
                   name: "new-skill",
                   description: "New Skill",
-                  target: "/Users/me/.liveagent/skills/new-skill",
+                  target: "/Users/me/.arcforge/skills/new-skill",
                   skillFile: "new-skill/SKILL.md",
                   baseDir: "new-skill",
                 },
                 {
                   name: "hidden-skill",
                   description: "Hidden Skill",
-                  target: "/Users/me/.liveagent/skills/hidden-skill",
+                  target: "/Users/me/.arcforge/skills/hidden-skill",
                   skillFile: "hidden-skill/SKILL.md",
                   baseDir: "hidden-skill",
                 },
@@ -2137,7 +2137,7 @@ test("SkillsManager management can auto-enable installed Skills without exposing
     });
     assert.equal(readResult.isError, false);
     assert.equal(readResult.details.path, "new-skill/SKILL.md");
-    assert.deepEqual(events, ["liveagent:skills-discovery-updated"]);
+    assert.deepEqual(events, ["arcforge:skills-discovery-updated"]);
   } finally {
     if (typeof previousWindow === "undefined") {
       delete globalThis.window;
@@ -2155,7 +2155,7 @@ test("SkillsManager list filters installed Skills when inventory is explicitly a
           assert.equal(command, "system_manage_skill");
           return {
             action: "list",
-            rootDir: "/Users/me/.liveagent/skills",
+            rootDir: "/Users/me/.arcforge/skills",
             skills: [
               {
                 name: "skills-creator",
@@ -2245,10 +2245,10 @@ test("SkillsManager create action builds payload and refreshes skill discovery",
           if (action === "create") {
             return {
               action,
-              rootDir: "/Users/me/.liveagent/skills",
+              rootDir: "/Users/me/.arcforge/skills",
               created: {
                 name: "workflow-skill",
-                target: "/Users/me/.liveagent/skills/workflow-skill",
+                target: "/Users/me/.arcforge/skills/workflow-skill",
                 backup: null,
                 skillFile: "workflow-skill/SKILL.md",
               },
@@ -2257,10 +2257,10 @@ test("SkillsManager create action builds payload and refreshes skill discovery",
           if (action === "validate") {
             return {
               action,
-              rootDir: "/Users/me/.liveagent/skills",
+              rootDir: "/Users/me/.arcforge/skills",
               validation: {
                 name: "workflow-skill",
-                target: "/Users/me/.liveagent/skills/workflow-skill",
+                target: "/Users/me/.arcforge/skills/workflow-skill",
                 ok: true,
                 errors: [],
               },
@@ -2269,11 +2269,11 @@ test("SkillsManager create action builds payload and refreshes skill discovery",
           if (action === "package") {
             return {
               action,
-              rootDir: "/Users/me/.liveagent/skills",
+              rootDir: "/Users/me/.arcforge/skills",
               package: {
                 name: "workflow-skill",
-                target: "/Users/me/.liveagent/skills/workflow-skill",
-                archive: "/Users/me/.liveagent/skills/.packages/workflow-skill.skill",
+                target: "/Users/me/.arcforge/skills/workflow-skill",
+                archive: "/Users/me/.arcforge/skills/.packages/workflow-skill.skill",
               },
             };
           }
@@ -2321,12 +2321,12 @@ test("SkillsManager create action builds payload and refreshes skill discovery",
     assert.equal(result.details.kind, "manage_skill");
     assert.equal(result.details.action, "create");
     assert.equal(result.details.createdName, "workflow-skill");
-    assert.equal(result.details.target, "/Users/me/.liveagent/skills/workflow-skill");
+    assert.equal(result.details.target, "/Users/me/.arcforge/skills/workflow-skill");
     assert.match(result.content[0].text, /pathScheme=skill:\/\/<baseDir>\/\.\.\./);
     assert.match(result.content[0].text, /target=skill:\/\/workflow-skill/);
     assert.match(result.content[0].text, /skillFile=workflow-skill\/SKILL\.md/);
     assert.match(result.content[0].text, /enabled=true/);
-    assert.doesNotMatch(result.content[0].text, /\/Users\/me\/\.liveagent\/skills/);
+    assert.doesNotMatch(result.content[0].text, /\/Users\/me\/\.arcforge\/skills/);
     assert.deepEqual(policy.allowedSkillNames, [
       "skills-creator",
       "skills-installer",
@@ -2368,7 +2368,7 @@ test("SkillsManager create action builds payload and refreshes skill discovery",
     });
     assert.equal(packageResult.isError, false);
     assert.match(packageResult.content[0].text, /archive=skill:\/\/\.packages\/workflow-skill\.skill/);
-    assert.deepEqual(events, ["liveagent:skills-discovery-updated"]);
+    assert.deepEqual(events, ["arcforge:skills-discovery-updated"]);
     assert.deepEqual(invocations, [
       {
         command: "system_manage_skill",
@@ -2511,7 +2511,7 @@ test("Image file tool reads installed Skill images through skill URLs", async ()
   const bundle = fsTools.createFsTools({
     workdir: "/workspace",
     skillsRootEnabled: true,
-    skillsRootDir: "/Users/me/.liveagent/skills",
+    skillsRootDir: "/Users/me/.arcforge/skills",
     fileState: fileToolState.createFileToolState(),
   });
 
@@ -2538,7 +2538,7 @@ test("Image file tool reads installed Skill images through skill URLs", async ()
     {
       command: "fs_read_image_source",
       args: {
-        workdir: "/Users/me/.liveagent/skills",
+        workdir: "/Users/me/.arcforge/skills",
         source: "demo/assets/logo.png",
         source_type: "path",
         mime_type: undefined,
@@ -2572,7 +2572,7 @@ test("Image file tool normalizes absolute workspace and Skill image paths", asyn
   const bundle = fsTools.createFsTools({
     workdir: "/workspace",
     skillsRootEnabled: true,
-    skillsRootDir: "/Users/me/.liveagent/skills",
+    skillsRootDir: "/Users/me/.arcforge/skills",
     fileState: fileToolState.createFileToolState(),
   });
 
@@ -2590,7 +2590,7 @@ test("Image file tool normalizes absolute workspace and Skill image paths", asyn
     type: "toolCall",
     id: "absolute-skill-image",
     name: "Image",
-    arguments: { path: "/Users/me/.liveagent/skills/demo/assets/logo.png" },
+    arguments: { path: "/Users/me/.arcforge/skills/demo/assets/logo.png" },
   });
   assert.equal(skillsResult.isError, false);
   assert.equal(skillsResult.details.images[0].scope, "skill");
@@ -2600,7 +2600,7 @@ test("Image file tool normalizes absolute workspace and Skill image paths", asyn
     type: "toolCall",
     id: "home-skill-image",
     name: "Image",
-    arguments: { path: "~/.liveagent/skills/demo/assets/logo.png" },
+    arguments: { path: "~/.arcforge/skills/demo/assets/logo.png" },
   });
   assert.equal(homeSkillsResult.isError, false);
   assert.equal(homeSkillsResult.details.images[0].scope, "skill");
@@ -2609,8 +2609,8 @@ test("Image file tool normalizes absolute workspace and Skill image paths", asyn
     invocations.map((call) => [call.args.workdir, call.args.source]),
     [
       ["/workspace", "uploads/logo.png"],
-      ["/Users/me/.liveagent/skills", "demo/assets/logo.png"],
-      ["/Users/me/.liveagent/skills", "demo/assets/logo.png"],
+      ["/Users/me/.arcforge/skills", "demo/assets/logo.png"],
+      ["/Users/me/.arcforge/skills", "demo/assets/logo.png"],
     ],
   );
 });
@@ -2638,7 +2638,7 @@ test("Image file tool blocks fixed Skills root paths when Skills are disabled", 
     type: "toolCall",
     id: "blocked-disabled-skill-image",
     name: "Image",
-    arguments: { path: "~/.liveagent/skills/demo/assets/logo.png" },
+    arguments: { path: "~/.arcforge/skills/demo/assets/logo.png" },
   });
 
   assert.equal(result.isError, true);
@@ -2664,7 +2664,7 @@ test("Image runtime errors surface the backend message for resolved local paths"
   const bundle = fsTools.createFsTools({
     workdir: "/workspace",
     skillsRootEnabled: true,
-    skillsRootDir: "/Users/me/.liveagent/skills",
+    skillsRootDir: "/Users/me/.arcforge/skills",
     fileState: fileToolState.createFileToolState(),
   });
 
@@ -2685,7 +2685,7 @@ test("Image runtime errors surface the backend message for resolved local paths"
     {
       command: "fs_read_image_source",
       args: {
-        workdir: "/Users/me/.liveagent/skills",
+        workdir: "/Users/me/.arcforge/skills",
         source: "demo/assets/missing.png",
         source_type: "path",
         mime_type: undefined,
