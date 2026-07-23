@@ -2,7 +2,7 @@
   <img src=".tmp/arcforge-brand/lockup.png" width="820" alt="ArcForge — Local-first desktop Work Agent for Windows professionals" />
 </p>
 
-<img src=".tmp/arcforge-brand/app.png" width="820" alt="ArcForge — Local-first desktop Work Agent for Windows professionals" />
+<img src=".tmp/arcforge-brand/app1.png" width="820" alt="ArcForge — Local-first desktop Work Agent for Windows professionals" />
 
 <p align="center">
   <strong>面向 Windows 专业用户的本地优先桌面 Work Agent</strong>
