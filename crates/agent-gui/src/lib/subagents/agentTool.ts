@@ -1,7 +1,7 @@
 import type { Tool, ToolCall, ToolResultMessage } from "@earendil-works/pi-ai";
 import { Type } from "typebox";
 
-import type { RuntimePlatform } from "../runtimePlatform";
+import type { RuntimeEnvironmentSnapshot, RuntimePlatform } from "../runtimePlatform";
 import type { ProviderId } from "../settings";
 import {
   type BuiltinToolBundle,
@@ -196,6 +196,7 @@ export function createSubagentTools(params: {
   model: string;
   runtime: SubagentProviderRuntime;
   runtimePlatform?: RuntimePlatform;
+  runtimeEnvironment?: RuntimeEnvironmentSnapshot;
   workdir: string;
   resolveHomeDir?: () => Promise<string>;
   sessionId?: string;
@@ -310,6 +311,7 @@ export function createSubagentTools(params: {
       model: params.model,
       runtime: params.runtime,
       runtimePlatform: params.runtimePlatform,
+      runtimeEnvironment: params.runtimeEnvironment,
       workdir: params.workdir,
       sessionId: params.sessionId,
       messageBusEnabled,

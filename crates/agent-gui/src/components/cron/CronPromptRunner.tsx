@@ -6,7 +6,7 @@ import { backend } from "../../lib/automation/backend";
 import { runAssistantWithTools } from "../../lib/chat/runner/agentRunner";
 import { createStreamDebugLogger } from "../../lib/debug/agentDebug";
 import { assistantMessageToText } from "../../lib/providers/llm";
-import { resolveRuntimePlatform } from "../../lib/runtimePlatform";
+import { resolveRuntimeEnvironmentSnapshot } from "../../lib/runtimePlatform";
 import {
   type AppSettings,
   DEFAULT_CHAT_RUNTIME_CONTROLS,
@@ -156,11 +156,13 @@ async function executeCronPromptRun(
 
   const skillsContext = await buildCronSkillsContext(settings);
   const activeAgentPrompt = getActiveAgentPrompt(settings);
-  const runtimePlatform = await resolveRuntimePlatform();
+  const runtimeEnvironment = await resolveRuntimeEnvironmentSnapshot();
+  const runtimePlatform = runtimeEnvironment.platform;
   const builtinRegistry = await buildBuiltinToolRegistry({
     workdir,
     providerId: provider.type,
     runtimePlatform,
+    runtimeEnvironment,
     fileState: createFileToolState(),
     skillsEnabled: skillsContext.enabled,
     skillsRootDir: skillsContext.rootDir,
@@ -219,6 +221,7 @@ async function executeCronPromptRun(
       modelConfig: findProviderModelConfig(provider, request.model),
     },
     runtimePlatform,
+    runtimeEnvironment,
     context,
     workdir,
     sessionId: request.executionId,

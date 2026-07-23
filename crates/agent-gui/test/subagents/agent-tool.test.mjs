@@ -91,6 +91,46 @@ test("Agent tool never appears in child tool selections", async () => {
   }
 });
 
+test("delegated agents inherit the parent task runtime snapshot", async () => {
+  const runtimeEnvironment = {
+    platform: "windows",
+    architecture: "x86_64",
+    shell: {
+      profile: "windows-powershell",
+      family: "powershell",
+      name: "powershell",
+      usesWsl: false,
+    },
+    commands: {
+      python: "available",
+      node: "available",
+      psql: "unavailable",
+      git: "available",
+      docker: "unknown",
+    },
+    python: {
+      status: "available",
+      launcher: "python",
+      postgresDriver: "psycopg",
+    },
+    source: "backend",
+  };
+  const harness = await createSubagentHarness({
+    runtimePlatform: "windows",
+    runtimeEnvironment,
+  });
+
+  await harness.bundle.executeToolCall(
+    createAgentToolCall({
+      agents: [{ id: "runtime-check", prompt: "Inspect the local runtime." }],
+    }),
+  );
+
+  assert.equal(harness.runnerCalls.length, 1);
+  assert.equal(harness.runnerCalls[0].runtimeEnvironment, runtimeEnvironment);
+  assert.equal(harness.runnerCalls[0].runtimePlatform, "windows");
+});
+
 test("SendMessage is not attached and persistence is skipped without a conversation id", async () => {
   const harness = await createSubagentHarness({ conversationId: "" });
   const result = await harness.bundle.executeToolCall(

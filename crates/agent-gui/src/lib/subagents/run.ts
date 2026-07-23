@@ -9,7 +9,7 @@ import {
 } from "../chat/conversation/conversationState";
 import { createTurnCancellationFromSignal } from "../chat/conversation/turnCancellation";
 import { runAssistantWithTools } from "../chat/runner/agentRunner";
-import type { RuntimePlatform } from "../runtimePlatform";
+import type { RuntimeEnvironmentSnapshot, RuntimePlatform } from "../runtimePlatform";
 import type {
   CodexRequestFormat,
   CustomProvider,
@@ -69,6 +69,7 @@ export type SubagentRunEnvironment = {
   model: string;
   runtime: SubagentProviderRuntime;
   runtimePlatform?: RuntimePlatform;
+  runtimeEnvironment?: RuntimeEnvironmentSnapshot;
   workdir: string;
   sessionId?: string;
   messageBusEnabled: boolean;
@@ -584,6 +585,7 @@ export async function executeSubagentRun(
       model: env.model,
       runtime: env.runtime,
       runtimePlatform: env.runtimePlatform,
+      runtimeEnvironment: env.runtimeEnvironment,
       context: buildRequestContext(baseState),
       workdir: childWorkdir,
       sessionId: subagentSessionId,

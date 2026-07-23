@@ -38,6 +38,7 @@ import type { RetryAttemptRecord } from "../../providers/runtime/streamRetry";
 import {
   inferRuntimePlatform,
   normalizeRuntimePlatform,
+  type RuntimeEnvironmentSnapshot,
   type RuntimePlatform,
   runtimePlatformLabel,
 } from "../../runtimePlatform";
@@ -129,12 +130,75 @@ async function runWithConcurrency<T, R>(
   return results;
 }
 
+function capabilitySnapshotLabel(status: RuntimeEnvironmentSnapshot["commands"]["python"]) {
+  if (status === "available") return "detected";
+  if (status === "unavailable") return "not detected on the ArcForge PATH";
+  return "unknown";
+}
+
+function buildRuntimeEnvironmentSection(snapshot: RuntimeEnvironmentSnapshot) {
+  const pythonLabel =
+    snapshot.python.status === "available" && snapshot.python.launcher
+      ? `detected via \`${snapshot.python.launcher}\``
+      : capabilitySnapshotLabel(snapshot.python.status);
+  const driverLabel =
+    snapshot.python.postgresDriver === "psycopg" ||
+    snapshot.python.postgresDriver === "psycopg2"
+      ? `\`${snapshot.python.postgresDriver}\` detected`
+      : snapshot.python.postgresDriver === "none"
+        ? "no `psycopg` or `psycopg2` driver detected"
+        : "unknown";
+  const architecture = snapshot.architecture ? ` (${snapshot.architecture})` : "";
+  const captureLine =
+    snapshot.source === "backend"
+      ? "- ArcForge captured this snapshot once at the start of the current task and shares it with all rounds and delegated agents. Use it to choose the first execution path; do not repeat presence probes for capabilities marked detected or not detected."
+      : "- The backend capability probe was unavailable, so command and driver values may be unknown. Share this fallback snapshot across the task, and use one targeted probe for an unknown capability when the task needs it.";
+
+  return [
+    "## Local Runtime Snapshot",
+    `- OS: ${runtimePlatformLabel(snapshot.platform)}${architecture}. Preferred command shell: \`${snapshot.shell.name}\` (${snapshot.shell.family}, profile \`${snapshot.shell.profile}\`). WSL is ${snapshot.shell.usesWsl ? "in use" : "not used"}.`,
+    `- Commands: Python ${pythonLabel}; Node ${capabilitySnapshotLabel(snapshot.commands.node)}; psql ${capabilitySnapshotLabel(snapshot.commands.psql)}; Git ${capabilitySnapshotLabel(snapshot.commands.git)}; Docker ${capabilitySnapshotLabel(snapshot.commands.docker)}.`,
+    `- Python PostgreSQL driver: ${driverLabel}.`,
+    captureLine,
+    "- Run one targeted re-check only when a capability is unknown, this task changed the environment, or actual execution contradicts the snapshot. PATH presence does not guarantee version compatibility or describe a project-private virtual environment.",
+    "- This snapshot describes the local ArcForge host only. Do not apply it to an SSH or other remote environment.",
+  ].join("\n");
+}
+
+function buildWindowsPostgresRoutingLine(snapshot?: RuntimeEnvironmentSnapshot) {
+  const driver = snapshot?.python.postgresDriver;
+  const psql = snapshot?.commands.psql;
+
+  if (driver === "psycopg" || driver === "psycopg2") {
+    return `- For PostgreSQL inspection or statistics, use the snapshot-detected \`${driver}\` driver directly. Do not probe \`psql\` unless the user explicitly requested the CLI or execution contradicts the snapshot.`;
+  }
+  if (driver !== "psycopg" && driver !== "psycopg2" && psql === "available") {
+    return "- For PostgreSQL inspection or statistics, no usable Python PostgreSQL driver was confirmed but `psql` was detected, so use `psql` directly.";
+  }
+  if (
+    (driver === "none" || snapshot?.python.status === "unavailable") &&
+    psql === "unavailable"
+  ) {
+    return "- No Python PostgreSQL driver or `psql` was detected on the local ArcForge PATH. Do not repeat blind availability probes; use one task-appropriate alternative or explain the missing capability.";
+  }
+  if (
+    (driver === "none" || snapshot?.python.status === "unavailable") &&
+    psql === "unknown"
+  ) {
+    return "- No Python PostgreSQL driver was detected and `psql` is unknown. Check `psql` once with a PowerShell-safe targeted probe, then use the result without retry loops.";
+  }
+  return "- For PostgreSQL inspection or statistics, first check for a native Python driver with a PowerShell-safe one-liner such as `python -c \"import importlib.util as u; print('psycopg' if u.find_spec('psycopg') else ('psycopg2' if u.find_spec('psycopg2') else ''))\"`. Use the detected driver instead of probing `psql`; probe `psql` only when neither driver is available or the user explicitly requested the CLI.";
+}
+
 export function buildToolsSuffix(
   workdir: string,
   availableToolNames?: readonly string[],
   runtimePlatformInput?: RuntimePlatform,
+  runtimeEnvironmentInput?: RuntimeEnvironmentSnapshot,
 ) {
   const runtimePlatform = normalizeRuntimePlatform(runtimePlatformInput) ?? inferRuntimePlatform();
+  const runtimeEnvironment =
+    runtimeEnvironmentInput?.platform === runtimePlatform ? runtimeEnvironmentInput : undefined;
   const platformLabel = runtimePlatformLabel(runtimePlatform);
   const allowAll = availableToolNames === undefined;
   const toolNames = new Set(availableToolNames ?? []);
@@ -314,6 +378,10 @@ export function buildToolsSuffix(
     );
   }
 
+  if (runtimeEnvironment) {
+    sections.push(buildRuntimeEnvironmentSection(runtimeEnvironment));
+  }
+
   if (has("Bash")) {
     const bashPlatformLines =
       runtimePlatform === "windows"
@@ -321,7 +389,7 @@ export function buildToolsSuffix(
             `- Current platform: ${platformLabel}. The compatibility-named Bash tool runs native Windows PowerShell first, then pwsh; it does not use WSL.`,
             "- Write Windows PowerShell 5.1-compatible commands by default: `$env:NAME = 'value'`, `$null`, semicolon-separated statements, and quoted Windows paths.",
             "- Do not use POSIX-only syntax such as `export`, `nohup`, `/dev/null`, or shell `&&`.",
-            "- For PostgreSQL inspection or statistics, first check for a native Python driver with a PowerShell-safe one-liner such as `python -c \"import importlib.util as u; print('psycopg' if u.find_spec('psycopg') else ('psycopg2' if u.find_spec('psycopg2') else ''))\"`. Use the detected driver instead of probing `psql`; probe `psql` only when neither driver is available or the user explicitly requested the CLI.",
+            buildWindowsPostgresRoutingLine(runtimeEnvironment),
             has("Write")
               ? "- Never use POSIX heredocs such as `python - <<'PY'` or `<<EOF` on Windows. For multiline Python or SQL, use Write to create a temporary file, then execute it."
               : "- Never use POSIX heredocs such as `python - <<'PY'` or `<<EOF` on Windows. Keep inline code to a short PowerShell-safe `python -c` command; if multiline input is unavoidable, use a PowerShell here-string piped to the interpreter.",
@@ -684,6 +752,7 @@ export async function runAssistantWithTools(params: {
     modelConfig?: ProviderModelConfig;
   };
   runtimePlatform?: RuntimePlatform;
+  runtimeEnvironment?: RuntimeEnvironmentSnapshot;
   context: Context;
   workdir: string;
   sessionId?: string;
@@ -919,6 +988,7 @@ export async function runAssistantWithTools(params: {
       params.workdir,
       llmTools.map((tool) => tool.name),
       params.runtimePlatform,
+      params.runtimeEnvironment,
     );
     let currentSystemPrompt = params.context.systemPrompt;
     let pendingTurnOverridePromise: Promise<TurnContextOverride> | null = null;

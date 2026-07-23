@@ -48,7 +48,7 @@ import {
 import { runAssistantWithTools } from "../../../lib/chat/runner/agentRunner";
 import type { StreamDebugLogger } from "../../../lib/debug/agentDebug";
 import { assistantMessageToText } from "../../../lib/providers/llm";
-import { resolveRuntimePlatform } from "../../../lib/runtimePlatform";
+import { resolveRuntimeEnvironmentSnapshot } from "../../../lib/runtimePlatform";
 import {
   type AppSettings,
   type McpSettingsOp,
@@ -394,12 +394,14 @@ export async function runAgentConversationTurn(params: RunAgentConversationTurnP
   const fileState = createFileToolState();
   const todoState = getOrCreateTodoToolState(conversationId);
   const subagentScheduler = createSubagentScheduler();
-  const runtimePlatform = await resolveRuntimePlatform();
+  const runtimeEnvironment = await resolveRuntimeEnvironmentSnapshot();
+  const runtimePlatform = runtimeEnvironment.platform;
   const buildRegistryStartedAt = perfNowMs();
   const builtinRegistry = await buildBuiltinToolRegistry({
     workdir: effectiveWorkdir,
     providerId,
     runtimePlatform,
+    runtimeEnvironment,
     fileState,
     todoState,
     askUserQuestionConversationId: conversationId,
@@ -667,6 +669,7 @@ export async function runAgentConversationTurn(params: RunAgentConversationTurnP
         model,
         runtime,
         runtimePlatform,
+        runtimeEnvironment,
         context: agentContext,
         workdir: effectiveWorkdir,
         sessionId,

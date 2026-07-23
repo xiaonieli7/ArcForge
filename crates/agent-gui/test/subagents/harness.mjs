@@ -446,6 +446,8 @@ export async function createSubagentHarness(options = {}) {
       apiKey: "test-key",
       reasoning: "medium",
     },
+    runtimePlatform: options.runtimePlatform,
+    runtimeEnvironment: options.runtimeEnvironment,
     workdir: options.workdir ?? "/tmp/arcforge-subagent-test",
     sessionId: options.sessionId === null ? undefined : (options.sessionId ?? "parent-session"),
     templates: options.templates ?? [

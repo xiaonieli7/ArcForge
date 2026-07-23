@@ -79,6 +79,31 @@ const todoToolsPath = fileURLToPath(
   new URL("../../src/lib/tools/todoTools.ts", import.meta.url),
 );
 
+const runtimeEnvironmentSnapshot = {
+  platform: "windows",
+  shell: {
+    profile: "windows-powershell",
+    family: "powershell",
+    name: "powershell",
+    usesWsl: false,
+  },
+  commands: {
+    python: "unknown",
+    node: "unknown",
+    psql: "unknown",
+    git: "unknown",
+    docker: "unknown",
+  },
+  python: {
+    status: "unknown",
+    postgresDriver: "unknown",
+  },
+  source: "fallback",
+};
+let runtimeEnvironmentResolveCalls = 0;
+let runnerRuntimeEnvironment = null;
+let registryRuntimeEnvironment = null;
+
 const loader = createTsModuleLoader({
   mocks: {
     [agentRunnerPath]: {
@@ -86,6 +111,7 @@ const loader = createTsModuleLoader({
       // (1-based rounds, results paired by toolCallId) is pinned against the
       // real runner in agent-runner.test.mjs.
       async runAssistantWithTools(params) {
+        runnerRuntimeEnvironment = params.runtimeEnvironment;
         params.onTurnStart?.(1);
         params.onToolCall?.(parentToolCall, 1);
         params.onToolCall?.(cardToolCall, 1);
@@ -117,7 +143,8 @@ const loader = createTsModuleLoader({
       },
     },
     [builtinRegistryPath]: {
-      async buildBuiltinToolRegistry() {
+      async buildBuiltinToolRegistry(params) {
+        registryRuntimeEnvironment = params.runtimeEnvironment;
         return {
           tools: [],
           async executeToolCall() {
@@ -127,8 +154,9 @@ const loader = createTsModuleLoader({
       },
     },
     [runtimePlatformPath]: {
-      async resolveRuntimePlatform() {
-        return "win32";
+      async resolveRuntimeEnvironmentSnapshot() {
+        runtimeEnvironmentResolveCalls += 1;
+        return runtimeEnvironmentSnapshot;
       },
     },
     [memoryExtractionPath]: {
@@ -257,4 +285,7 @@ test("agent turn preserves suppressed parent Agent trace for cancellation persis
   );
   assert.deepEqual(visibleToolCalls, [cardId]);
   assert.equal(visibleToolCalls.includes(parentId), false);
+  assert.equal(runtimeEnvironmentResolveCalls, 1);
+  assert.equal(registryRuntimeEnvironment, runtimeEnvironmentSnapshot);
+  assert.equal(runnerRuntimeEnvironment, runtimeEnvironmentSnapshot);
 });

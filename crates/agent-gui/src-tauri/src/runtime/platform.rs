@@ -94,6 +94,76 @@ pub(crate) fn resolve_program_path_with_current_dir(
     }
 }
 
+/// Resolve a fixed executable name against the ArcForge process PATH without
+/// invoking a shell. Callers must keep the requested names on a hard-coded
+/// allowlist and must not expose the returned absolute path to the frontend.
+pub(crate) fn find_program_on_path(raw: &str) -> Option<PathBuf> {
+    let trimmed = raw.trim();
+    if trimmed.is_empty() {
+        return None;
+    }
+
+    let expanded = expand_tilde_path(trimmed);
+
+    #[cfg(windows)]
+    {
+        return resolve_windows_program_path(trimmed, &expanded, None);
+    }
+
+    #[cfg(not(windows))]
+    {
+        if expanded.is_absolute() || trimmed.contains('/') {
+            return is_executable_file(&expanded).then_some(expanded);
+        }
+
+        #[cfg(target_os = "macos")]
+        {
+            for dir in [
+                PathBuf::from("/opt/homebrew/bin"),
+                PathBuf::from("/usr/local/bin"),
+                PathBuf::from("/usr/bin"),
+                PathBuf::from("/bin"),
+                PathBuf::from("/usr/sbin"),
+                PathBuf::from("/sbin"),
+            ] {
+                let candidate = dir.join(trimmed);
+                if is_executable_file(&candidate) {
+                    return Some(candidate);
+                }
+            }
+            if let Some(home) = dirs::home_dir() {
+                let candidate = home.join(".local/bin").join(trimmed);
+                if is_executable_file(&candidate) {
+                    return Some(candidate);
+                }
+            }
+        }
+
+        let path_var = env::var_os("PATH")?;
+        for dir in env::split_paths(&path_var) {
+            let candidate = dir.join(trimmed);
+            if is_executable_file(&candidate) {
+                return Some(candidate);
+            }
+        }
+        None
+    }
+}
+
+#[cfg(unix)]
+fn is_executable_file(path: &Path) -> bool {
+    use std::os::unix::fs::PermissionsExt;
+
+    path.metadata()
+        .map(|metadata| metadata.is_file() && metadata.permissions().mode() & 0o111 != 0)
+        .unwrap_or(false)
+}
+
+#[cfg(all(not(unix), not(windows)))]
+fn is_executable_file(path: &Path) -> bool {
+    path.is_file()
+}
+
 #[cfg(windows)]
 fn resolve_windows_program_path(
     raw: &str,

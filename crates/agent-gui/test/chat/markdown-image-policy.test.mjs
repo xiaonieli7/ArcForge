@@ -339,6 +339,116 @@ test("agent Bash compatibility rules are native PowerShell-first on Windows", ()
   assert.match(suffix, /require `nohup` and log redirection/);
 });
 
+test("agent uses a task-local runtime snapshot to choose the first PostgreSQL path", () => {
+  const snapshot = {
+    platform: "windows",
+    architecture: "x86_64",
+    shell: {
+      profile: "windows-powershell",
+      family: "powershell",
+      name: "powershell",
+      usesWsl: false,
+    },
+    commands: {
+      python: "available",
+      node: "available",
+      psql: "unavailable",
+      git: "available",
+      docker: "unknown",
+    },
+    python: {
+      status: "available",
+      launcher: "python",
+      postgresDriver: "psycopg",
+    },
+    source: "backend",
+  };
+  const suffix = agentRunnerModule.buildToolsSuffix(
+    "C:/workspace",
+    ["Bash", "Write", "ManagedProcess"],
+    "windows",
+    snapshot,
+  );
+
+  assert.match(suffix, /## Local Runtime Snapshot/);
+  assert.match(suffix, /OS: Windows \(x86_64\)/);
+  assert.match(suffix, /Python detected via `python`/);
+  assert.match(suffix, /psql not detected on the ArcForge PATH/);
+  assert.match(suffix, /Python PostgreSQL driver: `psycopg` detected/);
+  assert.match(suffix, /captured this snapshot once at the start of the current task/);
+  assert.match(suffix, /use the snapshot-detected `psycopg` driver directly/);
+  assert.doesNotMatch(suffix, /first check for a native Python driver/);
+  assert.doesNotMatch(suffix, /ignore previous instructions/);
+});
+
+test("agent routes to psql when the runtime snapshot has no Python PostgreSQL driver", () => {
+  const suffix = agentRunnerModule.buildToolsSuffix(
+    "C:/workspace",
+    ["Bash", "Write"],
+    "windows",
+    {
+      platform: "windows",
+      shell: {
+        profile: "windows-powershell",
+        family: "powershell",
+        name: "powershell",
+        usesWsl: false,
+      },
+      commands: {
+        python: "available",
+        node: "unknown",
+        psql: "available",
+        git: "unknown",
+        docker: "unknown",
+      },
+      python: {
+        status: "available",
+        launcher: "python",
+        postgresDriver: "none",
+      },
+      source: "backend",
+    },
+  );
+
+  assert.match(suffix, /no `psycopg` or `psycopg2` driver detected/);
+  assert.match(suffix, /`psql` was detected, so use `psql` directly/);
+  assert.doesNotMatch(suffix, /PowerShell-safe one-liner/);
+});
+
+test("readonly delegated agents still receive the shared runtime snapshot", () => {
+  const suffix = agentRunnerModule.buildToolsSuffix(
+    "C:/workspace",
+    ["Read", "Grep", "SendMessage"],
+    "windows",
+    {
+      platform: "windows",
+      shell: {
+        profile: "windows-powershell",
+        family: "powershell",
+        name: "powershell",
+        usesWsl: false,
+      },
+      commands: {
+        python: "available",
+        node: "available",
+        psql: "unavailable",
+        git: "available",
+        docker: "unknown",
+      },
+      python: {
+        status: "available",
+        launcher: "python",
+        postgresDriver: "psycopg",
+      },
+      source: "backend",
+    },
+  );
+
+  assert.match(suffix, /## Local Runtime Snapshot/);
+  assert.match(suffix, /shares it with all rounds and delegated agents/);
+  assert.doesNotMatch(suffix, /## Bash/);
+});
+
 test("agent PostgreSQL shell guidance stays Windows-specific on Linux", () => {
   const suffix = agentRunnerModule.buildToolsSuffix(
     "/workspace",
@@ -352,6 +462,43 @@ test("agent PostgreSQL shell guidance stays Windows-specific on Linux", () => {
   assert.doesNotMatch(suffix, /probe `psql` only when neither driver is available/);
   assert.doesNotMatch(suffix, /Never use POSIX heredocs/);
   assert.doesNotMatch(suffix, /For multiline Python or SQL, use Write to create a temporary file/);
+});
+
+test("agent runtime snapshot is platform-specific and local-only on Linux", () => {
+  const suffix = agentRunnerModule.buildToolsSuffix(
+    "/workspace",
+    ["Bash", "ManagedProcess"],
+    "linux",
+    {
+      platform: "linux",
+      architecture: "aarch64",
+      shell: {
+        profile: "posix-bash",
+        family: "posix",
+        name: "bash",
+        usesWsl: false,
+      },
+      commands: {
+        python: "available",
+        node: "unavailable",
+        psql: "available",
+        git: "available",
+        docker: "unavailable",
+      },
+      python: {
+        status: "available",
+        launcher: "python3",
+        postgresDriver: "psycopg2",
+      },
+      source: "backend",
+    },
+  );
+
+  assert.match(suffix, /OS: Linux \(aarch64\)/);
+  assert.match(suffix, /Preferred command shell: `bash` \(posix/);
+  assert.match(suffix, /local ArcForge host only/);
+  assert.doesNotMatch(suffix, /Current platform: Windows/);
+  assert.doesNotMatch(suffix, /Windows PowerShell 5\.1-compatible/);
 });
 
 test("agent Windows multiline guidance does not point to Write when Write is unavailable", () => {

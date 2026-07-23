@@ -1,6 +1,6 @@
 import type { ToolCall, ToolResultMessage } from "@earendil-works/pi-ai";
 import { homeDir } from "@tauri-apps/api/path";
-import type { RuntimePlatform } from "../runtimePlatform";
+import type { RuntimeEnvironmentSnapshot, RuntimePlatform } from "../runtimePlatform";
 import {
   type McpSettings,
   type McpSettingsOp,
@@ -126,6 +126,7 @@ type BuildBuiltinBaseToolRegistryParams = {
   workdir: string;
   providerId: ProviderId;
   runtimePlatform?: RuntimePlatform;
+  runtimeEnvironment?: RuntimeEnvironmentSnapshot;
   fileState: FileToolState;
   skillsEnabled: boolean;
   skillsRootDir?: string;
@@ -302,6 +303,7 @@ export async function buildBuiltinToolRegistry(
       model: subagentRuntime.model,
       runtime: subagentRuntime.runtime,
       runtimePlatform: params.runtimePlatform,
+      runtimeEnvironment: params.runtimeEnvironment,
       workdir: params.workdir,
       resolveHomeDir,
       sessionId: subagentRuntime.sessionId,
