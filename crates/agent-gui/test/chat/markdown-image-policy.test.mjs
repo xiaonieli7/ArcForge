@@ -307,16 +307,64 @@ test("agent tool rules route installed Skill scripts through skill cwd", () => {
 test("agent Bash compatibility rules are native PowerShell-first on Windows", () => {
   const suffix = agentRunnerModule.buildToolsSuffix(
     "/workspace",
-    ["Bash", "ManagedProcess"],
+    ["Bash", "Write", "Delete", "ManagedProcess"],
     "windows",
   );
   assert.match(suffix, /Current platform: Windows/);
   assert.match(suffix, /runs native Windows PowerShell first/);
   assert.match(suffix, /does not use WSL/);
   assert.match(suffix, /Windows PowerShell 5\.1-compatible commands/);
+  assert.match(
+    suffix,
+    /For PostgreSQL inspection or statistics, first check for a native Python driver with a PowerShell-safe one-liner/,
+  );
+  assert.match(suffix, /u\.find_spec\('psycopg'\)/);
+  assert.match(suffix, /u\.find_spec\('psycopg2'\)/);
+  assert.match(
+    suffix,
+    /probe `psql` only when neither driver is available or the user explicitly requested the CLI/,
+  );
+  assert.match(suffix, /Never use POSIX heredocs such as `python - <<'PY'` or `<<EOF` on Windows/);
+  assert.match(
+    suffix,
+    /For multiline Python or SQL, use Write to create a temporary file, then execute it/,
+  );
+  assert.match(suffix, /Do not embed credentials in temporary scripts/);
+  assert.match(
+    suffix,
+    /Pass secrets through environment variables or process input where feasible, and remove temporary files after use/,
+  );
   assert.match(suffix, /`&` is the call operator/);
   assert.doesNotMatch(suffix, /Git Bash with POSIX semantics/);
   assert.match(suffix, /require `nohup` and log redirection/);
+});
+
+test("agent PostgreSQL shell guidance stays Windows-specific on Linux", () => {
+  const suffix = agentRunnerModule.buildToolsSuffix(
+    "/workspace",
+    ["Bash", "Write", "ManagedProcess"],
+    "linux",
+  );
+
+  assert.match(suffix, /Current platform: Linux\. Bash runs through POSIX shells/);
+  assert.match(suffix, /Use POSIX\/bash-compatible commands/);
+  assert.doesNotMatch(suffix, /PowerShell-safe one-liner/);
+  assert.doesNotMatch(suffix, /probe `psql` only when neither driver is available/);
+  assert.doesNotMatch(suffix, /Never use POSIX heredocs/);
+  assert.doesNotMatch(suffix, /For multiline Python or SQL, use Write to create a temporary file/);
+});
+
+test("agent Windows multiline guidance does not point to Write when Write is unavailable", () => {
+  const suffix = agentRunnerModule.buildToolsSuffix(
+    "C:/workspace",
+    ["Bash", "ManagedProcess"],
+    "windows",
+  );
+
+  assert.match(suffix, /Never use POSIX heredocs/);
+  assert.match(suffix, /short PowerShell-safe `python -c` command/);
+  assert.match(suffix, /PowerShell here-string piped to the interpreter/);
+  assert.doesNotMatch(suffix, /use Write to create a temporary file/);
 });
 
 test("fs tool descriptions keep Image as the only display path for images", () => {

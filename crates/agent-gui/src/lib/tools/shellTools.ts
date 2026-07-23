@@ -263,6 +263,159 @@ function validateBashBackgroundStdio(command: string) {
   );
 }
 
+function commandUsesPosixHeredoc(command: string) {
+  let quote: "'" | '"' | null = null;
+  let hereStringQuote: "'" | '"' | null = null;
+  let inComment = false;
+  let inBlockComment = false;
+  let atLineStart = true;
+
+  for (let i = 0; i < command.length; i += 1) {
+    const ch = command[i];
+    const next = command[i + 1] ?? "";
+
+    if (hereStringQuote) {
+      if (atLineStart && ch === hereStringQuote && next === "@") {
+        hereStringQuote = null;
+        atLineStart = false;
+        i += 1;
+        continue;
+      }
+      if (ch === "\n") {
+        atLineStart = true;
+      } else if (ch !== "\r") {
+        atLineStart = false;
+      }
+      continue;
+    }
+
+    if (inBlockComment) {
+      if (ch === "#" && next === ">") {
+        inBlockComment = false;
+        atLineStart = false;
+        i += 1;
+        continue;
+      }
+      if (ch === "\n") {
+        atLineStart = true;
+      } else if (ch !== "\r") {
+        atLineStart = false;
+      }
+      continue;
+    }
+
+    if (inComment) {
+      if (ch === "\n") {
+        inComment = false;
+        atLineStart = true;
+      }
+      continue;
+    }
+
+    if (quote) {
+      if (quote === "'" && ch === "'" && next === "'") {
+        i += 1;
+        continue;
+      }
+      if (quote === '"' && ch === "`") {
+        i += 1;
+        continue;
+      }
+      if (ch === quote) {
+        quote = null;
+      }
+      if (ch === "\n") {
+        atLineStart = true;
+      } else if (ch !== "\r") {
+        atLineStart = false;
+      }
+      continue;
+    }
+
+    if (
+      ch === "@" &&
+      (next === "'" || next === '"') &&
+      (command[i + 2] === "\n" ||
+        (command[i + 2] === "\r" && command[i + 3] === "\n"))
+    ) {
+      hereStringQuote = next;
+      atLineStart = false;
+      i += 1;
+      continue;
+    }
+
+    if (ch === "<" && next === "#") {
+      inBlockComment = true;
+      atLineStart = false;
+      i += 1;
+      continue;
+    }
+
+    if (ch === "#") {
+      inComment = true;
+      continue;
+    }
+
+    if (ch === "'" || ch === '"') {
+      quote = ch;
+      atLineStart = false;
+      continue;
+    }
+
+    if (ch === "`") {
+      i += 1;
+      atLineStart = false;
+      continue;
+    }
+
+    if (ch === "<" && next === "<") {
+      let delimiterStart = i + 2;
+      if (command[delimiterStart] === "<") {
+        return true;
+      }
+      if (command[delimiterStart] === "-") {
+        delimiterStart += 1;
+      }
+      while (command[delimiterStart] === " " || command[delimiterStart] === "\t") {
+        delimiterStart += 1;
+      }
+
+      const delimiterQuote = command[delimiterStart];
+      if (delimiterQuote === "'" || delimiterQuote === '"') {
+        const delimiterEnd = command.indexOf(delimiterQuote, delimiterStart + 1);
+        if (delimiterEnd > delimiterStart + 1) {
+          return true;
+        }
+      } else if (
+        delimiterStart < command.length &&
+        !/[\s;&|<>()]/.test(command[delimiterStart])
+      ) {
+        return true;
+      }
+    }
+
+    if (ch === "\n") {
+      atLineStart = true;
+    } else if (ch !== "\r") {
+      atLineStart = false;
+    }
+  }
+
+  return false;
+}
+
+function validateWindowsPowerShellCommand(command: string) {
+  if (!commandUsesPosixHeredoc(command)) return;
+
+  throw new Error(
+    [
+      "POSIX heredoc syntax (`<<EOF` or `<<'EOF'`) is not supported by native Windows PowerShell 5.1.",
+      "If Write is available, use it to create a temporary .py or .sql file and then execute it;",
+      "otherwise use a PowerShell here-string or a simple `python -c` one-liner.",
+    ].join(" "),
+  );
+}
+
 function normalizeProcessAction(input: unknown) {
   const action = typeof input === "string" ? input.trim().toLowerCase() : "";
   if (action === "start" || action === "status" || action === "read_log" || action === "stop") {
@@ -381,7 +534,7 @@ export function createShellTools(params: {
   const platformLabel = runtimePlatformLabel(runtimePlatform);
   const shellPolicy =
     runtimePlatform === "windows"
-      ? "On Windows, the compatibility-named Bash tool runs native Windows PowerShell first, then pwsh, and never uses WSL. Write Windows PowerShell 5.1-compatible syntax by default: `$env:NAME = 'value'`, `$null`, semicolon-separated statements, and quoted Windows paths. Do not use POSIX-only syntax such as `export`, `nohup`, `/dev/null`, or shell `&&`. A verified Git Bash installation is compatibility-only and is never preferred over native PowerShell."
+      ? "On Windows, the compatibility-named Bash tool runs native Windows PowerShell first, then pwsh, and never uses WSL. Write Windows PowerShell 5.1-compatible syntax by default: `$env:NAME = 'value'`, `$null`, semicolon-separated statements, and quoted Windows paths. Do not use POSIX-only syntax such as `export`, `nohup`, `/dev/null`, shell `&&`, or heredocs such as `<<EOF`. A verified Git Bash installation is compatibility-only and is never preferred over native PowerShell."
       : runtimePlatform === "macos"
         ? "macOS runs Bash commands with POSIX shell syntax: zsh first, then Bash, then sh."
         : "Linux runs Bash commands with POSIX shell syntax: Bash first, then zsh, then sh.";
@@ -799,6 +952,9 @@ export function createShellTools(params: {
         const command =
           typeof toolCall.arguments?.command === "string" ? toolCall.arguments.command.trim() : "";
         if (!command) throw new Error('ManagedProcess.command is required for action="start"');
+        if (runtimePlatform === "windows") {
+          validateWindowsPowerShellCommand(command);
+        }
         if (runtimePlatform !== "windows" && scanShellSyntax(command).background) {
           throw new Error(
             "ManagedProcess.command must be a foreground command. Remove `&`; ManagedProcess starts it in the background and captures logs automatically.",
@@ -979,6 +1135,22 @@ export function createShellTools(params: {
         isError: true,
         timestamp: now,
       };
+    }
+
+    if (runtimePlatform === "windows") {
+      try {
+        validateWindowsPowerShellCommand(command);
+      } catch (err) {
+        return {
+          role: "toolResult",
+          toolCallId: toolCall.id,
+          toolName: toolCall.name,
+          content: [{ type: "text", text: asErrorMessage(err) }],
+          details: {},
+          isError: true,
+          timestamp: now,
+        };
+      }
     }
 
     let cwdResolved: ResolvedPath;

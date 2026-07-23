@@ -321,6 +321,11 @@ export function buildToolsSuffix(
             `- Current platform: ${platformLabel}. The compatibility-named Bash tool runs native Windows PowerShell first, then pwsh; it does not use WSL.`,
             "- Write Windows PowerShell 5.1-compatible commands by default: `$env:NAME = 'value'`, `$null`, semicolon-separated statements, and quoted Windows paths.",
             "- Do not use POSIX-only syntax such as `export`, `nohup`, `/dev/null`, or shell `&&`.",
+            "- For PostgreSQL inspection or statistics, first check for a native Python driver with a PowerShell-safe one-liner such as `python -c \"import importlib.util as u; print('psycopg' if u.find_spec('psycopg') else ('psycopg2' if u.find_spec('psycopg2') else ''))\"`. Use the detected driver instead of probing `psql`; probe `psql` only when neither driver is available or the user explicitly requested the CLI.",
+            has("Write")
+              ? "- Never use POSIX heredocs such as `python - <<'PY'` or `<<EOF` on Windows. For multiline Python or SQL, use Write to create a temporary file, then execute it."
+              : "- Never use POSIX heredocs such as `python - <<'PY'` or `<<EOF` on Windows. Keep inline code to a short PowerShell-safe `python -c` command; if multiline input is unavoidable, use a PowerShell here-string piped to the interpreter.",
+            "- Do not embed credentials in temporary scripts. Pass secrets through environment variables or process input where feasible, and remove temporary files after use.",
             "- In PowerShell, `&` is the call operator, not POSIX background syntax. Use ManagedProcess for dev servers, watchers, or any long-running process.",
           ]
         : [

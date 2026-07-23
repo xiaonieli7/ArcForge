@@ -320,6 +320,132 @@ test("Bash compatibility tool allows the PowerShell call operator on Windows", a
   assert.equal(calls.length, 1);
 });
 
+test("Bash tool rejects POSIX heredocs before invoking Windows PowerShell", async () => {
+  const calls = [];
+  const loader = createTsModuleLoader({
+    mocks: {
+      "@tauri-apps/api/core": {
+        async invoke(command, args) {
+          calls.push({ command, args });
+          throw new Error("unexpected invoke");
+        },
+      },
+    },
+  });
+
+  const { createShellTools } = loader.loadModule("src/lib/tools/shellTools.ts");
+  const bundle = createShellTools({
+    workdir: "/repo",
+    providerId: "codex",
+    runtimePlatform: "windows",
+  });
+  const commands = [
+    "python - <<'PY'\nprint('ready')\nPY",
+    "python <<EOF\nprint('ready')\nEOF",
+    "psql connection-string << 'SQL'\nselect 1;\nSQL",
+    "  py -3 - <<-PY\r\nprint('ready')\r\nPY",
+    'python - <<< "print(\'ready\')"',
+  ];
+
+  for (const command of commands) {
+    const result = await bundle.executeToolCall(createBashCall(command));
+    assert.equal(result.isError, true);
+    assert.match(result.content[0].text, /POSIX heredoc syntax/);
+    assert.match(result.content[0].text, /Windows PowerShell 5\.1/);
+    assert.match(result.content[0].text, /If Write is available/);
+    assert.match(result.content[0].text, /temporary \.py or \.sql file/);
+    assert.match(result.content[0].text, /PowerShell here-string/);
+    assert.match(result.content[0].text, /python -c/);
+  }
+  assert.deepEqual(calls, []);
+});
+
+test("Bash tool allows PowerShell comparisons, redirects, and here-strings on Windows", async () => {
+  const calls = [];
+  const loader = createTsModuleLoader({
+    mocks: {
+      "@tauri-apps/api/core": {
+        async invoke(command, args) {
+          calls.push({ command, args });
+          assert.equal(command, "shell_run");
+          return {
+            exit_code: 0,
+            shell: "powershell",
+            platform: "windows",
+            profile: "windows-powershell",
+            shell_family: "powershell",
+            stdout: "ok\n",
+            stderr: "",
+            stdout_truncated: false,
+            stderr_truncated: false,
+            timed_out: false,
+            cancelled: false,
+            effective_timeout_ms: args.timeout_ms,
+            duration_ms: 12,
+          };
+        },
+      },
+    },
+  });
+
+  const { createShellTools } = loader.loadModule("src/lib/tools/shellTools.ts");
+  const bundle = createShellTools({
+    workdir: "/repo",
+    providerId: "codex",
+    runtimePlatform: "windows",
+  });
+  const commands = [
+    "$value = 3; if ($value -lt 5) { Write-Output 'ok' }",
+    "Get-Content '.\\input.txt' > '.\\output.txt'; Write-Error 'note' 2>> '.\\errors.log'",
+    'python -c "print(\'ok\')"',
+    "Write-Output \"python - <<'PY'\"",
+    "# python - <<'PY'\nWrite-Output 'ok'",
+    "<#\npython - <<'PY'\n#>\nWrite-Output 'ok'",
+    "$script = @'\npython - <<'PY'\nprint('ready')\nPY\n'@\nWrite-Output $script",
+    '$sql = @"\nselect \'value <<EOF\';\n"@\nWrite-Output $sql',
+  ];
+
+  for (const command of commands) {
+    const result = await bundle.executeToolCall(createBashCall(command));
+    assert.equal(result.isError, false);
+  }
+  assert.equal(calls.length, commands.length);
+});
+
+test("ManagedProcess rejects POSIX heredocs before invoking the Windows backend", async () => {
+  const calls = [];
+  const loader = createTsModuleLoader({
+    mocks: {
+      "@tauri-apps/api/core": {
+        async invoke(command, args) {
+          calls.push({ command, args });
+          throw new Error("unexpected invoke");
+        },
+      },
+    },
+  });
+
+  const { createShellTools } = loader.loadModule("src/lib/tools/shellTools.ts");
+  const bundle = createShellTools({
+    workdir: "/repo",
+    providerId: "claude_code",
+    runtimePlatform: "windows",
+  });
+  const result = await bundle.executeToolCall({
+    type: "toolCall",
+    id: "managed-start-heredoc",
+    name: "ManagedProcess",
+    arguments: {
+      action: "start",
+      command: "python <<EOF\nprint('ready')\nEOF",
+    },
+  });
+
+  assert.equal(result.isError, true);
+  assert.match(result.content[0].text, /POSIX heredoc syntax/);
+  assert.deepEqual(calls, []);
+});
+
 function createWindowsFailureLoader(
   shellFamily,
   shell,
