@@ -11,6 +11,7 @@ import { HostedSearchGroupView } from "./HostedSearchGroupView";
 import { LazyCollapse } from "./LazyCollapse";
 import { AssistantStatus, CompactingText, VibingText } from "./StatusText";
 import { MemoToolCallItem } from "./ToolCallItem";
+import { getNativeDisplayFilePayload, NativeDisplayFileBlock } from "./ToolFiles";
 import { getNativeDisplayImagePayload, NativeDisplayImageBlock } from "./ToolImages";
 import { ToolTraceGroup } from "./ToolTraceGroup";
 import { UsagePanel } from "./UsagePanel";
@@ -245,12 +246,21 @@ export const RoundContent = memo(function RoundContent(props: {
         }
 
         if (block.kind === "tool") {
+          const displayFilePayload = getNativeDisplayFilePayload(block.item);
+          if (displayFilePayload) {
+            return <NativeDisplayFileBlock key={block.key} files={displayFilePayload} />;
+          }
+
           const displayImagePayload = getNativeDisplayImagePayload(block.item);
           if (displayImagePayload) {
             return <NativeDisplayImageBlock key={block.key} payload={displayImagePayload} />;
           }
 
           if (block.item.toolCall.name === "Image" && !block.item.toolResult?.isError) {
+            return null;
+          }
+
+          if (block.item.toolCall.name === "PresentFile" && !block.item.toolResult?.isError) {
             return null;
           }
 

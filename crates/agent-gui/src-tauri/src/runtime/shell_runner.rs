@@ -317,19 +317,78 @@ fn windows_cmd_command(cmd: &str) -> String {
 }
 
 #[cfg(windows)]
-fn is_windows_system32_dir(dir: &Path) -> bool {
-    let Some(root) = std::env::var_os("SystemRoot") else {
-        return false;
-    };
-    let normalize = |p: &Path| {
-        p.to_string_lossy()
-            .trim_end_matches(['\\', '/'])
-            .to_ascii_lowercase()
-    };
-    normalize(dir) == normalize(&Path::new(&root).join("System32"))
+fn normalize_windows_path(path: &Path) -> String {
+    path.to_string_lossy()
+        .replace('/', "\\")
+        .trim_end_matches('\\')
+        .to_ascii_lowercase()
 }
 
-/// Git Bash 解析（对标 Claude Code）：env 覆盖 → PATH → Git for Windows 默认安装路径。
+#[cfg(windows)]
+fn is_windows_wsl_bash_launcher(path: &Path) -> bool {
+    let normalized = normalize_windows_path(path);
+    normalized.ends_with(r"\windows\system32\bash.exe")
+        || normalized.ends_with(r"\windows\sysnative\bash.exe")
+        || (normalized.contains(r"\microsoft\windowsapps\") && normalized.ends_with(r"\bash.exe"))
+}
+
+#[cfg(windows)]
+fn find_git_bash_under_root(root: &Path) -> Option<PathBuf> {
+    let has_git_for_windows_marker = [
+        root.join(r"cmd\git.exe"),
+        root.join(r"bin\git.exe"),
+        root.join("git-bash.exe"),
+    ]
+    .iter()
+    .any(|path| path.is_file());
+    if !has_git_for_windows_marker {
+        return None;
+    }
+
+    [root.join(r"bin\bash.exe"), root.join(r"usr\bin\bash.exe")]
+        .into_iter()
+        .find(|path| path.is_file() && !is_windows_wsl_bash_launcher(path))
+}
+
+#[cfg(windows)]
+fn git_root_from_path_dir(dir: &Path) -> Option<PathBuf> {
+    let leaf = dir.file_name()?.to_string_lossy();
+    if leaf.eq_ignore_ascii_case("bin") {
+        let parent = dir.parent()?;
+        if parent
+            .file_name()
+            .is_some_and(|name| name.to_string_lossy().eq_ignore_ascii_case("usr"))
+        {
+            return parent.parent().map(Path::to_path_buf);
+        }
+    }
+    if leaf.eq_ignore_ascii_case("cmd") || leaf.eq_ignore_ascii_case("bin") {
+        return dir.parent().map(Path::to_path_buf);
+    }
+    None
+}
+
+#[cfg(windows)]
+fn find_git_bash_from_path_dirs<I>(dirs: I) -> Option<PathBuf>
+where
+    I: IntoIterator<Item = PathBuf>,
+{
+    for dir in dirs {
+        let Some(root) = git_root_from_path_dir(&dir) else {
+            continue;
+        };
+        if let Some(bash) = find_git_bash_under_root(&root) {
+            return Some(bash);
+        }
+    }
+    None
+}
+
+/// Git Bash 解析：env 覆盖 → Git-aware PATH → Git for Windows 标准安装路径。
+///
+/// 不能把 PATH 中任意 `bash.exe` 当成 Git Bash。Windows 自带的
+/// `System32\bash.exe` 和 WindowsApps 别名都是 WSL 启动器；误选它们会让
+/// 完全不依赖 WSL 的本地任务触发 WSL2 磁盘挂载错误。
 #[cfg(windows)]
 fn find_git_bash() -> Option<PathBuf> {
     for var in ["ARCFORGE_GIT_BASH_PATH", "CLAUDE_CODE_GIT_BASH_PATH"] {
@@ -337,7 +396,7 @@ fn find_git_bash() -> Option<PathBuf> {
             let trimmed = raw.trim().trim_matches('"');
             if !trimmed.is_empty() {
                 let path = expand_tilde_path(trimmed);
-                if path.is_file() {
+                if path.is_file() && !is_windows_wsl_bash_launcher(&path) {
                     return Some(path);
                 }
             }
@@ -345,31 +404,25 @@ fn find_git_bash() -> Option<PathBuf> {
     }
 
     let path_var = std::env::var_os("PATH").unwrap_or_default();
-    for dir in std::env::split_paths(&path_var) {
-        // System32 下的 bash.exe 是 WSL 启动器，不是 Git Bash。
-        if is_windows_system32_dir(&dir) {
-            continue;
-        }
-        let candidate = dir.join("bash.exe");
-        if candidate.is_file() {
-            return Some(candidate);
-        }
+    if let Some(bash) = find_git_bash_from_path_dirs(std::env::split_paths(&path_var)) {
+        return Some(bash);
     }
 
     let roots = ["ProgramFiles", "ProgramW6432", "ProgramFiles(x86)"]
         .iter()
         .filter_map(|var| std::env::var_os(var).map(PathBuf::from))
+        .chain(
+            std::env::var_os("LOCALAPPDATA")
+                .map(PathBuf::from)
+                .map(|root| root.join("Programs")),
+        )
         .chain([
             PathBuf::from(r"C:\Program Files"),
             PathBuf::from(r"C:\Program Files (x86)"),
         ]);
     for root in roots {
-        // bin\bash.exe 是带 MSYS 环境注入的启动器，优先于 usr\bin 的裸 bash。
-        for rel in [r"Git\bin\bash.exe", r"Git\usr\bin\bash.exe"] {
-            let candidate = root.join(rel);
-            if candidate.is_file() {
-                return Some(candidate);
-            }
+        if let Some(bash) = find_git_bash_under_root(&root.join("Git")) {
+            return Some(bash);
         }
     }
     None
@@ -381,6 +434,12 @@ pub(crate) struct ShellExecutionProfile {
     pub profile: &'static str,
     pub shell_family: &'static str,
     pub display_shell: &'static str,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ShellPreference {
+    Native,
+    PosixCompatible,
 }
 
 struct ShellCandidate {
@@ -395,42 +454,36 @@ pub(crate) struct SpawnedPlatformShell {
     pub profile: ShellExecutionProfile,
 }
 
-fn platform_shell_candidates(cmd: &str) -> Vec<ShellCandidate> {
+#[cfg(windows)]
+fn windows_git_bash_candidate(cmd: &str, bash: PathBuf) -> ShellCandidate {
+    ShellCandidate {
+        profile: ShellExecutionProfile {
+            platform: "windows",
+            profile: "windows-git-bash",
+            shell_family: "posix",
+            display_shell: "bash",
+        },
+        program: bash,
+        // 非登录 -c：-lc 会执行 /etc/profile 并 cd $HOME，破坏 cwd 语义。
+        args: vec!["-c".to_string(), cmd.to_string()],
+        augment_macos_path: false,
+    }
+}
+
+fn platform_shell_candidates(cmd: &str, preference: ShellPreference) -> Vec<ShellCandidate> {
+    #[cfg(not(windows))]
+    let _ = preference;
+
     #[cfg(windows)]
     {
         let mut candidates = Vec::new();
-        if let Some(bash) = find_git_bash() {
-            candidates.push(ShellCandidate {
-                profile: ShellExecutionProfile {
-                    platform: "windows",
-                    profile: "windows-git-bash",
-                    shell_family: "posix",
-                    display_shell: "bash",
-                },
-                program: bash,
-                // 非登录 -c：-lc 会执行 /etc/profile 并 cd $HOME，破坏 cwd 语义。
-                args: vec!["-c".to_string(), cmd.to_string()],
-                augment_macos_path: false,
-            });
+        let git_bash = find_git_bash();
+        if preference == ShellPreference::PosixCompatible {
+            if let Some(bash) = git_bash.clone() {
+                candidates.push(windows_git_bash_candidate(cmd, bash));
+            }
         }
         let powershell_command = windows_powershell_command(cmd);
-        candidates.push(ShellCandidate {
-            profile: ShellExecutionProfile {
-                platform: "windows",
-                profile: "windows-pwsh",
-                shell_family: "powershell",
-                display_shell: "pwsh",
-            },
-            program: PathBuf::from("pwsh"),
-            args: vec![
-                "-NoLogo".to_string(),
-                "-NoProfile".to_string(),
-                "-NonInteractive".to_string(),
-                "-Command".to_string(),
-                powershell_command.clone(),
-            ],
-            augment_macos_path: false,
-        });
         candidates.push(ShellCandidate {
             profile: ShellExecutionProfile {
                 platform: "windows",
@@ -446,10 +499,34 @@ fn platform_shell_candidates(cmd: &str) -> Vec<ShellCandidate> {
                 "-ExecutionPolicy".to_string(),
                 "Bypass".to_string(),
                 "-Command".to_string(),
+                powershell_command.clone(),
+            ],
+            augment_macos_path: false,
+        });
+        candidates.push(ShellCandidate {
+            profile: ShellExecutionProfile {
+                platform: "windows",
+                profile: "windows-pwsh",
+                shell_family: "powershell",
+                display_shell: "pwsh",
+            },
+            program: PathBuf::from("pwsh"),
+            args: vec![
+                "-NoLogo".to_string(),
+                "-NoProfile".to_string(),
+                "-NonInteractive".to_string(),
+                "-Command".to_string(),
                 powershell_command,
             ],
             augment_macos_path: false,
         });
+        // Chat/runtime shell calls are native-first. Explicit Bash automation
+        // keeps its historical Git Bash-first behavior without ever using WSL.
+        if preference == ShellPreference::Native {
+            if let Some(bash) = git_bash {
+                candidates.push(windows_git_bash_candidate(cmd, bash));
+            }
+        }
         candidates.push(ShellCandidate {
             profile: ShellExecutionProfile {
                 platform: "windows",
@@ -550,7 +627,7 @@ fn platform_shell_candidates(cmd: &str) -> Vec<ShellCandidate> {
 
 #[cfg(test)]
 fn default_platform_shell_profile() -> ShellExecutionProfile {
-    platform_shell_candidates("")
+    platform_shell_candidates("", ShellPreference::Native)
         .into_iter()
         .next()
         .map(|candidate| candidate.profile)
@@ -566,6 +643,25 @@ pub(crate) fn spawn_platform_shell_command<F>(
     command: &str,
     cwd: &Path,
     envs: &[(String, String)],
+    stdio_factory: F,
+) -> Result<SpawnedPlatformShell, String>
+where
+    F: FnMut() -> io::Result<(Stdio, Stdio)>,
+{
+    spawn_platform_shell_command_with_preference(
+        command,
+        cwd,
+        envs,
+        ShellPreference::Native,
+        stdio_factory,
+    )
+}
+
+fn spawn_platform_shell_command_with_preference<F>(
+    command: &str,
+    cwd: &Path,
+    envs: &[(String, String)],
+    preference: ShellPreference,
     mut stdio_factory: F,
 ) -> Result<SpawnedPlatformShell, String>
 where
@@ -574,7 +670,7 @@ where
     let mut errors: Vec<String> = Vec::new();
     let system_proxy_envs = crate::services::system_proxy::shell_proxy_envs()?;
 
-    for candidate in platform_shell_candidates(command) {
+    for candidate in platform_shell_candidates(command, preference) {
         let (stdout, stderr) =
             stdio_factory().map_err(|err| format!("Failed to prepare shell stdio: {err}"))?;
         let mut c = Command::new(&candidate.program);
@@ -641,8 +737,54 @@ pub(crate) fn run_shell_script(
     )
 }
 
+pub(crate) fn run_native_shell_script(
+    workdir: String,
+    command: String,
+    cwd: Option<String>,
+    timeout_ms: Option<u64>,
+    max_timeout_ms: Option<u64>,
+    provider_id: Option<String>,
+    cancel_token: Option<ShellCancelToken>,
+) -> Result<ShellRunResponse, String> {
+    run_shell_script_with_envs_and_preference(
+        workdir,
+        command,
+        cwd,
+        timeout_ms,
+        max_timeout_ms,
+        provider_id,
+        cancel_token,
+        &[],
+        ShellPreference::Native,
+    )
+}
+
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn run_shell_script_with_envs(
+    workdir: String,
+    command: String,
+    cwd: Option<String>,
+    timeout_ms: Option<u64>,
+    max_timeout_ms: Option<u64>,
+    provider_id: Option<String>,
+    cancel_token: Option<ShellCancelToken>,
+    envs: &[(String, String)],
+) -> Result<ShellRunResponse, String> {
+    run_shell_script_with_envs_and_preference(
+        workdir,
+        command,
+        cwd,
+        timeout_ms,
+        max_timeout_ms,
+        provider_id,
+        cancel_token,
+        envs,
+        ShellPreference::PosixCompatible,
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn run_shell_script_with_envs_and_preference(
     workdir: String,
     command: String,
     cwd: Option<String>,
@@ -651,6 +793,7 @@ pub(crate) fn run_shell_script_with_envs(
     _provider_id: Option<String>,
     cancel_token: Option<ShellCancelToken>,
     envs: &[(String, String)],
+    preference: ShellPreference,
 ) -> Result<ShellRunResponse, String> {
     let wd = canonicalize_workdir(&workdir).map_err(|e| e.to_string())?;
 
@@ -685,9 +828,10 @@ pub(crate) fn run_shell_script_with_envs(
     let timeout = Duration::from_millis(effective_timeout_ms);
     let start = Instant::now();
 
-    let spawned = spawn_platform_shell_command(cmd, &actual_cwd, envs, || {
-        Ok((Stdio::piped(), Stdio::piped()))
-    })?;
+    let spawned =
+        spawn_platform_shell_command_with_preference(cmd, &actual_cwd, envs, preference, || {
+            Ok((Stdio::piped(), Stdio::piped()))
+        })?;
     let mut child = spawned.child;
     let shell_profile = spawned.profile;
     let shell_name = shell_basename(shell_profile.display_shell);
@@ -793,7 +937,9 @@ mod tests {
     };
     use std::fs;
     use std::path::PathBuf;
+    #[cfg(unix)]
     use std::sync::Arc;
+    #[cfg(unix)]
     use std::time::{Duration, Instant};
 
     #[test]
@@ -833,12 +979,8 @@ mod tests {
         let profile = default_platform_shell_profile();
         if cfg!(windows) {
             assert_eq!(profile.platform, "windows");
-            // 首候选取决于测试机是否装了 Git Bash。
-            match profile.profile {
-                "windows-git-bash" => assert_eq!(profile.shell_family, "posix"),
-                "windows-pwsh" => assert_eq!(profile.shell_family, "powershell"),
-                other => panic!("unexpected windows profile: {other}"),
-            }
+            assert_eq!(profile.profile, "windows-powershell");
+            assert_eq!(profile.shell_family, "powershell");
         } else if cfg!(target_os = "macos") {
             assert_eq!(profile.platform, "macos");
             assert_eq!(profile.profile, "posix-zsh");
@@ -852,20 +994,97 @@ mod tests {
 
     #[cfg(windows)]
     #[test]
-    fn windows_shell_chain_orders_git_bash_before_powershell_fallbacks() {
-        let profiles: Vec<&'static str> = super::platform_shell_candidates("echo hi")
-            .iter()
-            .map(|candidate| candidate.profile.profile)
-            .collect();
-        let tail = ["windows-pwsh", "windows-powershell", "windows-cmd"];
+    fn windows_shell_chain_prefers_native_powershell() {
+        let profiles: Vec<&'static str> =
+            super::platform_shell_candidates("echo hi", super::ShellPreference::Native)
+                .iter()
+                .map(|candidate| candidate.profile.profile)
+                .collect();
+        assert_eq!(profiles[0], "windows-powershell");
+        assert_eq!(profiles[1], "windows-pwsh");
         match profiles.len() {
             4 => {
-                assert_eq!(profiles[0], "windows-git-bash");
-                assert_eq!(profiles[1..], tail);
+                assert_eq!(profiles[2], "windows-git-bash");
+                assert_eq!(profiles[3], "windows-cmd");
             }
-            3 => assert_eq!(profiles[..], tail),
+            3 => assert_eq!(profiles[2], "windows-cmd"),
             other => panic!("unexpected windows candidate count: {other}"),
         }
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn windows_explicit_bash_automation_preserves_posix_compatibility() {
+        let profiles: Vec<&'static str> = super::platform_shell_candidates(
+            "echo hi",
+            super::ShellPreference::PosixCompatible,
+        )
+        .iter()
+        .map(|candidate| candidate.profile.profile)
+        .collect();
+
+        if super::find_git_bash().is_some() {
+            assert_eq!(profiles[0], "windows-git-bash");
+            assert_eq!(profiles[1], "windows-powershell");
+        } else {
+            assert_eq!(profiles[0], "windows-powershell");
+        }
+        assert_eq!(profiles.last(), Some(&"windows-cmd"));
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn windows_shell_execution_uses_native_powershell() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let response = super::run_native_shell_script(
+            dir.path().to_string_lossy().to_string(),
+            "Write-Output ready".to_string(),
+            None,
+            Some(10_000),
+            None,
+            None,
+            None,
+        )
+        .expect("run native Windows shell");
+
+        assert_eq!(response.exit_code, 0);
+        assert_eq!(response.profile, "windows-powershell");
+        assert_eq!(response.shell_family, "powershell");
+        assert!(response.stdout.contains("ready"));
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn windows_git_bash_search_ignores_wsl_and_finds_git_from_path() {
+        let dir = tempfile::tempdir().expect("tempdir");
+        let system32 = dir.path().join(r"Windows\System32");
+        let wsl_bash = system32.join("bash.exe");
+        fs::create_dir_all(&system32).unwrap();
+        fs::write(&wsl_bash, b"").unwrap();
+
+        let git_root = dir.path().join("PortableGit");
+        let git_cmd = git_root.join("cmd");
+        let git_bash = git_root.join(r"bin\bash.exe");
+        fs::create_dir_all(&git_cmd).unwrap();
+        fs::create_dir_all(git_bash.parent().unwrap()).unwrap();
+        fs::write(git_cmd.join("git.exe"), b"").unwrap();
+        fs::write(&git_bash, b"").unwrap();
+
+        assert!(super::is_windows_wsl_bash_launcher(&PathBuf::from(
+            r"C:\Windows\System32\bash.exe"
+        )));
+        assert!(super::is_windows_wsl_bash_launcher(&PathBuf::from(
+            r"C:\Windows\Sysnative\bash.exe"
+        )));
+        assert!(super::is_windows_wsl_bash_launcher(&PathBuf::from(
+            r"C:\Users\User\AppData\Local\Microsoft\WindowsApps\bash.exe"
+        )));
+        assert!(!super::is_windows_wsl_bash_launcher(&git_bash));
+
+        assert_eq!(
+            super::find_git_bash_from_path_dirs([system32, git_cmd]),
+            Some(git_bash)
+        );
     }
 
     #[cfg(windows)]
@@ -887,6 +1106,13 @@ mod tests {
             "ARCFORGE_GIT_BASH_PATH",
             dir.path().join("missing-bash.exe"),
         );
+        assert_eq!(super::find_git_bash(), Some(claude_bash.clone()));
+
+        // 即使显式变量误指向 Windows 的 WSL 启动器，也必须跳过。
+        let wsl_bash = dir.path().join(r"Windows\System32\bash.exe");
+        fs::create_dir_all(wsl_bash.parent().unwrap()).unwrap();
+        fs::write(&wsl_bash, b"").unwrap();
+        std::env::set_var("ARCFORGE_GIT_BASH_PATH", &wsl_bash);
         assert_eq!(super::find_git_bash(), Some(claude_bash.clone()));
 
         std::env::remove_var("ARCFORGE_GIT_BASH_PATH");

@@ -45,6 +45,8 @@ export function getToolMeta(name: string): {
       return { Icon: Eye, accent: "var(--tool-file-accent)", category: "file" };
     case "Image":
       return { Icon: ImageIcon, accent: "var(--tool-file-accent)", category: "file" };
+    case "PresentFile":
+      return { Icon: FileText, accent: "var(--tool-file-accent)", category: "file" };
     case "SkillsManager":
       return { Icon: Eye, accent: "var(--tool-file-accent)", category: "file" };
     case "CronTaskManager":
@@ -316,6 +318,7 @@ export function groupRoundBlocks(blocks: UiRound["blocks"]): GroupedRoundBlock[]
       flushPendingSearches();
       if (
         block.item.toolCall.name === "Image" ||
+        block.item.toolCall.name === "PresentFile" ||
         block.item.toolCall.name === "TodoWrite" ||
         block.item.toolCall.name === "AskUserQuestion" ||
         isAgentToolName(block.item.toolCall.name)

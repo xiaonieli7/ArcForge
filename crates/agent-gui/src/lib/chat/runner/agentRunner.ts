@@ -143,9 +143,17 @@ export function buildToolsSuffix(
   const hasDynamicMcp =
     allowAll || (availableToolNames ?? []).some((name) => name.startsWith("mcp_"));
 
-  const fileTools = ["Read", "Image", "Write", "Edit", "Delete", "List", "Grep", "Glob"].filter(
-    has,
-  );
+  const fileTools = [
+    "Read",
+    "Image",
+    "PresentFile",
+    "Write",
+    "Edit",
+    "Delete",
+    "List",
+    "Grep",
+    "Glob",
+  ].filter(has);
   const hasFileTool = fileTools.length > 0;
   const hasReadFamily = hasAny("Read", "List", "Grep", "Glob");
   const canWrite = hasAny("Write", "Edit", "Delete");
@@ -291,14 +299,29 @@ export function buildToolsSuffix(
     );
   }
 
+  if (has("PresentFile")) {
+    sections.push(
+      [
+        "## Delivering Files",
+        "- After generating, exporting, downloading, or otherwise preparing a file that is a user deliverable, call PresentFile with its exact workspace-relative path before the final reply.",
+        "- Use PresentFile for finished files such as Excel workbooks, PDFs, Word documents, archives, audio, video, and text exports. It is not needed for ordinary source-code edits unless the user asked to receive that file as a deliverable.",
+        "- PresentFile only accepts files inside the workspace. Pass the exact path returned by the tool or command that created or listed the file.",
+        "- Do not substitute a Markdown link, file:// URL, local path in prose, or shell output for PresentFile.",
+        has("Image")
+          ? "- Use Image when an image should render inline in the conversation; use PresentFile when an image is being delivered as an openable file."
+          : "- PresentFile creates an openable file card; it does not render image pixels inline.",
+      ].join("\n"),
+    );
+  }
+
   if (has("Bash")) {
     const bashPlatformLines =
       runtimePlatform === "windows"
         ? [
-            `- Current platform: ${platformLabel}. Bash runs through Git Bash with POSIX semantics; pwsh, Windows PowerShell, and cmd are fallbacks used only when Git Bash is not installed.`,
-            "- Write POSIX/bash-compatible commands by default: `export`, `&&`, `/dev/null`, forward-slash paths.",
-            "- Background commands using `&` must redirect stdout and stderr before detaching, for example `nohup command > /tmp/arcforge-task.log 2>&1 < /dev/null &`.",
-            "- If a Bash result header reports `shell_family: powershell` or `shell_family: cmd`, Git Bash is missing: switch to PowerShell syntax and suggest installing Git for Windows or setting `ARCFORGE_GIT_BASH_PATH`.",
+            `- Current platform: ${platformLabel}. The compatibility-named Bash tool runs native Windows PowerShell first, then pwsh; it does not use WSL.`,
+            "- Write Windows PowerShell 5.1-compatible commands by default: `$env:NAME = 'value'`, `$null`, semicolon-separated statements, and quoted Windows paths.",
+            "- Do not use POSIX-only syntax such as `export`, `nohup`, `/dev/null`, or shell `&&`.",
+            "- In PowerShell, `&` is the call operator, not POSIX background syntax. Use ManagedProcess for dev servers, watchers, or any long-running process.",
           ]
         : [
             `- Current platform: ${platformLabel}. Bash runs through POSIX shells.`,

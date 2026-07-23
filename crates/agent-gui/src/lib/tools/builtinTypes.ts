@@ -138,6 +138,34 @@ export type DisplayImageResultDetails = {
   contentHash?: string;
 };
 
+export type DisplayFilePreviewKind =
+  | "audio"
+  | "document"
+  | "html"
+  | "image"
+  | "markdown"
+  | "pdf"
+  | "spreadsheet"
+  | "text"
+  | "video";
+
+export type DisplayFileItemDetails = {
+  path: string;
+  relativePath: string;
+  fileName: string;
+  mimeType?: string;
+  previewKind?: DisplayFilePreviewKind;
+  sizeBytes: number;
+  mtimeMs: number;
+  fileId?: string;
+  previewSupported: boolean;
+};
+
+export type DisplayFileResultDetails = {
+  kind: "display_file";
+  files: DisplayFileItemDetails[];
+};
+
 export type ReadPdfResultDetails = {
   kind: "read_pdf";
   path: string;
@@ -380,6 +408,7 @@ export type BuiltinToolResultDetails =
   | ReadTextResultDetails
   | ReadImageResultDetails
   | DisplayImageResultDetails
+  | DisplayFileResultDetails
   | ReadPdfResultDetails
   | ReadNotebookResultDetails
   | ReadDocumentResultDetails

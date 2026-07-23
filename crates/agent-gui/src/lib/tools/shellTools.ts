@@ -320,10 +320,16 @@ function buildCancelledResult(params: {
   const durationMs = Date.now() - params.startedAt;
   const details: ShellRunResponse = {
     exit_code: -1,
-    shell: params.shell || "unknown",
+    shell:
+      params.shell || (params.runtimePlatform === "windows" ? "powershell" : "unknown"),
     platform: params.runtimePlatform,
-    profile: params.runtimePlatform === "windows" ? "windows-git-bash" : undefined,
-    shell_family: params.runtimePlatform ? "posix" : undefined,
+    profile: params.runtimePlatform === "windows" ? "windows-powershell" : undefined,
+    shell_family:
+      params.runtimePlatform === "windows"
+        ? "powershell"
+        : params.runtimePlatform
+          ? "posix"
+          : undefined,
     stdout: "",
     stderr: "Cancelled",
     stdout_truncated: false,
@@ -375,12 +381,18 @@ export function createShellTools(params: {
   const platformLabel = runtimePlatformLabel(runtimePlatform);
   const shellPolicy =
     runtimePlatform === "windows"
-      ? "Windows runs Bash commands with Git Bash (POSIX semantics) when available, falling back to pwsh, then Windows PowerShell, then cmd only if Git Bash is not installed. Write POSIX/bash syntax by default: `export NAME=value`, `&&`, `/dev/null`, forward-slash paths. If the result header reports `shell_family: powershell` or `shell_family: cmd`, Git Bash is missing on this machine — switch to PowerShell syntax and suggest installing Git for Windows or setting ARCFORGE_GIT_BASH_PATH."
+      ? "On Windows, the compatibility-named Bash tool runs native Windows PowerShell first, then pwsh, and never uses WSL. Write Windows PowerShell 5.1-compatible syntax by default: `$env:NAME = 'value'`, `$null`, semicolon-separated statements, and quoted Windows paths. Do not use POSIX-only syntax such as `export`, `nohup`, `/dev/null`, or shell `&&`. A verified Git Bash installation is compatibility-only and is never preferred over native PowerShell."
       : runtimePlatform === "macos"
         ? "macOS runs Bash commands with POSIX shell syntax: zsh first, then Bash, then sh."
         : "Linux runs Bash commands with POSIX shell syntax: Bash first, then zsh, then sh.";
   const backgroundPolicy =
-    "Background commands using `&` must detach stdout and stderr first, for example `nohup command > /tmp/arcforge-task.log 2>&1 < /dev/null &`; otherwise the tool rejects them because inherited pipes can keep Bash running forever. Prefer ManagedProcess for dev servers, watchers, or anything long-running.";
+    runtimePlatform === "windows"
+      ? "Use ManagedProcess for dev servers, watchers, or anything long-running. Do not use Start-Process, Start-Job, or detached child processes to bypass ArcForge process tracking."
+      : "Background commands using `&` must detach stdout and stderr first, for example `nohup command > /tmp/arcforge-task.log 2>&1 < /dev/null &`; otherwise the tool rejects them because inherited pipes can keep Bash running forever. Prefer ManagedProcess for dev servers, watchers, or anything long-running.";
+  const shellPathPolicy =
+    runtimePlatform === "windows"
+      ? "Use quoted Windows paths in commands. The cwd argument still accepts workspace-relative, absolute Windows, and skill:// paths."
+      : "Use / as the path separator.";
   const workdir = params.workdir;
   const allowSkillsRoot = params.skillsRootEnabled === true;
   const allowManagedProcess = params.managedProcessEnabled !== false;
@@ -440,7 +452,7 @@ export function createShellTools(params: {
       ? `(?:~/\\.arcforge/skills|/\\.arcforge/skills|${escapedRoot})`
       : "(?:~/\\.arcforge/skills|/\\.arcforge/skills)";
     const fileReadPattern = new RegExp(
-      `(?:^|[\\s;&|()])(?:cat|head|tail|less|more|ls|find|grep|fgrep|egrep|rg|sed|awk)\\b(?:\\s+-[A-Za-z0-9_-]+)*\\s+['"]?${skillPathPrefix}`,
+      `(?:^|[\\s;&|()])(?:cat|head|tail|less|more|ls|find|grep|fgrep|egrep|rg|sed|awk|get-content|get-childitem|gci|select-string)\\b(?:\\s+-[A-Za-z0-9_-]+)*\\s+['"]?${skillPathPrefix}`,
       "i",
     );
     return fileReadPattern.test(value);
@@ -455,7 +467,7 @@ export function createShellTools(params: {
       ? `(?:~/\\.arcforge/skills|/\\.arcforge/skills|${escapedRoot})`
       : "(?:~/\\.arcforge/skills|/\\.arcforge/skills)";
     const cdPattern = new RegExp(
-      `(?:^|[\\s;&|()])(?:cd|pushd)\\b\\s+(?:--\\s+)?['"]?${skillPathPrefix}(?:[/\\s'";&|)]|$)`,
+      `(?:^|[\\s;&|()])(?:cd|pushd|set-location|sl)\\b\\s+(?:(?:--|-[A-Za-z0-9_-]+)\\s+)*['"]?${skillPathPrefix}(?:[/\\s'";&|)]|$)`,
       "i",
     );
     return cdPattern.test(value);
@@ -484,14 +496,20 @@ export function createShellTools(params: {
   }
 
   function commandUsesWorkspaceSkillsGuess(command: string) {
-    return /(^|[\s;&|()])(?:cd|pushd|python3?|node|bash|sh|zsh)\s+["']?\.?\/?skills\/[^ \n;&|)]+/i.test(
+    return /(^|[\s;&|()])(?:cd|pushd|set-location|sl|python3?|node|bash|sh|zsh)\s+["']?\.?\/?skills\/[^ \n;&|)]+/i.test(
       normalizeCommandForPolicy(command),
     );
   }
 
   function commandSearchesFilesystemForSkills(command: string) {
-    return /\bfind\s+\/(?:\s|$)[\s\S]*(skills|\.arcforge|SKILL\.md|skill\.json|README\.md)/i.test(
-      normalizeCommandForPolicy(command),
+    const value = normalizeCommandForPolicy(command);
+    return (
+      /\bfind\s+\/(?:\s|$)[\s\S]*(skills|\.arcforge|SKILL\.md|skill\.json|README\.md)/i.test(
+        value,
+      ) ||
+      /\b(?:get-childitem|gci)\b[^\n;|]*(?:-recurse|-r)\b[^\n;|]*(skills|\.arcforge|SKILL\.md|skill\.json|README\.md)/i.test(
+        value,
+      )
     );
   }
 
@@ -527,7 +545,7 @@ export function createShellTools(params: {
       // and Skill-aware access policy that raw Bash cannot match.
       if (commandFileReadVerbAgainstSkillsAbsolute(params.command)) {
         throw new Error(
-          "Bash cannot read or search ~/.arcforge/skills or absolute Skill paths. Use Read/List/Glob/Grep with a skill://<enabled-skill>/... path instead of cat, head, tail, ls, find, grep, rg, sed, or awk.",
+          "Bash cannot read or search ~/.arcforge/skills or absolute Skill paths. Use Read/List/Glob/Grep with a skill://<enabled-skill>/... path instead of shell file commands such as cat/Get-Content, ls/Get-ChildItem, grep/Select-String, rg, sed, or awk.",
         );
       }
       if (commandChangesDirectoryToSkillsAbsolute(params.command)) {
@@ -573,12 +591,24 @@ export function createShellTools(params: {
 
     if (
       runtimePlatform === "windows" &&
-      (params.shellFamily === "powershell" || params.shellFamily === "cmd")
+      (params.shellFamily === "powershell" || params.shellFamily === "cmd") &&
+      /(?:^|[\s;&|])(export|nohup)\b|\/dev\/null|&&/i.test(combined)
     ) {
       hints.push(
-        `Hint: Git Bash was not found, so this command ran under ${
-          params.shellFamily === "cmd" ? "cmd" : "PowerShell"
-        } where POSIX syntax like \`export\`, \`nohup\`, and \`/dev/null\` fails. Rewrite the command in PowerShell syntax for now, and suggest installing Git for Windows or setting ARCFORGE_GIT_BASH_PATH to restore Bash semantics.`,
+        `Hint: This command ran under native ${
+          params.shellFamily === "cmd" ? "cmd" : "Windows PowerShell"
+        }. Rewrite POSIX syntax using PowerShell 5.1-compatible forms such as \`$env:NAME = 'value'\`, \`$null\`, and semicolon-separated statements; do not use \`export\`, \`nohup\`, \`/dev/null\`, or shell \`&&\`.`,
+      );
+    }
+
+    if (
+      runtimePlatform === "windows" &&
+      /\bWSL\b|Wsl\/Service|Wsl\/MountDisk|failed to attach disk|无法将磁盘附加到 WSL/i.test(
+        combined,
+      )
+    ) {
+      hints.push(
+        "Hint: ArcForge does not require WSL for local Windows tasks. This build appears to have launched a WSL shim; rebuild/restart ArcForge with the native-shell fix and retry under Windows PowerShell.",
       );
     }
 
@@ -592,7 +622,9 @@ export function createShellTools(params: {
     }
 
     if (
-      /(cat|ls|find|grep|rg|sed)\b/.test(params.command) &&
+      /(cat|ls|find|grep|rg|sed|get-content|get-childitem|gci|select-string)\b/i.test(
+        params.command,
+      ) &&
       /(\.arcforge\/skills|~\/\.arcforge\/skills|skills\/)/.test(params.command)
     ) {
       hints.push(
@@ -626,7 +658,7 @@ export function createShellTools(params: {
 
   const toolBash: Tool = {
     name: "Bash",
-    description: `Execute a non-interactive shell command on the local machine for builds, tests, package managers, external CLIs, curl/API calls, running Skill scripts, or explicitly requested shell work. Runtime platform: ${platformLabel}. ${shellPolicy} Reserve it for commands that truly require a shell — do NOT use Bash for file operations the dedicated tools handle: use Read/List/Glob/Grep instead of cat/ls/find/grep/rg for any workspace or Skill content; use Delete instead of rm/rmdir/unlink/find -delete; use Image instead of open/xdg-open/file paths to show pictures. Use curl with an explicit timeout such as \`--max-time 30\` for endpoint tests. ${backgroundPolicy} Running a Skill script: set cwd to \`skill://<enabled-skill>/scripts\` and run a relative command, or execute the absolute script path directly when that Skill is enabled. Use / as the path separator; Windows \\ is auto-normalized. Returns stdout, stderr, exit_code, platform, profile, and shell_family. For ${timeoutPolicy.providerLabel}, timeout defaults to ${timeoutPolicy.defaultTimeoutMs}ms and is capped at ${timeoutPolicy.maxTimeoutMs}ms; larger timeout_ms values are accepted by the schema but clamped before execution. High risk: use carefully.`,
+    description: `Execute a non-interactive shell command on the local machine for builds, tests, package managers, external CLIs, curl/API calls, running Skill scripts, or explicitly requested shell work. Runtime platform: ${platformLabel}. ${shellPolicy} Reserve it for commands that truly require a shell — do NOT use Bash for file operations the dedicated tools handle: use Read/List/Glob/Grep instead of cat/ls/find/grep/rg for any workspace or Skill content; use Delete instead of rm/rmdir/unlink/find -delete; use Image instead of open/xdg-open/file paths to show pictures. Use curl with an explicit timeout such as \`--max-time 30\` for endpoint tests. ${backgroundPolicy} Running a Skill script: set cwd to \`skill://<enabled-skill>/scripts\` and run a relative command, or execute the absolute script path directly when that Skill is enabled. ${shellPathPolicy} Returns stdout, stderr, exit_code, platform, profile, and shell_family. For ${timeoutPolicy.providerLabel}, timeout defaults to ${timeoutPolicy.defaultTimeoutMs}ms and is capped at ${timeoutPolicy.maxTimeoutMs}ms; larger timeout_ms values are accepted by the schema but clamped before execution. High risk: use carefully.`,
     parameters: strictToolParameters({
       command: Type.String({
         description: "Shell command to execute (prefer non-interactive, idempotent commands).",
@@ -767,7 +799,7 @@ export function createShellTools(params: {
         const command =
           typeof toolCall.arguments?.command === "string" ? toolCall.arguments.command.trim() : "";
         if (!command) throw new Error('ManagedProcess.command is required for action="start"');
-        if (scanShellSyntax(command).background) {
+        if (runtimePlatform !== "windows" && scanShellSyntax(command).background) {
           throw new Error(
             "ManagedProcess.command must be a foreground command. Remove `&`; ManagedProcess starts it in the background and captures logs automatically.",
           );
@@ -990,18 +1022,20 @@ export function createShellTools(params: {
       };
     }
 
-    try {
-      validateBashBackgroundStdio(command);
-    } catch (err) {
-      return {
-        role: "toolResult",
-        toolCallId: toolCall.id,
-        toolName: toolCall.name,
-        content: [{ type: "text", text: asErrorMessage(err) }],
-        details: {},
-        isError: true,
-        timestamp: now,
-      };
+    if (runtimePlatform !== "windows") {
+      try {
+        validateBashBackgroundStdio(command);
+      } catch (err) {
+        return {
+          role: "toolResult",
+          toolCallId: toolCall.id,
+          toolName: toolCall.name,
+          content: [{ type: "text", text: asErrorMessage(err) }],
+          details: {},
+          isError: true,
+          timestamp: now,
+        };
+      }
     }
 
     const timeoutRaw = toolCall.arguments?.timeout_ms;

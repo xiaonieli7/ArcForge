@@ -13,6 +13,10 @@ import {
   type ChangedFilesActions,
   ChangedFilesActionsProvider,
 } from "../components/chat/ChangedFilesCard";
+import {
+  type GeneratedFilesActions,
+  GeneratedFilesActionsProvider,
+} from "../components/chat/GeneratedFilesCard";
 import { HistoryShareModal } from "../components/chat/HistoryShareModal";
 import type { MentionComposerHandle } from "../components/chat/MentionComposer";
 import { NotifyToast } from "../components/chat/NotifyToast";
@@ -28,6 +32,7 @@ import { RightDockPanel } from "../components/project-tools/RightDockPanel";
 import { expandedPathsForFileTreePath } from "../components/project-tools/rightDockModel";
 import { Button } from "../components/ui/button";
 import { useConfirmDialog } from "../components/ui/confirm-dialog";
+import type { WorkspaceFilePreviewOpenRequest } from "../components/workspace-editor/WorkspaceFilePreviewOverlay";
 import { useLocale } from "../i18n";
 import type { CompactionStatus } from "../lib/chat/compaction/types";
 import {
@@ -234,6 +239,9 @@ export function ChatPage(props: ChatPageProps) {
     "chat",
   );
   const [rightDockOpen, setRightDockOpen] = useState(false);
+  const [rightDockFilePreviewRequest, setRightDockFilePreviewRequest] =
+    useState<WorkspaceFilePreviewOpenRequest | null>(null);
+  const rightDockFilePreviewNonceRef = useRef(0);
   const {
     workspaceProjects,
     setActiveWorkspaceProjectId,
@@ -507,6 +515,12 @@ export function ChatPage(props: ChatPageProps) {
     currentConversationPersistedCwd ||
     currentConversationRuntimeWorkdir ||
     (isAgentMode ? activeWorkspaceProjectPath || workdir : "");
+  // The dock preview belongs to one conversation transcript. Its payload does
+  // not otherwise read the id, but switching conversations must discard it.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: currentConversationId is the reset signal.
+  useEffect(() => {
+    setRightDockFilePreviewRequest(null);
+  }, [currentConversationId]);
   const terminalProjectPath = isAgentMode ? activeWorkspaceProjectPath.trim() : "";
   const terminalProjectPathKey = terminalProjectPath
     ? workspaceProjectPathKey(terminalProjectPath)
@@ -679,6 +693,53 @@ export function ChatPage(props: ChatPageProps) {
     }),
     [handleChangedFileOpenDiff, handleChangedFileReveal, handleOpenWorkspaceFile],
   );
+  const handleGeneratedFileOpen = useCallback(
+    (file: Parameters<NonNullable<GeneratedFilesActions["onOpenFile"]>>[0]) => {
+      const previewWorkdir = displayedConversationWorkdir.trim();
+      const previewPath = (file.relativePath || file.path).trim();
+      if (!previewWorkdir || !previewPath) return;
+      rightDockFilePreviewNonceRef.current += 1;
+      setRightDockOpen(true);
+      setRightDockFilePreviewRequest({
+        id: rightDockFilePreviewNonceRef.current,
+        projectPathKey: workspaceProjectPathKey(previewWorkdir),
+        workdir: previewWorkdir,
+        path: previewPath,
+      });
+    },
+    [displayedConversationWorkdir],
+  );
+  const handleGeneratedFileReveal = useCallback(
+    (file: Parameters<NonNullable<GeneratedFilesActions["onRevealInFileTree"]>>[0]) => {
+      const previewWorkdir = displayedConversationWorkdir.trim();
+      if (!previewWorkdir || workspaceProjectPathKey(previewWorkdir) !== terminalProjectPathKey) {
+        return;
+      }
+      setRightDockFilePreviewRequest(null);
+      handleChangedFileReveal(file.relativePath || file.path);
+    },
+    [displayedConversationWorkdir, handleChangedFileReveal, terminalProjectPathKey],
+  );
+  const canRevealGeneratedFile =
+    Boolean(displayedConversationWorkdir.trim()) &&
+    workspaceProjectPathKey(displayedConversationWorkdir.trim()) === terminalProjectPathKey;
+  const generatedFilesActions = useMemo<GeneratedFilesActions>(
+    () => ({
+      onOpenFile: handleGeneratedFileOpen,
+      onRevealInFileTree: canRevealGeneratedFile ? handleGeneratedFileReveal : undefined,
+    }),
+    [canRevealGeneratedFile, handleGeneratedFileOpen, handleGeneratedFileReveal],
+  );
+  const handleRightDockToggle = useCallback(() => {
+    setRightDockOpen((open) => {
+      const nextOpen = !open;
+      if (!nextOpen) setRightDockFilePreviewRequest(null);
+      return nextOpen;
+    });
+  }, []);
+  const handleCloseGeneratedFilePreview = useCallback(() => {
+    setRightDockFilePreviewRequest(null);
+  }, []);
   // Local runner running-state → sidebar store: diff transitions so sidebar
   // dots (and running workdir keys) include local runs immediately; remote
   // runs arrive through the store's own event subscription.
@@ -1599,7 +1660,7 @@ export function ChatPage(props: ChatPageProps) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => setRightDockOpen((open) => !open)}
+                      onClick={handleRightDockToggle}
                       disabled={Boolean(terminalDisabledMessage) && !rightDockOpen}
                       aria-expanded={rightDockOpen}
                       title={
@@ -1627,34 +1688,36 @@ export function ChatPage(props: ChatPageProps) {
                 <NotifyToast items={notifyItems} onDismiss={dismissNotify} />
               </div>
 
-              <ChangedFilesActionsProvider value={changedFilesActions}>
-                <ChatTranscript
-                  conversationId={currentConversationId}
-                  workspaceRoot={currentConversationWorkspaceRoot}
-                  gitClient={tauriGitClient}
-                  followRef={scrollFollowRef}
-                  hasModels={hasModels}
-                  historyItems={historyRenderItems}
-                  isHistorySwitching={conversationOpenState.showOverlay}
-                  isSending={isSending}
-                  isAgentMode={isAgentMode}
-                  showUsage={isAgentDevExecutionMode}
-                  usageContextWindow={currentModelContextWindow}
-                  liveTranscriptStore={liveTranscriptStore}
-                  isCompactionRunning={isCompactionRunning}
-                  bottomReservePx={composerOverlayHeight}
-                  onResendFromEdit={handleResendFromEdit}
-                  onBranchConversation={
-                    // 水合中/水合失败时 handler 只会静默 return——直接不传，
-                    // 让 AssistantRow 的 disabled 分支给出可见的禁用态。
-                    isConversationHydrating || isConversationHydrationFailed
-                      ? undefined
-                      : handleBranchConversation
-                  }
-                  branchPendingMessageId={branchPendingMessageId}
-                  onOpenSettings={onOpenSettings}
-                />
-              </ChangedFilesActionsProvider>
+              <GeneratedFilesActionsProvider value={generatedFilesActions}>
+                <ChangedFilesActionsProvider value={changedFilesActions}>
+                  <ChatTranscript
+                    conversationId={currentConversationId}
+                    workspaceRoot={currentConversationWorkspaceRoot}
+                    gitClient={tauriGitClient}
+                    followRef={scrollFollowRef}
+                    hasModels={hasModels}
+                    historyItems={historyRenderItems}
+                    isHistorySwitching={conversationOpenState.showOverlay}
+                    isSending={isSending}
+                    isAgentMode={isAgentMode}
+                    showUsage={isAgentDevExecutionMode}
+                    usageContextWindow={currentModelContextWindow}
+                    liveTranscriptStore={liveTranscriptStore}
+                    isCompactionRunning={isCompactionRunning}
+                    bottomReservePx={composerOverlayHeight}
+                    onResendFromEdit={handleResendFromEdit}
+                    onBranchConversation={
+                      // 水合中/水合失败时 handler 只会静默 return——直接不传，
+                      // 让 AssistantRow 的 disabled 分支给出可见的禁用态。
+                      isConversationHydrating || isConversationHydrationFailed
+                        ? undefined
+                        : handleBranchConversation
+                    }
+                    branchPendingMessageId={branchPendingMessageId}
+                    onOpenSettings={onOpenSettings}
+                  />
+                </ChangedFilesActionsProvider>
+              </GeneratedFilesActionsProvider>
 
               <ChatComposerBar
                 composerRef={composerRef}
@@ -1761,6 +1824,8 @@ export function ChatPage(props: ChatPageProps) {
         onInsertCodeReviewSkill={codeReviewSkill ? handleRightDockInsertCodeReviewSkill : undefined}
         onInsertCommitMention={handleRightDockInsertCommitMention}
         onInsertGitFileMention={handleRightDockInsertGitFileMention}
+        filePreviewRequest={rightDockFilePreviewRequest}
+        onCloseFilePreview={handleCloseGeneratedFilePreview}
       />
     </div>
   );

@@ -23,6 +23,7 @@ const READ_MAX_TEXT_BYTES: usize = 200 * 1024; // 200KB
 const EDITABLE_TEXT_MAX_BYTES: usize = 3 * 1024 * 1024; // 3MB
 const READ_MAX_IMAGE_BYTES: usize = 25 * 1024 * 1024; // 25MB
 const READ_MAX_PREVIEW_BYTES: usize = 25 * 1024 * 1024; // 25MB
+const MAX_WORKSPACE_ARTIFACTS: usize = 12;
 const DOCUMENT_PREVIEW_CACHE_VERSION: &str = "v1";
 const IMAGE_SOURCE_HTTP_TIMEOUT_SECS: u64 = 20;
 const DEFAULT_READ_LIMIT_LINES: usize = 200;
@@ -936,6 +937,55 @@ fn infer_workspace_preview_mime(path: &Path, bytes: &[u8]) -> Option<&'static st
         Some("webm") => Some("video/webm"),
         Some("ogv") => Some("video/ogg"),
         Some("mov") => Some("video/quicktime"),
+        _ => None,
+    }
+}
+
+fn workspace_preview_kind(path: &Path, mime_type: &str) -> Option<&'static str> {
+    let mime = mime_type
+        .split(';')
+        .next()
+        .unwrap_or("")
+        .trim()
+        .to_ascii_lowercase();
+
+    if mime.starts_with("image/") {
+        return Some("image");
+    }
+    if is_pdf_file(path) || mime == "application/pdf" {
+        return Some("pdf");
+    }
+
+    match extension_lower(path).as_deref() {
+        Some("html") | Some("htm") => Some("html"),
+        Some("md") | Some("mdx") => Some("markdown"),
+        Some("doc") | Some("docx") | Some("rtf") => Some("document"),
+        Some("csv") | Some("ods") | Some("tsv") | Some("xls") | Some("xlsm") | Some("xlsx")
+        | Some("xltm") | Some("xltx") => Some("spreadsheet"),
+        Some("flac") | Some("m4a") | Some("mp3") | Some("oga") | Some("ogg") | Some("wav") => {
+            Some("audio")
+        }
+        Some("m4v") | Some("mov") | Some("mp4") | Some("ogv") | Some("webm") => Some("video"),
+        Some("log") | Some("txt") => Some("text"),
+        _ if mime == "text/html" => Some("html"),
+        _ if mime == "text/markdown" || mime == "text/x-markdown" => Some("markdown"),
+        _ if mime == "text/csv"
+            || mime == "text/tab-separated-values"
+            || mime.contains("spreadsheet")
+            || mime.contains("excel")
+            || mime == "application/vnd.oasis.opendocument.spreadsheet" =>
+        {
+            Some("spreadsheet")
+        }
+        _ if mime.contains("wordprocessingml")
+            || mime == "application/msword"
+            || mime == "application/rtf" =>
+        {
+            Some("document")
+        }
+        _ if mime.starts_with("audio/") => Some("audio"),
+        _ if mime.starts_with("video/") => Some("video"),
+        _ if mime.starts_with("text/") => Some("text"),
         _ => None,
     }
 }
@@ -2916,6 +2966,106 @@ pub async fn fs_path_status(
     path: String,
 ) -> Result<PathStatusResponse, FsCommandError> {
     run_blocking_fs("fs_path_status", move || fs_path_status_sync(workdir, path)).await
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WorkspaceArtifactDescriptor {
+    pub path: String,
+    pub relative_path: String,
+    pub file_name: String,
+    pub mime_type: Option<String>,
+    pub preview_kind: Option<String>,
+    pub size_bytes: u64,
+    pub mtime_ms: u64,
+    pub file_id: Option<String>,
+    pub preview_supported: bool,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DescribeWorkspaceArtifactsResponse {
+    pub files: Vec<WorkspaceArtifactDescriptor>,
+}
+
+pub(crate) fn fs_describe_workspace_artifacts_sync(
+    workdir: String,
+    paths: Vec<String>,
+) -> Result<DescribeWorkspaceArtifactsResponse, FsCommandError> {
+    let wd = canonicalize_workdir(&workdir)?;
+    fs_describe_workspace_artifacts_impl(&wd, paths)
+        .map_err(|error| FsCommandError::from(error).with_workdir(&wd))
+}
+
+fn fs_describe_workspace_artifacts_impl(
+    wd: &Path,
+    paths: Vec<String>,
+) -> Result<DescribeWorkspaceArtifactsResponse, FsError> {
+    if paths.is_empty() {
+        return Err(FsError::Other(
+            "paths must contain at least one workspace-relative file path".to_string(),
+        ));
+    }
+    if paths.len() > MAX_WORKSPACE_ARTIFACTS {
+        return Err(FsError::Other(format!(
+            "paths may contain at most {MAX_WORKSPACE_ARTIFACTS} files"
+        )));
+    }
+
+    let mut files = Vec::with_capacity(paths.len());
+    let mut seen_paths = HashSet::with_capacity(paths.len());
+    for path in paths {
+        let rel = sanitize_rel_path(&path)?;
+        let logical_path = logical_rel_path(&rel);
+        if !seen_paths.insert(logical_path.clone()) {
+            continue;
+        }
+
+        let target = resolve_existing_file_target(wd, &rel).map_err(|error| match error {
+            // Keep command errors scoped to the caller-provided workspace path.
+            FsError::OutOfBounds(_) => FsError::OutOfBounds(logical_path.clone()),
+            other => other,
+        })?;
+        let metadata = fs::metadata(&target)?;
+        let size_bytes = metadata.len();
+        let mime_type = infer_workspace_preview_mime(&target, &[]);
+        let preview_kind = mime_type.and_then(|mime| workspace_preview_kind(&target, mime));
+        let file_name = rel
+            .file_name()
+            .map(|name| name.to_string_lossy().into_owned())
+            .unwrap_or_else(|| logical_path.clone());
+        let raw_file_id = file_identity(&metadata, &target);
+        let file_id = raw_file_id
+            .strip_prefix("path:")
+            .map(|fallback_path| format!("path-hash:{}", hash_bytes(fallback_path.as_bytes())))
+            .unwrap_or(raw_file_id);
+
+        files.push(WorkspaceArtifactDescriptor {
+            path: logical_path.clone(),
+            relative_path: logical_path,
+            file_name,
+            mime_type: mime_type.map(str::to_string),
+            preview_kind: preview_kind.map(str::to_string),
+            size_bytes,
+            mtime_ms: metadata_mtime_ms(&metadata),
+            file_id: Some(file_id),
+            preview_supported: preview_kind.is_some()
+                && size_bytes <= READ_MAX_PREVIEW_BYTES as u64,
+        });
+    }
+
+    Ok(DescribeWorkspaceArtifactsResponse { files })
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn fs_describe_workspace_artifacts(
+    workdir: String,
+    paths: Vec<String>,
+) -> Result<DescribeWorkspaceArtifactsResponse, FsCommandError> {
+    run_blocking_fs("fs_describe_workspace_artifacts", move || {
+        fs_describe_workspace_artifacts_sync(workdir, paths)
+    })
+    .await
 }
 
 #[derive(Debug, Serialize)]
@@ -5141,6 +5291,124 @@ mod tests {
         assert!(missing.mtime_ms.is_none());
 
         let _ = fs::remove_dir_all(workdir);
+    }
+
+    #[test]
+    fn describe_workspace_artifacts_returns_safe_preview_metadata() {
+        let workdir = unique_test_workdir("describe-artifacts");
+        fs::create_dir_all(workdir.join("reports")).expect("create reports directory");
+        let contents = b"arcforge-xlsx-placeholder";
+        fs::write(workdir.join("reports/usage.xlsx"), contents).expect("write report");
+
+        let response = fs_describe_workspace_artifacts_sync(
+            workdir.display().to_string(),
+            vec![
+                "reports\\usage.xlsx".to_string(),
+                "reports/usage.xlsx".to_string(),
+            ],
+        )
+        .expect("artifact description should succeed");
+
+        assert_eq!(response.files.len(), 1, "normalized duplicates are omitted");
+        let file = &response.files[0];
+        assert_eq!(file.path, "reports/usage.xlsx");
+        assert_eq!(file.relative_path, "reports/usage.xlsx");
+        assert_eq!(file.file_name, "usage.xlsx");
+        assert_eq!(
+            file.mime_type.as_deref(),
+            Some("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        );
+        assert_eq!(file.preview_kind.as_deref(), Some("spreadsheet"));
+        assert_eq!(file.size_bytes, contents.len() as u64);
+        assert!(file.mtime_ms > 0);
+        assert!(file
+            .file_id
+            .as_deref()
+            .is_some_and(|value| !value.is_empty()));
+        assert!(file.preview_supported);
+
+        let serialized = serde_json::to_value(&response).expect("serialize artifact response");
+        let serialized_file = &serialized["files"][0];
+        assert_eq!(serialized_file["relativePath"], "reports/usage.xlsx");
+        assert_eq!(serialized_file["fileName"], "usage.xlsx");
+        assert_eq!(serialized_file["previewKind"], "spreadsheet");
+        assert_eq!(serialized_file["previewSupported"], true);
+        assert!(
+            !serialized.to_string().contains(&display_path(&workdir)),
+            "successful response must not expose the absolute workdir"
+        );
+
+        let _ = fs::remove_dir_all(workdir);
+    }
+
+    #[test]
+    fn describe_workspace_artifacts_rejects_invalid_missing_and_directory_targets() {
+        let workdir = unique_test_workdir("describe-artifacts-invalid");
+        fs::create_dir_all(workdir.join("reports")).expect("create reports directory");
+
+        for invalid_path in ["", "../outside.xlsx", "/outside.xlsx"] {
+            let error = fs_describe_workspace_artifacts_sync(
+                workdir.display().to_string(),
+                vec![invalid_path.to_string()],
+            )
+            .expect_err("invalid path should fail");
+            assert!(
+                matches!(error.code, FsErrorCode::InvalidPath),
+                "unexpected error for {invalid_path:?}: {:?}",
+                error.code
+            );
+        }
+
+        let missing = fs_describe_workspace_artifacts_sync(
+            workdir.display().to_string(),
+            vec!["reports/missing.xlsx".to_string()],
+        )
+        .expect_err("missing file should fail");
+        assert!(matches!(missing.code, FsErrorCode::NotFound));
+        assert_eq!(missing.path.as_deref(), Some("reports/missing.xlsx"));
+
+        let directory = fs_describe_workspace_artifacts_sync(
+            workdir.display().to_string(),
+            vec!["reports".to_string()],
+        )
+        .expect_err("directory should fail");
+        assert!(matches!(directory.code, FsErrorCode::NotAFile));
+        assert_eq!(directory.path.as_deref(), Some("reports"));
+        assert_eq!(directory.entry_kind.as_deref(), Some("dir"));
+
+        let too_many = (0..=MAX_WORKSPACE_ARTIFACTS)
+            .map(|index| format!("report-{index}.xlsx"))
+            .collect::<Vec<_>>();
+        let limit_error =
+            fs_describe_workspace_artifacts_sync(workdir.display().to_string(), too_many)
+                .expect_err("too many paths should fail before resolving entries");
+        assert!(matches!(limit_error.code, FsErrorCode::Other));
+        assert!(limit_error.message.contains("at most 12"));
+
+        let _ = fs::remove_dir_all(workdir);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn describe_workspace_artifacts_rejects_out_of_bounds_symlink() {
+        let workdir = unique_test_workdir("describe-artifacts-symlink");
+        let outside = unique_test_workdir("describe-artifacts-outside");
+        fs::create_dir_all(&workdir).expect("create workdir");
+        fs::create_dir_all(&outside).expect("create outside directory");
+        fs::write(outside.join("private.xlsx"), "outside").expect("write outside file");
+        std::os::unix::fs::symlink(outside.join("private.xlsx"), workdir.join("report.xlsx"))
+            .expect("create symlink");
+
+        let error = fs_describe_workspace_artifacts_sync(
+            workdir.display().to_string(),
+            vec!["report.xlsx".to_string()],
+        )
+        .expect_err("out-of-bounds symlink should fail");
+        assert!(matches!(error.code, FsErrorCode::OutOfBounds));
+        assert_eq!(error.path.as_deref(), Some("report.xlsx"));
+
+        let _ = fs::remove_dir_all(workdir);
+        let _ = fs::remove_dir_all(outside);
     }
 
     #[test]

@@ -14,7 +14,7 @@ function createBashCall(command = "echo ready") {
   };
 }
 
-test("Bash tool keeps one Bash entry and uses Git Bash-first policy for Claude Code", async () => {
+test("Bash compatibility tool uses native PowerShell policy for Claude Code on Windows", async () => {
   const calls = [];
   const loader = createTsModuleLoader({
     mocks: {
@@ -24,10 +24,10 @@ test("Bash tool keeps one Bash entry and uses Git Bash-first policy for Claude C
           assert.equal(command, "shell_run");
           return {
             exit_code: 0,
-            shell: "bash",
+            shell: "powershell",
             platform: "windows",
-            profile: "windows-git-bash",
-            shell_family: "posix",
+            profile: "windows-powershell",
+            shell_family: "powershell",
             stdout: "ready\n",
             stderr: "",
             stdout_truncated: false,
@@ -49,10 +49,10 @@ test("Bash tool keeps one Bash entry and uses Git Bash-first policy for Claude C
     runtimePlatform: "windows",
   });
 
-  assert.match(bundle.tools[0].description, /Windows runs Bash commands/);
-  assert.match(bundle.tools[0].description, /Git Bash \(POSIX semantics\)/);
-  assert.match(bundle.tools[0].description, /Write POSIX\/bash syntax by default/);
-  assert.doesNotMatch(bundle.tools[0].description, /native Windows shell chain/);
+  assert.match(bundle.tools[0].description, /runs native Windows PowerShell first/);
+  assert.match(bundle.tools[0].description, /never uses WSL/);
+  assert.match(bundle.tools[0].description, /PowerShell 5\.1-compatible syntax/);
+  assert.doesNotMatch(bundle.tools[0].description, /Write POSIX\/bash syntax by default/);
 
   const result = await bundle.executeToolCall(createBashCall());
 
@@ -61,10 +61,10 @@ test("Bash tool keeps one Bash entry and uses Git Bash-first policy for Claude C
   assert.equal(calls[0].args.provider_id, "claude_code");
   assert.equal(calls[0].args.max_timeout_ms, 600_000);
   assert.match(result.content[0].text, /platform: windows/);
-  assert.match(result.content[0].text, /profile: windows-git-bash/);
+  assert.match(result.content[0].text, /profile: windows-powershell/);
 });
 
-test("Bash tool uses the same Git Bash-first policy for Codex", async () => {
+test("Bash compatibility tool uses the same native PowerShell policy for Codex", async () => {
   const calls = [];
   const loader = createTsModuleLoader({
     mocks: {
@@ -74,10 +74,10 @@ test("Bash tool uses the same Git Bash-first policy for Codex", async () => {
           assert.equal(command, "shell_run");
           return {
             exit_code: 0,
-            shell: "bash",
+            shell: "powershell",
             platform: "windows",
-            profile: "windows-git-bash",
-            shell_family: "posix",
+            profile: "windows-powershell",
+            shell_family: "powershell",
             stdout: "ready\n",
             stderr: "",
             stdout_truncated: false,
@@ -99,9 +99,9 @@ test("Bash tool uses the same Git Bash-first policy for Codex", async () => {
     runtimePlatform: "windows",
   });
 
-  assert.match(bundle.tools[0].description, /Windows runs Bash commands/);
-  assert.match(bundle.tools[0].description, /Git Bash \(POSIX semantics\)/);
-  assert.doesNotMatch(bundle.tools[0].description, /Codex-style auto shell selection/);
+  assert.match(bundle.tools[0].description, /runs native Windows PowerShell first/);
+  assert.match(bundle.tools[0].description, /never uses WSL/);
+  assert.doesNotMatch(bundle.tools[0].description, /Git Bash \(POSIX semantics\)/);
 
   const result = await bundle.executeToolCall(createBashCall());
 
@@ -279,36 +279,7 @@ test("Bash tool rejects background commands with only stderr append redirected",
   assert.deepEqual(calls, []);
 });
 
-test("Bash tool applies POSIX ampersand background validation on Windows", async () => {
-  const calls = [];
-  const loader = createTsModuleLoader({
-    mocks: {
-      "@tauri-apps/api/core": {
-        async invoke(command, args) {
-          calls.push({ command, args });
-          throw new Error("shell_run should not be invoked for rejected commands");
-        },
-      },
-    },
-  });
-
-  const { createShellTools } = loader.loadModule("src/lib/tools/shellTools.ts");
-  const bundle = createShellTools({
-    workdir: "/repo",
-    providerId: "codex",
-    runtimePlatform: "windows",
-  });
-
-  const result = await bundle.executeToolCall(
-    createBashCall("deno run --allow-net main.ts 2>> /tmp/server.err &"),
-  );
-
-  assert.equal(result.isError, true);
-  assert.match(result.content[0].text, /Background Bash commands must detach stdout and stderr/);
-  assert.equal(calls.length, 0);
-});
-
-test("Bash tool allows detached background commands on Windows", async () => {
+test("Bash compatibility tool allows the PowerShell call operator on Windows", async () => {
   const calls = [];
   const loader = createTsModuleLoader({
     mocks: {
@@ -318,10 +289,10 @@ test("Bash tool allows detached background commands on Windows", async () => {
           assert.equal(command, "shell_run");
           return {
             exit_code: 0,
-            shell: "bash",
+            shell: "powershell",
             platform: "windows",
-            profile: "windows-git-bash",
-            shell_family: "posix",
+            profile: "windows-powershell",
+            shell_family: "powershell",
             stdout: "ok\n",
             stderr: "",
             stdout_truncated: false,
@@ -343,15 +314,17 @@ test("Bash tool allows detached background commands on Windows", async () => {
     runtimePlatform: "windows",
   });
 
-  const result = await bundle.executeToolCall(
-    createBashCall("nohup deno run main.ts > /tmp/arcforge-test.log 2>&1 < /dev/null &"),
-  );
+  const result = await bundle.executeToolCall(createBashCall("& '.\\script.ps1'"));
 
   assert.equal(result.isError, false);
   assert.equal(calls.length, 1);
 });
 
-function createWindowsFailureLoader(shellFamily, shell) {
+function createWindowsFailureLoader(
+  shellFamily,
+  shell,
+  stderr = "export : The term 'export' is not recognized",
+) {
   return createTsModuleLoader({
     mocks: {
       "@tauri-apps/api/core": {
@@ -361,10 +334,10 @@ function createWindowsFailureLoader(shellFamily, shell) {
             exit_code: 1,
             shell,
             platform: "windows",
-            profile: shellFamily === "posix" ? "windows-git-bash" : "windows-pwsh",
+            profile: shellFamily === "posix" ? "windows-git-bash" : "windows-powershell",
             shell_family: shellFamily,
             stdout: "",
-            stderr: "export : The term 'export' is not recognized",
+            stderr,
             stdout_truncated: false,
             stderr_truncated: false,
             timed_out: false,
@@ -378,8 +351,8 @@ function createWindowsFailureLoader(shellFamily, shell) {
   });
 }
 
-test("Bash tool hints about missing Git Bash when Windows falls back to PowerShell", async () => {
-  const loader = createWindowsFailureLoader("powershell", "pwsh");
+test("Bash tool rewrites POSIX syntax hints for native Windows PowerShell", async () => {
+  const loader = createWindowsFailureLoader("powershell", "powershell");
   const { createShellTools } = loader.loadModule("src/lib/tools/shellTools.ts");
   const bundle = createShellTools({
     workdir: "/repo",
@@ -390,12 +363,13 @@ test("Bash tool hints about missing Git Bash when Windows falls back to PowerShe
   const result = await bundle.executeToolCall(createBashCall("export NAME=value"));
 
   assert.equal(result.isError, true);
-  assert.match(result.content[0].text, /Git Bash was not found/);
-  assert.match(result.content[0].text, /ARCFORGE_GIT_BASH_PATH/);
+  assert.match(result.content[0].text, /ran under native Windows PowerShell/);
+  assert.match(result.content[0].text, /PowerShell 5\.1-compatible/);
+  assert.doesNotMatch(result.content[0].text, /ARCFORGE_GIT_BASH_PATH/);
 });
 
-test("Bash tool does not hint about Git Bash when a Windows failure ran under Git Bash", async () => {
-  const loader = createWindowsFailureLoader("posix", "bash");
+test("Bash tool does not add a POSIX rewrite hint for an ordinary PowerShell failure", async () => {
+  const loader = createWindowsFailureLoader("powershell", "powershell", "boom");
   const { createShellTools } = loader.loadModule("src/lib/tools/shellTools.ts");
   const bundle = createShellTools({
     workdir: "/repo",
@@ -403,10 +377,10 @@ test("Bash tool does not hint about Git Bash when a Windows failure ran under Gi
     runtimePlatform: "windows",
   });
 
-  const result = await bundle.executeToolCall(createBashCall("exit 1"));
+  const result = await bundle.executeToolCall(createBashCall("Write-Error 'boom'"));
 
   assert.equal(result.isError, true);
-  assert.doesNotMatch(result.content[0].text, /Git Bash was not found/);
+  assert.doesNotMatch(result.content[0].text, /PowerShell 5\.1-compatible/);
 });
 
 test("Bash tool allows background commands with detached stdio", async () => {
@@ -565,14 +539,29 @@ test("ManagedProcess rejects nested shell background operators", async () => {
   assert.deepEqual(calls, []);
 });
 
-test("ManagedProcess rejects background ampersand commands on Windows", async () => {
+test("ManagedProcess allows the PowerShell call operator on Windows", async () => {
   const calls = [];
   const loader = createTsModuleLoader({
     mocks: {
       "@tauri-apps/api/core": {
         async invoke(command, args) {
           calls.push({ command, args });
-          throw new Error("managed_process_start should not be invoked for rejected commands");
+          assert.equal(command, "managed_process_start");
+          return {
+            process: {
+              id: "proc-windows",
+              label: null,
+              command: args.command,
+              cwd: "/repo",
+              shell: "powershell",
+              pid: 321,
+              log_path: "C:\\logs\\proc-windows.log",
+              started_at: 10,
+              finished_at: null,
+              exit_code: null,
+              running: true,
+            },
+          };
         },
       },
     },
@@ -591,13 +580,13 @@ test("ManagedProcess rejects background ampersand commands on Windows", async ()
     name: "ManagedProcess",
     arguments: {
       action: "start",
-      command: "vite --port 5173 &",
+      command: "& '.\\server.ps1'",
     },
   });
 
-  assert.equal(result.isError, true);
-  assert.match(result.content[0].text, /must be a foreground command/);
-  assert.equal(calls.length, 0);
+  assert.equal(result.isError, false);
+  assert.match(result.content[0].text, /ManagedProcess started/);
+  assert.equal(calls.length, 1);
 });
 
 test("Bash tool marks stdio-open shell responses as errors", async () => {
@@ -894,5 +883,71 @@ test("Bash tool blocks workspace skills guesses before shell execution", async (
   assert.equal(result.isError, true);
   assert.match(result.content[0].text, /workspace skills\/ guesses/);
   assert.match(result.content[0].text, /cwd to skill:\/\/<enabled-skill>\/scripts/);
+  assert.deepEqual(calls, []);
+});
+
+test("Bash tool blocks PowerShell reads against the fixed Skills root", async () => {
+  const calls = [];
+  const loader = createTsModuleLoader({
+    mocks: {
+      "@tauri-apps/api/core": {
+        async invoke(command, args) {
+          calls.push({ command, args });
+          throw new Error("unexpected invoke");
+        },
+      },
+    },
+  });
+
+  const { createShellTools } = loader.loadModule("src/lib/tools/shellTools.ts");
+  const bundle = createShellTools({
+    workdir: "C:\\repo",
+    providerId: "codex",
+    runtimePlatform: "windows",
+    skillsRootEnabled: true,
+    skillsRootDir: "C:\\Users\\me\\.arcforge\\skills",
+  });
+
+  const result = await bundle.executeToolCall(
+    createBashCall(
+      "Get-Content -LiteralPath 'C:\\Users\\me\\.arcforge\\skills\\metaphysics-steward\\SKILL.md'",
+    ),
+  );
+
+  assert.equal(result.isError, true);
+  assert.match(result.content[0].text, /cat\/Get-Content/);
+  assert.deepEqual(calls, []);
+});
+
+test("Bash tool blocks PowerShell Set-Location into the fixed Skills root", async () => {
+  const calls = [];
+  const loader = createTsModuleLoader({
+    mocks: {
+      "@tauri-apps/api/core": {
+        async invoke(command, args) {
+          calls.push({ command, args });
+          throw new Error("unexpected invoke");
+        },
+      },
+    },
+  });
+
+  const { createShellTools } = loader.loadModule("src/lib/tools/shellTools.ts");
+  const bundle = createShellTools({
+    workdir: "C:\\repo",
+    providerId: "codex",
+    runtimePlatform: "windows",
+    skillsRootEnabled: true,
+    skillsRootDir: "C:\\Users\\me\\.arcforge\\skills",
+  });
+
+  const result = await bundle.executeToolCall(
+    createBashCall(
+      "Set-Location -LiteralPath 'C:\\Users\\me\\.arcforge\\skills\\metaphysics-steward\\scripts'",
+    ),
+  );
+
+  assert.equal(result.isError, true);
+  assert.match(result.content[0].text, /cannot cd into the fixed Skills root/);
   assert.deepEqual(calls, []);
 });

@@ -46,7 +46,8 @@ type ReadWorkspacePreviewResponse = {
 type WorkspaceFilePreviewOverlayProps = {
   openRequest: WorkspaceFilePreviewOpenRequest | null;
   isOpen: boolean;
-  onOpenEditor: (request: WorkspaceFilePreviewOpenRequest) => void;
+  presentation?: "overlay" | "dock";
+  onOpenEditor?: (request: WorkspaceFilePreviewOpenRequest) => void;
   onRequestClose: () => void;
   onClose: () => void;
 };
@@ -324,8 +325,16 @@ function buildSpreadsheetTable(
 }
 
 export function WorkspaceFilePreviewOverlay(props: WorkspaceFilePreviewOverlayProps) {
-  const { openRequest, isOpen, onOpenEditor, onRequestClose, onClose } = props;
+  const {
+    openRequest,
+    isOpen,
+    presentation = "overlay",
+    onOpenEditor,
+    onRequestClose,
+    onClose,
+  } = props;
   const { t } = useLocale();
+  const isDock = presentation === "dock";
   const closeAnimationTimeoutRef = useRef<number | null>(null);
   const loadSequenceRef = useRef(0);
   const previewBlobUrlRef = useRef<string | null>(null);
@@ -338,7 +347,7 @@ export function WorkspaceFilePreviewOverlay(props: WorkspaceFilePreviewOverlayPr
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [renderError, setRenderError] = useState<string | null>(null);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(() => isDock && isOpen);
 
   const replacePreview = useCallback((next: LoadedPreview | null) => {
     if (previewBlobUrlRef.current) {
@@ -362,6 +371,16 @@ export function WorkspaceFilePreviewOverlay(props: WorkspaceFilePreviewOverlayPr
   );
 
   useEffect(() => {
+    if (isDock) {
+      if (closeAnimationTimeoutRef.current !== null) {
+        window.clearTimeout(closeAnimationTimeoutRef.current);
+        closeAnimationTimeoutRef.current = null;
+      }
+      setIsVisible(isOpen);
+      if (!isOpen) onClose();
+      return;
+    }
+
     if (isOpen) {
       if (closeAnimationTimeoutRef.current !== null) {
         window.clearTimeout(closeAnimationTimeoutRef.current);
@@ -376,7 +395,7 @@ export function WorkspaceFilePreviewOverlay(props: WorkspaceFilePreviewOverlayPr
       closeAnimationTimeoutRef.current = null;
       onClose();
     }, FILE_PREVIEW_OVERLAY_ANIMATION_MS);
-  }, [isOpen, onClose]);
+  }, [isDock, isOpen, onClose]);
 
   useEffect(
     () => () => {
@@ -470,7 +489,9 @@ export function WorkspaceFilePreviewOverlay(props: WorkspaceFilePreviewOverlayPr
       kind === "image" ? normalizeImagePaths(activePreviewRequest?.imagePaths, activePath) : [],
     [activePath, activePreviewRequest?.imagePaths, kind],
   );
-  const canOpenEditor = Boolean(activePreviewRequest && isWorkspaceEditablePreviewPath(activePath));
+  const canOpenEditor = Boolean(
+    onOpenEditor && activePreviewRequest && isWorkspaceEditablePreviewPath(activePath),
+  );
   const canOpenExternal = Boolean(activePreviewRequest && activePath && !canOpenEditor);
 
   const openImagePath = useCallback(
@@ -499,18 +520,28 @@ export function WorkspaceFilePreviewOverlay(props: WorkspaceFilePreviewOverlayPr
   return (
     <div
       className={cn(
-        "workspace-file-preview-overlay absolute inset-0 z-50 flex min-h-0 min-w-0 transform-gpu flex-col overflow-hidden border-r border-border bg-background transition-[opacity,transform,box-shadow] duration-200 ease-out motion-reduce:transition-none",
-        isVisible
-          ? "pointer-events-auto translate-x-0 opacity-100 shadow-2xl"
-          : "pointer-events-none -translate-x-2 opacity-0 shadow-lg",
+        "workspace-file-preview-overlay flex min-h-0 min-w-0 flex-col overflow-hidden bg-background",
+        isDock
+          ? "relative h-full w-full"
+          : "absolute inset-0 z-50 transform-gpu border-r border-border transition-[opacity,transform,box-shadow] duration-200 ease-out motion-reduce:transition-none",
+        isVisible &&
+          (isDock
+            ? "pointer-events-auto opacity-100"
+            : "pointer-events-auto translate-x-0 opacity-100 shadow-2xl"),
+        !isVisible &&
+          (isDock
+            ? "pointer-events-none opacity-0"
+            : "pointer-events-none -translate-x-2 opacity-0 shadow-lg"),
       )}
     >
-      <MacOsTitleBarSpacer className="bg-muted/45" />
+      {!isDock ? <MacOsTitleBarSpacer className="bg-muted/45" /> : null}
       <div className="flex h-11 shrink-0 items-center gap-2 border-b border-border bg-muted/45 px-3">
         <PreviewIcon className="h-4 w-4 shrink-0 text-primary" />
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-semibold leading-tight">
-            {t("workspaceFilePreview.title")}
+            {isDock
+              ? basename(activePath) || t("workspaceFilePreview.title")
+              : t("workspaceFilePreview.title")}
           </div>
           <div className="truncate text-[11px] text-muted-foreground">{activePath}</div>
         </div>
@@ -522,7 +553,7 @@ export function WorkspaceFilePreviewOverlay(props: WorkspaceFilePreviewOverlayPr
               title={t("workspaceFilePreview.edit")}
               aria-label={t("workspaceFilePreview.edit")}
               onClick={() =>
-                onOpenEditor({
+                onOpenEditor?.({
                   ...activePreviewRequest,
                   path: activePath || activePreviewRequest.path,
                 })

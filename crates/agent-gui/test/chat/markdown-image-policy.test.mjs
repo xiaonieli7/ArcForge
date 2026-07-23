@@ -186,6 +186,39 @@ test("agent tool rules require Image for chat-visible images", () => {
   );
 });
 
+test("agent tool rules require PresentFile for generated user deliverables", () => {
+  const suffix = agentRunnerModule.buildToolsSuffix("/workspace", [
+    "Read",
+    "Image",
+    "PresentFile",
+    "Write",
+    "Bash",
+  ]);
+
+  assert.match(suffix, /## Delivering Files/);
+  assert.match(
+    suffix,
+    /After generating, exporting, downloading, or otherwise preparing a file that is a user deliverable, call PresentFile with its exact workspace-relative path before the final reply\./,
+  );
+  assert.match(
+    suffix,
+    /Use PresentFile for finished files such as Excel workbooks, PDFs, Word documents, archives, audio, video, and text exports\./,
+  );
+  assert.match(
+    suffix,
+    /Do not substitute a Markdown link, file:\/\/ URL, local path in prose, or shell output for PresentFile\./,
+  );
+  assert.match(
+    suffix,
+    /Use Image when an image should render inline in the conversation; use PresentFile when an image is being delivered as an openable file\./,
+  );
+});
+
+test("agent tool rules omit PresentFile delivery guidance when the tool is unavailable", () => {
+  const suffix = agentRunnerModule.buildToolsSuffix("/workspace", ["Read", "Write", "Bash"]);
+  assert.doesNotMatch(suffix, /## Delivering Files/);
+});
+
 test("agent tool rules prefer one parallel Agent batch over sequential calls", () => {
   const suffix = agentRunnerModule.buildToolsSuffix("/workspace", [
     "Agent",
@@ -271,16 +304,18 @@ test("agent tool rules route installed Skill scripts through skill cwd", () => {
   assert.match(suffix, /Do not cd into ~\/\.arcforge\/skills or workspace skills\/ guesses/);
 });
 
-test("agent Bash rules are Git Bash-first when runtime platform is Windows", () => {
+test("agent Bash compatibility rules are native PowerShell-first on Windows", () => {
   const suffix = agentRunnerModule.buildToolsSuffix(
     "/workspace",
     ["Bash", "ManagedProcess"],
     "windows",
   );
   assert.match(suffix, /Current platform: Windows/);
-  assert.match(suffix, /Git Bash with POSIX semantics/);
-  assert.match(suffix, /Write POSIX\/bash-compatible commands by default/);
-  assert.match(suffix, /shell_family: powershell/);
+  assert.match(suffix, /runs native Windows PowerShell first/);
+  assert.match(suffix, /does not use WSL/);
+  assert.match(suffix, /Windows PowerShell 5\.1-compatible commands/);
+  assert.match(suffix, /`&` is the call operator/);
+  assert.doesNotMatch(suffix, /Git Bash with POSIX semantics/);
   assert.match(suffix, /require `nohup` and log redirection/);
 });
 

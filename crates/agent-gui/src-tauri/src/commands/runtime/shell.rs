@@ -3,7 +3,9 @@ use std::sync::Arc;
 use serde::Serialize;
 use tauri::State;
 
-use crate::runtime::shell_runner::{run_shell_script, ShellRunRegistry, ShellRunResponse};
+use crate::runtime::shell_runner::{
+    run_native_shell_script, ShellRunRegistry, ShellRunResponse,
+};
 
 #[derive(Debug, Serialize)]
 pub struct ShellCancelResponse {
@@ -27,7 +29,7 @@ pub async fn shell_run(
     let cancel_token = normalized_run_id.as_deref().map(|id| registry.register(id));
 
     let join_result = tauri::async_runtime::spawn_blocking(move || {
-        run_shell_script(
+        run_native_shell_script(
             workdir,
             command,
             cwd,

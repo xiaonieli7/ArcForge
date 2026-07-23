@@ -62,6 +62,7 @@ macro_rules! app_invoke_handler {
             commands::fs::fs_read_text,
             commands::fs::fs_read_editable_text,
             commands::fs::fs_path_status,
+            commands::fs::fs_describe_workspace_artifacts,
             commands::fs::fs_read_image_source,
             commands::fs::fs_read_workspace_image,
             commands::fs::fs_write_text,

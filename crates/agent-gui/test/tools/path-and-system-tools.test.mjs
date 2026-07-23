@@ -2486,6 +2486,221 @@ test("Image file tool returns display image details and inline image content", a
   ]);
 });
 
+test("PresentFile returns trusted workspace artifact descriptors for native file cards", async () => {
+  const invocations = [];
+  const fsLoader = createTsModuleLoader({
+    mocks: {
+      "@tauri-apps/api/core": {
+        async invoke(command, args) {
+          invocations.push({ command, args });
+          assert.equal(command, "fs_describe_workspace_artifacts");
+          return {
+            files: [
+              {
+                path: "reports/usage.xlsx",
+                fileName: "usage.xlsx",
+                mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                previewKind: "spreadsheet",
+                sizeBytes: 23456,
+                mtimeMs: 42,
+                fileId: "artifact-1",
+                previewSupported: true,
+              },
+            ],
+          };
+        },
+      },
+    },
+  });
+  const fsTools = fsLoader.loadModule("src/lib/tools/fsTools.ts");
+  const fileToolState = fsLoader.loadModule("src/lib/tools/fileToolState.ts");
+  const bundle = fsTools.createFsTools({
+    workdir: "/workspace",
+    fileState: fileToolState.createFileToolState(),
+  });
+
+  assert.deepEqual(bundle.tools.map((tool) => tool.name).slice(0, 3), [
+    "Read",
+    "Image",
+    "PresentFile",
+  ]);
+  assert.equal(bundle.metadataByName.get("PresentFile").kind, "display_file");
+  assert.equal(bundle.metadataByName.get("PresentFile").isReadOnly, true);
+
+  const presentFileTool = bundle.tools.find((tool) => tool.name === "PresentFile");
+  assert.equal(presentFileTool.parameters.additionalProperties, false);
+  assert.match(JSON.stringify(presentFileTool.parameters), /"maxItems":12/);
+
+  const result = await bundle.executeToolCall({
+    type: "toolCall",
+    id: "present-file-call",
+    name: "PresentFile",
+    arguments: { path: "reports/usage.xlsx" },
+  });
+
+  assert.equal(result.isError, false);
+  assert.equal(result.toolName, "PresentFile");
+  assert.deepEqual(result.details, {
+    kind: "display_file",
+    files: [
+      {
+        path: "reports/usage.xlsx",
+        relativePath: "reports/usage.xlsx",
+        fileName: "usage.xlsx",
+        mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        previewKind: "spreadsheet",
+        sizeBytes: 23456,
+        mtimeMs: 42,
+        fileId: "artifact-1",
+        previewSupported: true,
+      },
+    ],
+  });
+  assert.match(result.content[0].text, /Present files: 1/);
+  assert.match(result.content[0].text, /reports\/usage\.xlsx/);
+  assert.deepEqual(invocations, [
+    {
+      command: "fs_describe_workspace_artifacts",
+      args: {
+        workdir: "/workspace",
+        paths: ["reports/usage.xlsx"],
+      },
+    },
+  ]);
+});
+
+test("PresentFile rejects files outside the workspace before invoking the backend", async () => {
+  let invokeCount = 0;
+  const fsLoader = createTsModuleLoader({
+    mocks: {
+      "@tauri-apps/api/core": {
+        async invoke() {
+          invokeCount += 1;
+          throw new Error("backend should not be called");
+        },
+      },
+    },
+  });
+  const fsTools = fsLoader.loadModule("src/lib/tools/fsTools.ts");
+  const fileToolState = fsLoader.loadModule("src/lib/tools/fileToolState.ts");
+  const bundle = fsTools.createFsTools({
+    workdir: "/workspace",
+    fileState: fileToolState.createFileToolState(),
+  });
+
+  const result = await bundle.executeToolCall({
+    type: "toolCall",
+    id: "present-external-file-call",
+    name: "PresentFile",
+    arguments: { path: "/Users/me/Desktop/usage.xlsx" },
+  });
+
+  assert.equal(result.isError, true);
+  assert.match(result.content[0].text, /outside the workspace|must resolve inside the workspace/);
+  assert.equal(invokeCount, 0);
+});
+
+test("PresentFile deduplicates normalized workspace paths while preserving first order", async () => {
+  const invocations = [];
+  const fsLoader = createTsModuleLoader({
+    mocks: {
+      "@tauri-apps/api/core": {
+        async invoke(command, args) {
+          invocations.push({ command, args });
+          return {
+            files: [
+              {
+                path: "reports/usage.xlsx",
+                relativePath: "reports/usage.xlsx",
+                fileName: "usage.xlsx",
+                sizeBytes: 10,
+                mtimeMs: 20,
+                previewSupported: true,
+              },
+              {
+                path: "reports/summary.pdf",
+                relativePath: "reports/summary.pdf",
+                fileName: "summary.pdf",
+                sizeBytes: 30,
+                mtimeMs: 40,
+                previewSupported: true,
+              },
+            ],
+          };
+        },
+      },
+    },
+  });
+  const fsTools = fsLoader.loadModule("src/lib/tools/fsTools.ts");
+  const fileToolState = fsLoader.loadModule("src/lib/tools/fileToolState.ts");
+  const bundle = fsTools.createFsTools({
+    workdir: "/workspace",
+    fileState: fileToolState.createFileToolState(),
+  });
+
+  const result = await bundle.executeToolCall({
+    type: "toolCall",
+    id: "present-duplicate-files-call",
+    name: "PresentFile",
+    arguments: {
+      paths: [
+        "reports/usage.xlsx",
+        "./reports\\usage.xlsx",
+        "reports/summary.pdf",
+        "reports/usage.xlsx",
+      ],
+    },
+  });
+
+  assert.equal(result.isError, false);
+  assert.deepEqual(
+    result.details.files.map((file) => file.relativePath),
+    ["reports/usage.xlsx", "reports/summary.pdf"],
+  );
+  assert.deepEqual(invocations, [
+    {
+      command: "fs_describe_workspace_artifacts",
+      args: {
+        workdir: "/workspace",
+        paths: ["reports/usage.xlsx", "reports/summary.pdf"],
+      },
+    },
+  ]);
+});
+
+test("PresentFile enforces its twelve-file runtime limit", async () => {
+  let invokeCount = 0;
+  const fsLoader = createTsModuleLoader({
+    mocks: {
+      "@tauri-apps/api/core": {
+        async invoke() {
+          invokeCount += 1;
+          return { files: [] };
+        },
+      },
+    },
+  });
+  const fsTools = fsLoader.loadModule("src/lib/tools/fsTools.ts");
+  const fileToolState = fsLoader.loadModule("src/lib/tools/fileToolState.ts");
+  const bundle = fsTools.createFsTools({
+    workdir: "/workspace",
+    fileState: fileToolState.createFileToolState(),
+  });
+
+  const result = await bundle.executeToolCall({
+    type: "toolCall",
+    id: "present-too-many-files-call",
+    name: "PresentFile",
+    arguments: {
+      paths: Array.from({ length: 13 }, (_, index) => `reports/${index}.xlsx`),
+    },
+  });
+
+  assert.equal(result.isError, true);
+  assert.match(result.content[0].text, /supports at most 12 files per call/);
+  assert.equal(invokeCount, 0);
+});
+
 test("Image file tool reads installed Skill images through skill URLs", async () => {
   const invocations = [];
   const fsLoader = createTsModuleLoader({

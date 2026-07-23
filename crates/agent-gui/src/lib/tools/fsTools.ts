@@ -12,6 +12,9 @@ import {
   type BuiltinToolResultDetails,
   createBuiltinMetadataMap,
   type DeleteResultDetails,
+  type DisplayFileItemDetails,
+  type DisplayFilePreviewKind,
+  type DisplayFileResultDetails,
   type DisplayImageItemDetails,
   type DisplayImageResultDetails,
   type EditMatchStrategy,
@@ -38,6 +41,7 @@ type ToolOk<TDetails extends BuiltinToolResultDetails = BuiltinToolResultDetails
 };
 
 const MAX_DISPLAY_IMAGE_PATHS = 12;
+const MAX_DISPLAY_FILE_PATHS = 12;
 const AUTO_FULL_READ_MAX_LINES = 5_000;
 
 function strictToolParameters(properties: Record<string, unknown>) {
@@ -115,6 +119,22 @@ type PathStatusCommandResponse = {
   sizeBytes?: number | null;
   mtimeMs?: number | null;
   fileId?: string | null;
+};
+
+type WorkspaceArtifactDescriptor = {
+  path: string;
+  relativePath?: string | null;
+  fileName: string;
+  mimeType?: string | null;
+  previewKind?: DisplayFilePreviewKind | null;
+  sizeBytes: number;
+  mtimeMs: number;
+  fileId?: string | null;
+  previewSupported: boolean;
+};
+
+type DescribeWorkspaceArtifactsResponse = {
+  files: WorkspaceArtifactDescriptor[];
 };
 
 type EditCommandResponse = {
@@ -518,6 +538,33 @@ export function createFsTools(params: {
     }),
   };
 
+  const toolPresentFile: Tool = {
+    name: "PresentFile",
+    description:
+      "Present one or more finished workspace files to the user as native file cards that can be opened or previewed from the chat. Call this after generating, exporting, downloading, or otherwise preparing a user deliverable such as an Excel workbook, PDF, Word document, archive, audio, video, or text file. This is read-only and accepts workspace files only; it does not create, edit, upload, or expose files outside the workspace. Use Image instead for images that should render inline in the conversation. Do not substitute Markdown links, file:// URLs, or shell output for this tool.",
+    parameters: strictToolParameters({
+      path: Type.Optional(
+        Type.String({
+          description:
+            "Single finished workspace file to present. Pass the exact workspace-relative path returned by the tool that created or listed it.",
+        }),
+      ),
+      paths: Type.Optional(
+        Type.Array(
+          Type.String({
+            description:
+              "Finished workspace file to present. Pass the exact workspace-relative path returned by the tool that created or listed it.",
+          }),
+          {
+            minItems: 1,
+            maxItems: MAX_DISPLAY_FILE_PATHS,
+            description: "Multiple finished workspace files to present in order.",
+          },
+        ),
+      ),
+    }),
+  };
+
   const toolWrite: Tool & { prepareArguments?: (args: unknown) => unknown } = {
     name: "Write",
     description:
@@ -691,6 +738,7 @@ export function createFsTools(params: {
   const tools: Tool[] = [
     toolRead,
     toolImage,
+    toolPresentFile,
     toolWrite,
     toolEdit,
     toolDelete,
@@ -702,6 +750,7 @@ export function createFsTools(params: {
   const allowedArgumentsByToolName: Record<string, readonly string[]> = {
     Read: ["path", "start_line", "limit", "page_start", "page_limit", "cell_start", "cell_limit"],
     Image: ["path", "paths", "url", "urls", "base64", "base64s", "mimeType", "source", "sources"],
+    PresentFile: ["path", "paths"],
     // "mode" is legacy tolerance: no longer in the schema, silently ignored.
     Write: ["path", "content", "mode"],
     Edit: ["path", "old_string", "new_string", "expected_replacements", "replace_all"],
@@ -1395,6 +1444,113 @@ export function createFsTools(params: {
     };
   }
 
+  async function execPresentFile(
+    args: any,
+    signal?: AbortSignal,
+  ): Promise<ToolOk<DisplayFileResultDetails>> {
+    if (signal?.aborted) throw new Error("Cancelled");
+
+    const requestedPaths: unknown[] = [];
+    if (typeof args?.path === "string" && args.path.trim()) requestedPaths.push(args.path);
+    if (Array.isArray(args?.paths)) requestedPaths.push(...args.paths);
+    if (requestedPaths.length === 0) {
+      throw new Error("PresentFile requires path or paths");
+    }
+    if (requestedPaths.length > MAX_DISPLAY_FILE_PATHS) {
+      throw new Error(`PresentFile supports at most ${MAX_DISPLAY_FILE_PATHS} files per call`);
+    }
+
+    const resolvedPaths: ResolvedPath[] = [];
+    for (const [index, requestedPath] of requestedPaths.entries()) {
+      if (signal?.aborted) throw new Error("Cancelled");
+      const label = requestedPaths.length === 1 ? "PresentFile.path" : `PresentFile.paths[${index}]`;
+      const resolved = await pathResolver.resolvePath(requestedPath, {
+        label,
+        intent: "read",
+        required: true,
+      });
+      if (resolved.scope !== "workspace") {
+        throw new Error(
+          `${label} must resolve inside the workspace; ${formatResolvedTarget(resolved)} is ${resolved.scope}-scoped`,
+        );
+      }
+      if (!resolved.relativePath) {
+        throw new Error(`${label} must identify a workspace file`);
+      }
+      if (resolvedPaths.some((candidate) => candidate.relativePath === resolved.relativePath)) {
+        continue;
+      }
+      resolvedPaths.push(resolved);
+    }
+
+    const response = await invokeFs<DescribeWorkspaceArtifactsResponse>(
+      "fs_describe_workspace_artifacts",
+      {
+        workdir,
+        paths: resolvedPaths.map((resolved) => resolved.relativePath),
+      },
+    );
+    if (!response || !Array.isArray(response.files)) {
+      throw new Error("PresentFile received an invalid artifact descriptor response");
+    }
+    if (response.files.length !== resolvedPaths.length) {
+      throw new Error(
+        `PresentFile expected ${resolvedPaths.length} file descriptor${resolvedPaths.length === 1 ? "" : "s"}, received ${response.files.length}`,
+      );
+    }
+
+    const files: DisplayFileItemDetails[] = response.files.map((file, index) => {
+      const resolved = resolvedPaths[index];
+      if (!resolved) throw new Error("PresentFile could not match a returned file descriptor");
+      const resolvedRelativePath = resolved.relativePath;
+      if (!resolvedRelativePath) {
+        throw new Error("PresentFile could not resolve the returned file inside the workspace");
+      }
+      const backendPath =
+        typeof file.relativePath === "string" && file.relativePath.trim()
+          ? file.relativePath.trim()
+          : typeof file.path === "string"
+            ? file.path.trim()
+            : "";
+      const relativePath = backendPath || resolvedRelativePath;
+      const fileName =
+        typeof file.fileName === "string" && file.fileName.trim()
+          ? file.fileName
+          : relativePath.split("/").filter(Boolean).at(-1) || relativePath;
+      return {
+        path: relativePath,
+        relativePath,
+        fileName,
+        mimeType:
+          typeof file.mimeType === "string" && file.mimeType ? file.mimeType : undefined,
+        previewKind: file.previewKind ?? undefined,
+        sizeBytes: typeof file.sizeBytes === "number" ? file.sizeBytes : 0,
+        mtimeMs: typeof file.mtimeMs === "number" ? file.mtimeMs : 0,
+        fileId: typeof file.fileId === "string" && file.fileId ? file.fileId : undefined,
+        previewSupported: file.previewSupported === true,
+      };
+    });
+
+    return {
+      content: [
+        {
+          type: "text",
+          text: [
+            `Present files: ${files.length}`,
+            ...files.map(
+              (file, index) =>
+                `${index + 1}. ${file.relativePath}\nsizeBytes=${file.sizeBytes}\npreviewSupported=${file.previewSupported}`,
+            ),
+          ].join("\n"),
+        },
+      ],
+      details: {
+        kind: "display_file",
+        files,
+      },
+    };
+  }
+
   async function execWrite(args: any, signal?: AbortSignal): Promise<ToolOk<WriteResultDetails>> {
     if (signal?.aborted) throw new Error("Cancelled");
 
@@ -1841,6 +1997,9 @@ export function createFsTools(params: {
         case "Image":
           result = await execImage(toolCall.arguments, signal);
           break;
+        case "PresentFile":
+          result = await execPresentFile(toolCall.arguments, signal);
+          break;
         case "Write":
           result = await execWrite(toolCall.arguments, signal);
           break;
@@ -1913,6 +2072,15 @@ export function createFsTools(params: {
         {
           groupId: "fs",
           kind: "display_image",
+          isReadOnly: true,
+          displayCategory: "file",
+        },
+      ],
+      [
+        "PresentFile",
+        {
+          groupId: "fs",
+          kind: "display_file",
           isReadOnly: true,
           displayCategory: "file",
         },
