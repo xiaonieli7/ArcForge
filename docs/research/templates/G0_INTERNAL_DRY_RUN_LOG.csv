@@ -1,3 +1,0 @@
-dry_run_id,date,operator,observer,fixture_version,baseline_total_min,arcforge_total_min,findings_correct_of_10,citation_precision,locator_open_rate,excluded_canary_absent,parse_failure_visible,boundary_questions_passed_of_5,accepted_applied_succeeded_pass,partial_unknown_pass,recording_fields_complete,scoring_disagreement_percent,p0_issue_count,decision,notes
-DRY-01,2026-07-20,AI primary coder,AI secondary coder,V1,NA,NA,10,1.000,1.000,true,true,5,true,true,true,0.0,0,pass_positive_control,Compliant synthetic report; no user product provider or apply evidence
-DRY-02,2026-07-20,AI primary coder,AI secondary coder,V1,NA,NA,7,0.813,1.000,true,true,5,true,true,true,0.0,0,pass_negative_control,Three of three seeded critical defects detected; artifact rejected as designed

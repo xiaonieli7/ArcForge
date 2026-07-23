@@ -1,2 +1,0 @@
-deviation_id,case_id,session_id,observed_behavior,evidence_refs,arcforge_expected_contract,impact,likelihood,priority,reproducible,containment,owner,status
-SD-001,,,,,,unknown,unknown,P0,unknown,,,open

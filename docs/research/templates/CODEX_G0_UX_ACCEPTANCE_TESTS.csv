@@ -1,9 +1,0 @@
-test_id,source_cases,precondition,user_task,pass_criterion,evidence_refs,result,target_doc
-UX-G0-01,W10-01;W10-04,Two workspaces and two active tasks,Switch tasks during plan run and review,User always identifies the true workspace task and run without help,,not_run,UI_WIREFRAMES_V1
-UX-G0-02,W20-01;W20-02;W20-03,Plan selected,Request file process and provider actions,User understands provider egress may occur but resource effects cannot,,not_run,MVP_PRD_V1
-UX-G0-03,W30-02;W50-01,Data boundary review visible,State what leaves the device and where,At least 90 percent identify source scope provider and endpoint,,not_run,UI_WIREFRAMES_V1
-UX-G0-04,W40-01;W40-04,Artifact accepted but not applied,State current artifact and workspace status,At least 90 percent distinguish accepted applied and succeeded,,not_run,UI_WIREFRAMES_V1
-UX-G0-05,W40-03,Target changed after preview,Attempt apply,Stale preview is invalidated and no silent overwrite occurs,,not_run,PROTOCOL_V1
-UX-G0-06,W40-05;W40-06,Multi-file apply fails or outcome is unknown,Explain result and next safe action,No participant interprets partial or unknown as global success,,not_run,UI_WIREFRAMES_V1
-UX-G0-07,W30-04;W30-05;W30-06,Pending approval exists,Change args task or restart,Old approval cannot authorize changed scope and user can identify why,,not_run,PROTOCOL_V1
-UX-G0-08,W50-03,MCP is configured and connected,Explain whether a tool can run now,User does not equate connection with execution authorization,,not_run,MVP_PRD_V1
