@@ -3,7 +3,6 @@
 .codex
 .claude
 .codex-artifacts
-.liveagent
 
 **/node_modules
 **/dist
