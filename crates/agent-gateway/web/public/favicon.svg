@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="ArcForge app icon">
+  <defs>
+    <linearGradient id="tile" x1="132" y1="94" x2="891" y2="932" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.5" stop-color="#f8fbfd"/>
+      <stop offset="1" stop-color="#e8f0f6"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="312" y1="252" x2="724" y2="784" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0b5276"/>
+      <stop offset="0.46" stop-color="#062f58"/>
+      <stop offset="1" stop-color="#06284f"/>
+    </linearGradient>
+    <linearGradient id="arc" x1="295" y1="691" x2="775" y2="552" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#78c5dd"/>
+      <stop offset="0.48" stop-color="#2f91b4"/>
+      <stop offset="1" stop-color="#15779f"/>
+    </linearGradient>
+  </defs>
+  <rect x="64" y="64" width="896" height="896" rx="220" fill="url(#tile)"/>
+  <rect x="65.5" y="65.5" width="893" height="893" rx="218.5" fill="none" stroke="#d6e3ec" stroke-width="3"/>
+  <g transform="translate(102.4 102.4) scale(.8)">
+    <path fill="url(#steel)" fill-rule="evenodd" d="M170 826 419 222c17-42 52-66 95-66 44 0 79 24 96 66l244 604H681l-51-139H390l-52 139H170Zm269-287h143l-71-194-72 194Z"/>
+    <path fill="url(#arc)" d="M190 692c130-119 287-177 486-178 56 0 114 6 177 18l-34 126c-62-16-121-25-176-26-145-3-264 34-365 115l-88-55Z"/>
+    <path d="M269 686c106-75 231-109 376-105 53 1 108 8 166 21" fill="none" stroke="#a9deec" stroke-width="16" stroke-linecap="round" opacity="0.72"/>
+    <path d="m768 166 24 51 51 24-51 24-24 51-24-51-51-24 51-24 24-51Z" fill="#2f91b4"/>
+    <path d="m864 305 11 23 23 11-23 11-11 23-11-23-23-11 23-11 11-23Z" fill="#78c5dd"/>
+  </g>
+</svg>

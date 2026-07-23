@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 420" role="img" aria-label="ArcForge — local-first desktop Work Agent for Windows professionals">
+  <defs>
+    <linearGradient id="background" x1="54" y1="26" x2="1335" y2="402" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="0.55" stop-color="#f8fbfd"/>
+      <stop offset="1" stop-color="#e8f0f6"/>
+    </linearGradient>
+    <linearGradient id="steel" x1="122" y1="84" x2="352" y2="350" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0b5276"/>
+      <stop offset="0.46" stop-color="#062f58"/>
+      <stop offset="1" stop-color="#06284f"/>
+    </linearGradient>
+    <linearGradient id="arc" x1="105" y1="296" x2="372" y2="222" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#78c5dd"/>
+      <stop offset="0.48" stop-color="#2f91b4"/>
+      <stop offset="1" stop-color="#15779f"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="12" stdDeviation="18" flood-color="#06284f" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <rect x="10" y="10" width="1380" height="400" rx="52" fill="url(#background)" stroke="#d6e3ec" stroke-width="2"/>
+  <g filter="url(#shadow)">
+    <rect x="62" y="62" width="296" height="296" rx="74" fill="#ffffff" stroke="#d6e3ec" stroke-width="2"/>
+    <g transform="translate(75 75) scale(.27)">
+      <path fill="url(#steel)" fill-rule="evenodd" d="M170 826 419 222c17-42 52-66 95-66 44 0 79 24 96 66l244 604H681l-51-139H390l-52 139H170Zm269-287h143l-71-194-72 194Z"/>
+      <path fill="url(#arc)" d="M190 692c130-119 287-177 486-178 56 0 114 6 177 18l-34 126c-62-16-121-25-176-26-145-3-264 34-365 115l-88-55Z"/>
+      <path d="M269 686c106-75 231-109 376-105 53 1 108 8 166 21" fill="none" stroke="#a9deec" stroke-width="16" stroke-linecap="round" opacity="0.72"/>
+      <path d="m768 166 24 51 51 24-51 24-24 51-24-51-51-24 51-24 24-51Z" fill="#2f91b4"/>
+      <path d="m864 305 11 23 23 11-23 11-11 23-11-23-23-11 23-11 11-23Z" fill="#78c5dd"/>
+    </g>
+  </g>
+
+  <text x="420" y="168" fill="#06284f" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="96" font-weight="700" letter-spacing="-3">ArcForge</text>
+  <text x="426" y="222" fill="#3e647f" font-family="Segoe UI, Inter, Arial, sans-serif" font-size="30" font-weight="500">Local-first desktop Work Agent for Windows professionals</text>
+
+  <g font-family="Segoe UI, Inter, Arial, sans-serif" font-size="22" font-weight="600">
+    <rect x="426" y="270" width="270" height="54" rx="27" fill="#e5f3f8"/>
+    <circle cx="456" cy="297" r="7" fill="#2f91b4"/>
+    <text x="476" y="305" fill="#174867">Reviewable deliverables</text>
+    <rect x="714" y="270" width="236" height="54" rx="27" fill="#e5f3f8"/>
+    <circle cx="744" cy="297" r="7" fill="#2f91b4"/>
+    <text x="764" y="305" fill="#174867">Verifiable evidence</text>
+    <rect x="968" y="270" width="296" height="54" rx="27" fill="#e5f3f8"/>
+    <circle cx="998" cy="297" r="7" fill="#2f91b4"/>
+    <text x="1018" y="305" fill="#174867">Explicit authorization</text>
+  </g>
+</svg>

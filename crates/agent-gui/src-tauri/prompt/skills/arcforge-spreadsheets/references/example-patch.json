@@ -1,0 +1,42 @@
+{
+  "sheets": [
+    {
+      "name": "Quarterly Summary",
+      "set_cells": {
+        "A6": "FY Total",
+        "B6": "=SUM(B2:B5)",
+        "C6": "=SUM(C2:C5)",
+        "D6": "=IFERROR((B6-C6)/B6,0)"
+      },
+      "styles": [
+        {
+          "range": "A6:D6",
+          "style": {
+            "font": {
+              "bold": true,
+              "color": "0F172A"
+            },
+            "fill": "DBEAFE",
+            "border": {
+              "style": "thin",
+              "color": "93C5FD"
+            }
+          }
+        },
+        {
+          "range": "B6:C6",
+          "style": {
+            "number_format": "¥#,##0"
+          }
+        },
+        {
+          "range": "D6",
+          "style": {
+            "number_format": "0.0%"
+          }
+        }
+      ]
+    }
+  ]
+}
+
