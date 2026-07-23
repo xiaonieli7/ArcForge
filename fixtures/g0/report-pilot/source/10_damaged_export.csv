@@ -1,0 +1,4 @@
+user_id,region,status
+U-101,East,active
+U-102,South,"active
+U-103,East,paused,unexpected-column

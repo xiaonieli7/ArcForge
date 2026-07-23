@@ -1,0 +1,3062 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.arcforge.dev/contracts/v0/arcforge-contracts.schema.json",
+  "title": "ArcForge Trusted Execution Contract Bundle V0",
+  "description": "Draft machine-readable contracts for the G0.5 trusted execution boundary. Contract schema version 0 targets protocol major 1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_schema_version",
+    "status",
+    "protocol_major",
+    "protocol_minor",
+    "command_envelopes",
+    "tool_intents",
+    "data_boundary_grants",
+    "resource_identities",
+    "invocation_specs",
+    "policy_decisions",
+    "previews",
+    "approvals",
+    "authorization_grants",
+    "effect_receipts"
+  ],
+  "properties": {
+    "contract_schema_version": {
+      "type": "integer",
+      "const": 0
+    },
+    "status": {
+      "type": "string",
+      "const": "draft"
+    },
+    "protocol_major": {
+      "type": "integer",
+      "const": 1
+    },
+    "protocol_minor": {
+      "type": "integer",
+      "const": 0
+    },
+    "command_envelopes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "$ref": "#/$defs/CommandEnvelope"
+      }
+    },
+    "tool_intents": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "$ref": "#/$defs/ToolIntent"
+      }
+    },
+    "data_boundary_grants": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "$ref": "#/$defs/DataBoundaryGrant"
+      }
+    },
+    "resource_identities": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "$ref": "#/$defs/ResourceIdentity"
+      }
+    },
+    "invocation_specs": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "$ref": "#/$defs/InvocationSpec"
+      }
+    },
+    "policy_decisions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "$ref": "#/$defs/PolicyDecision"
+      }
+    },
+    "previews": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "$ref": "#/$defs/PreviewBinding"
+      }
+    },
+    "approvals": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "$ref": "#/$defs/Approval"
+      }
+    },
+    "authorization_grants": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "$ref": "#/$defs/AuthorizationGrant"
+      }
+    },
+    "effect_receipts": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "$ref": "#/$defs/EffectReceipt"
+      }
+    }
+  },
+  "$defs": {
+    "UuidV7": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "Sha256": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "DecimalUint": {
+      "type": "string",
+      "$comment": "Unsigned 64-bit decimal. JSON Schema limits lexical form and width; the review/runtime validator MUST reject values above 18446744073709551615.",
+      "maxLength": 20,
+      "pattern": "^(0|[1-9][0-9]*)$"
+    },
+    "NonZeroDecimalUint": {
+      "type": "string",
+      "$comment": "Non-zero unsigned 64-bit decimal. JSON Schema limits lexical form and width; the review/runtime validator MUST reject values above 18446744073709551615.",
+      "maxLength": 20,
+      "pattern": "^[1-9][0-9]*$"
+    },
+    "Rfc3339Utc": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "Z$"
+    },
+    "CanonicalHttpsOrigin": {
+      "type": "string",
+      "format": "uri",
+      "maxLength": 280,
+      "$comment": "ASCII lowercase DNS origin only: no userinfo, path, query, fragment, IP literal, localhost, trailing dot, or default :443. The semantic validator performs trusted URI parsing, port range checks, IDNA/canonical round-trip, and SSRF policy checks.",
+      "pattern": "^https://(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z](?:[a-z0-9-]{0,61}[a-z0-9])?(?::[1-9][0-9]{0,4})?$"
+    },
+    "AsciiIdentifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "QualifiedName": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160,
+      "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$"
+    },
+    "TraceId": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{32}$"
+    },
+    "RequiredFeatures": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "contains": {
+        "const": "closed-authoritative-schema"
+      },
+      "minContains": 1,
+      "maxContains": 1,
+      "items": {
+        "type": "string",
+        "enum": [
+          "closed-authoritative-schema",
+          "jcs-rfc8785",
+          "exact-argument-bytes",
+          "trusted-preview-renderer",
+          "trusted-monotonic-clock",
+          "ntfs-file-id-128",
+          "data-boundary-grant",
+          "per-resource-receipts",
+          "one-use-authorization",
+          "durable-fencing",
+          "late-receipt-reconciliation"
+        ]
+      }
+    },
+    "EffectClass": {
+      "type": "string",
+      "enum": [
+        "DataEgress",
+        "WorkspaceMutation"
+      ]
+    },
+    "ContentRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "content_ref",
+        "sha256",
+        "byte_length"
+      ],
+      "properties": {
+        "content_ref": {
+          "type": "string",
+          "pattern": "^arcforge-content:sha256:[0-9a-f]{64}$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "byte_length": {
+          "$ref": "#/$defs/DecimalUint"
+        }
+      }
+    },
+    "Actor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actor_type",
+        "actor_id"
+      ],
+      "properties": {
+        "actor_type": {
+          "type": "string",
+          "enum": [
+            "User",
+            "System",
+            "Broker"
+          ]
+        },
+        "actor_id": {
+          "$ref": "#/$defs/AsciiIdentifier"
+        }
+      }
+    },
+    "BrokerActor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "actor_type",
+        "actor_id"
+      ],
+      "properties": {
+        "actor_type": {
+          "const": "Broker"
+        },
+        "actor_id": {
+          "$ref": "#/$defs/AsciiIdentifier"
+        }
+      }
+    },
+    "Scope": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "scope_type"
+          ],
+          "properties": {
+            "scope_type": {
+              "const": "Global"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "scope_type",
+            "workspace_id"
+          ],
+          "properties": {
+            "scope_type": {
+              "const": "Workspace"
+            },
+            "workspace_id": {
+              "$ref": "#/$defs/UuidV7"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "scope_type",
+            "workspace_id",
+            "thread_id"
+          ],
+          "properties": {
+            "scope_type": {
+              "const": "Thread"
+            },
+            "workspace_id": {
+              "$ref": "#/$defs/UuidV7"
+            },
+            "thread_id": {
+              "$ref": "#/$defs/UuidV7"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "scope_type",
+            "workspace_id",
+            "thread_id",
+            "task_id"
+          ],
+          "properties": {
+            "scope_type": {
+              "const": "Task"
+            },
+            "workspace_id": {
+              "$ref": "#/$defs/UuidV7"
+            },
+            "thread_id": {
+              "$ref": "#/$defs/UuidV7"
+            },
+            "task_id": {
+              "$ref": "#/$defs/UuidV7"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "scope_type",
+            "workspace_id",
+            "thread_id",
+            "task_id",
+            "run_id"
+          ],
+          "properties": {
+            "scope_type": {
+              "const": "AgentRun"
+            },
+            "workspace_id": {
+              "$ref": "#/$defs/UuidV7"
+            },
+            "thread_id": {
+              "$ref": "#/$defs/UuidV7"
+            },
+            "task_id": {
+              "$ref": "#/$defs/UuidV7"
+            },
+            "run_id": {
+              "$ref": "#/$defs/UuidV7"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "scope_type",
+            "settings_operation_id"
+          ],
+          "properties": {
+            "scope_type": {
+              "const": "SettingsDiagnostic"
+            },
+            "settings_operation_id": {
+              "$ref": "#/$defs/UuidV7"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "scope_type",
+            "effect_id"
+          ],
+          "properties": {
+            "scope_type": {
+              "const": "Recovery"
+            },
+            "effect_id": {
+              "$ref": "#/$defs/UuidV7"
+            }
+          }
+        }
+      ]
+    },
+    "ApprovalScope": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "scope_type",
+            "workspace_id",
+            "thread_id",
+            "task_id",
+            "run_id"
+          ],
+          "properties": {
+            "scope_type": {
+              "const": "TaskRun"
+            },
+            "workspace_id": {
+              "$ref": "#/$defs/UuidV7"
+            },
+            "thread_id": {
+              "$ref": "#/$defs/UuidV7"
+            },
+            "task_id": {
+              "$ref": "#/$defs/UuidV7"
+            },
+            "run_id": {
+              "$ref": "#/$defs/UuidV7"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "scope_type",
+            "settings_operation_id"
+          ],
+          "properties": {
+            "scope_type": {
+              "const": "SettingsDiagnostic"
+            },
+            "settings_operation_id": {
+              "$ref": "#/$defs/UuidV7"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "scope_type",
+            "effect_id"
+          ],
+          "properties": {
+            "scope_type": {
+              "const": "Recovery"
+            },
+            "effect_id": {
+              "$ref": "#/$defs/UuidV7"
+            }
+          }
+        }
+      ]
+    },
+    "ExpectedAggregateVersion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stream_id",
+        "aggregate_version"
+      ],
+      "properties": {
+        "stream_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "aggregate_version": {
+          "$ref": "#/$defs/DecimalUint"
+        }
+      }
+    },
+    "CommandPayloadRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "$comment": "The referenced payload is accepted only when schema_id/schema_version are present in the negotiated closed registry.",
+      "required": [
+        "schema_id",
+        "schema_version",
+        "body"
+      ],
+      "properties": {
+        "schema_id": {
+          "$ref": "#/$defs/QualifiedName"
+        },
+        "schema_version": {
+          "type": "integer",
+          "const": 0
+        },
+        "body": {
+          "$ref": "#/$defs/ContentRef"
+        }
+      }
+    },
+    "CommandEnvelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "$comment": "command_id plus payload_hash is the idempotency identity. payload_hash is the domain-separated RFC 8785 hash of the complete CommandPayloadRef (schema_id, schema_version, and body ContentRef), using object type CommandPayloadRef and schema version 0; it is not merely body.sha256. issued_at is audit-only and never authorizes execution.",
+      "required": [
+        "protocol_major",
+        "protocol_minor",
+        "schema_id",
+        "schema_version",
+        "required_features",
+        "command_id",
+        "client_instance_id",
+        "client_session_id",
+        "issued_at",
+        "actor",
+        "scope",
+        "command_type",
+        "expected_versions",
+        "correlation_id",
+        "payload",
+        "payload_hash"
+      ],
+      "properties": {
+        "protocol_major": {
+          "const": 1
+        },
+        "protocol_minor": {
+          "const": 0
+        },
+        "schema_id": {
+          "const": "arcforge.command-envelope"
+        },
+        "schema_version": {
+          "const": 0
+        },
+        "required_features": {
+          "$ref": "#/$defs/RequiredFeatures"
+        },
+        "command_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "client_instance_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "client_session_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "issued_at": {
+          "$ref": "#/$defs/Rfc3339Utc"
+        },
+        "actor": {
+          "$ref": "#/$defs/Actor"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope"
+        },
+        "command_type": {
+          "$ref": "#/$defs/QualifiedName"
+        },
+        "expected_versions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/ExpectedAggregateVersion"
+          }
+        },
+        "correlation_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "payload": {
+          "$ref": "#/$defs/CommandPayloadRef"
+        },
+        "payload_hash": {
+          "$ref": "#/$defs/Sha256"
+        }
+      }
+    },
+    "DataBoundaryGrantRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "data_boundary_id",
+        "version",
+        "grant_hash"
+      ],
+      "properties": {
+        "data_boundary_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "version": {
+          "$ref": "#/$defs/NonZeroDecimalUint"
+        },
+        "grant_hash": {
+          "$ref": "#/$defs/Sha256"
+        }
+      }
+    },
+    "ToolResourceProposal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resource_operation_id",
+        "resource_identity_id",
+        "resource_identity_hash",
+        "requested_operation",
+        "expected_revision"
+      ],
+      "properties": {
+        "resource_operation_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "resource_identity_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "resource_identity_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "requested_operation": {
+          "$ref": "#/$defs/QualifiedName"
+        },
+        "expected_revision": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "requested_content_hash": {
+          "$ref": "#/$defs/Sha256"
+        }
+      }
+    },
+    "ToolIntent": {
+      "type": "object",
+      "additionalProperties": false,
+      "$comment": "This object is an untrusted proposal. It is never executable and never an authorization. causation_command_id and correlation_id preserve the authoritative Command-to-Intent lineage.",
+      "required": [
+        "protocol_major",
+        "protocol_minor",
+        "schema_id",
+        "schema_version",
+        "required_features",
+        "tool_intent_id",
+        "causation_command_id",
+        "correlation_id",
+        "backend_instance_id",
+        "backend_event_id",
+        "source_sequence",
+        "workspace_id",
+        "task_id",
+        "run_id",
+        "agent_id",
+        "run_mode",
+        "mode_policy_hash",
+        "data_boundary_grant",
+        "capability_id",
+        "operation",
+        "declared_arguments_schema_id",
+        "declared_arguments_schema_version",
+        "declared_arguments",
+        "resource_proposals",
+        "requested_deadline_ms",
+        "trace_id",
+        "intent_hash"
+      ],
+      "properties": {
+        "protocol_major": {
+          "const": 1
+        },
+        "protocol_minor": {
+          "const": 0
+        },
+        "schema_id": {
+          "const": "arcforge.tool-intent"
+        },
+        "schema_version": {
+          "const": 0
+        },
+        "required_features": {
+          "$ref": "#/$defs/RequiredFeatures"
+        },
+        "tool_intent_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "causation_command_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "correlation_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "backend_instance_id": {
+          "$ref": "#/$defs/AsciiIdentifier"
+        },
+        "backend_event_id": {
+          "$ref": "#/$defs/AsciiIdentifier"
+        },
+        "source_sequence": {
+          "$ref": "#/$defs/DecimalUint"
+        },
+        "workspace_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "task_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "run_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "agent_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "run_mode": {
+          "type": "string",
+          "enum": [
+            "Plan",
+            "Execute"
+          ]
+        },
+        "mode_policy_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "data_boundary_grant": {
+          "$ref": "#/$defs/DataBoundaryGrantRef"
+        },
+        "capability_id": {
+          "$ref": "#/$defs/QualifiedName"
+        },
+        "operation": {
+          "$ref": "#/$defs/QualifiedName"
+        },
+        "declared_arguments_schema_id": {
+          "$ref": "#/$defs/QualifiedName"
+        },
+        "declared_arguments_schema_version": {
+          "type": "integer",
+          "const": 0
+        },
+        "declared_arguments": {
+          "$ref": "#/$defs/ContentRef"
+        },
+        "resource_proposals": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/ToolResourceProposal"
+          }
+        },
+        "requested_deadline_ms": {
+          "$ref": "#/$defs/NonZeroDecimalUint"
+        },
+        "trace_id": {
+          "$ref": "#/$defs/TraceId"
+        },
+        "intent_hash": {
+          "$ref": "#/$defs/Sha256"
+        }
+      }
+    },
+    "ClockBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "$comment": "Execution validity requires both the trusted monotonic deadline and trusted UTC checks to pass. A clock epoch change invalidates the binding.",
+      "required": [
+        "issued_at_utc_trusted",
+        "issued_monotonic_ticks",
+        "ttl_ms",
+        "expires_monotonic_ticks",
+        "clock_epoch_id"
+      ],
+      "properties": {
+        "issued_at_utc_trusted": {
+          "$ref": "#/$defs/Rfc3339Utc"
+        },
+        "issued_monotonic_ticks": {
+          "$ref": "#/$defs/DecimalUint"
+        },
+        "ttl_ms": {
+          "$ref": "#/$defs/NonZeroDecimalUint"
+        },
+        "expires_monotonic_ticks": {
+          "$ref": "#/$defs/DecimalUint"
+        },
+        "clock_epoch_id": {
+          "$ref": "#/$defs/UuidV7"
+        }
+      }
+    },
+    "DataBoundaryGrant": {
+      "type": "object",
+      "additionalProperties": false,
+      "$comment": "Any source, classification, provider, model, endpoint, redirect, egress, or consent change invalidates this grant before provider invocation.",
+      "required": [
+        "protocol_major",
+        "protocol_minor",
+        "schema_id",
+        "schema_version",
+        "required_features",
+        "data_boundary_id",
+        "version",
+        "task_id",
+        "task_spec_version",
+        "source_set_version",
+        "source_hash_set",
+        "data_classification",
+        "extraction_policy_hash",
+        "provider_profile_id",
+        "provider_profile_version",
+        "model_id",
+        "canonical_endpoint_origin",
+        "redirect_policy_hash",
+        "egress_policy_hash",
+        "consent_version",
+        "confirmed_by",
+        "confirmed_at",
+        "lifetime",
+        "status",
+        "grant_hash"
+      ],
+      "properties": {
+        "protocol_major": {
+          "const": 1
+        },
+        "protocol_minor": {
+          "const": 0
+        },
+        "schema_id": {
+          "const": "arcforge.data-boundary-grant"
+        },
+        "schema_version": {
+          "const": 0
+        },
+        "required_features": {
+          "$ref": "#/$defs/RequiredFeatures"
+        },
+        "data_boundary_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "version": {
+          "$ref": "#/$defs/NonZeroDecimalUint"
+        },
+        "task_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "task_spec_version": {
+          "$ref": "#/$defs/NonZeroDecimalUint"
+        },
+        "source_set_version": {
+          "$ref": "#/$defs/NonZeroDecimalUint"
+        },
+        "source_hash_set": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/Sha256"
+          }
+        },
+        "data_classification": {
+          "type": "string",
+          "enum": [
+            "L0",
+            "L1",
+            "L2",
+            "L3"
+          ]
+        },
+        "extraction_policy_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "provider_profile_id": {
+          "$ref": "#/$defs/AsciiIdentifier"
+        },
+        "provider_profile_version": {
+          "$ref": "#/$defs/NonZeroDecimalUint"
+        },
+        "model_id": {
+          "$ref": "#/$defs/AsciiIdentifier"
+        },
+        "canonical_endpoint_origin": {
+          "$ref": "#/$defs/CanonicalHttpsOrigin"
+        },
+        "redirect_policy_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "egress_policy_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "consent_version": {
+          "$ref": "#/$defs/NonZeroDecimalUint"
+        },
+        "confirmed_by": {
+          "$ref": "#/$defs/Actor"
+        },
+        "confirmed_at": {
+          "$ref": "#/$defs/Rfc3339Utc"
+        },
+        "lifetime": {
+          "$ref": "#/$defs/ClockBinding"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Active",
+            "Invalidated",
+            "Expired"
+          ]
+        },
+        "grant_hash": {
+          "$ref": "#/$defs/Sha256"
+        }
+      }
+    },
+    "NtfsFileIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "volume_serial_number",
+        "file_id_128"
+      ],
+      "properties": {
+        "volume_serial_number": {
+          "type": "string",
+          "pattern": "^0x[0-9A-F]{8,16}$"
+        },
+        "file_id_128": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{32}$"
+        }
+      }
+    },
+    "ResourceSnapshot": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "absence_proof_hash",
+            "observed_at_utc"
+          ],
+          "properties": {
+            "state": {
+              "const": "Absent"
+            },
+            "absence_proof_hash": {
+              "$ref": "#/$defs/Sha256"
+            },
+            "observed_at_utc": {
+              "$ref": "#/$defs/Rfc3339Utc"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "state",
+            "ntfs_identity",
+            "revision",
+            "content_hash",
+            "byte_length",
+            "observed_at_utc"
+          ],
+          "properties": {
+            "state": {
+              "const": "Present"
+            },
+            "ntfs_identity": {
+              "$ref": "#/$defs/NtfsFileIdentity"
+            },
+            "revision": {
+              "$ref": "#/$defs/Sha256"
+            },
+            "content_hash": {
+              "$ref": "#/$defs/Sha256"
+            },
+            "byte_length": {
+              "$ref": "#/$defs/DecimalUint"
+            },
+            "observed_at_utc": {
+              "$ref": "#/$defs/Rfc3339Utc"
+            },
+            "last_write_at_utc": {
+              "$ref": "#/$defs/Rfc3339Utc"
+            }
+          }
+        }
+      ]
+    },
+    "ExistingResourceIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocol_major",
+        "protocol_minor",
+        "schema_id",
+        "schema_version",
+        "required_features",
+        "resource_identity_id",
+        "identity_kind",
+        "workspace_id",
+        "file_system",
+        "workspace_root",
+        "parent_directory",
+        "target",
+        "relative_locator",
+        "stream_name",
+        "reparse_chain",
+        "case_sensitive_directory",
+        "link_count",
+        "expected_revision",
+        "expected_content_hash",
+        "expected_size",
+        "expected_last_write_utc",
+        "expected_change_time_utc",
+        "resource_identity_hash"
+      ],
+      "properties": {
+        "protocol_major": {
+          "const": 1
+        },
+        "protocol_minor": {
+          "const": 0
+        },
+        "schema_id": {
+          "const": "arcforge.resource-identity"
+        },
+        "schema_version": {
+          "const": 0
+        },
+        "required_features": {
+          "$ref": "#/$defs/RequiredFeatures"
+        },
+        "resource_identity_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "identity_kind": {
+          "const": "Existing"
+        },
+        "workspace_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "file_system": {
+          "const": "NTFS"
+        },
+        "workspace_root": {
+          "$ref": "#/$defs/NtfsFileIdentity"
+        },
+        "parent_directory": {
+          "$ref": "#/$defs/NtfsFileIdentity"
+        },
+        "target": {
+          "$ref": "#/$defs/NtfsFileIdentity"
+        },
+        "relative_locator": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)(?!.*:)(?!.*//)[^\\u0000-\\u001F]+$"
+        },
+        "stream_name": {
+          "const": ""
+        },
+        "reparse_chain": {
+          "type": "array",
+          "maxItems": 0
+        },
+        "case_sensitive_directory": {
+          "const": false
+        },
+        "link_count": {
+          "const": "1"
+        },
+        "expected_revision": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "expected_content_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "expected_size": {
+          "$ref": "#/$defs/DecimalUint"
+        },
+        "expected_last_write_utc": {
+          "$ref": "#/$defs/Rfc3339Utc"
+        },
+        "expected_change_time_utc": {
+          "$ref": "#/$defs/Rfc3339Utc"
+        },
+        "expected_usn": {
+          "$ref": "#/$defs/DecimalUint"
+        },
+        "resource_identity_hash": {
+          "$ref": "#/$defs/Sha256"
+        }
+      }
+    },
+    "NewResourceIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "$comment": "The parent identity and absence proof must be rechecked immediately before apply; string containment is never an authorization fallback.",
+      "required": [
+        "protocol_major",
+        "protocol_minor",
+        "schema_id",
+        "schema_version",
+        "required_features",
+        "resource_identity_id",
+        "identity_kind",
+        "workspace_id",
+        "file_system",
+        "workspace_root",
+        "parent_directory",
+        "relative_locator",
+        "leaf_name",
+        "stream_name",
+        "reparse_chain",
+        "case_sensitive_directory",
+        "expected_revision",
+        "absence_proof_hash",
+        "absence_observed_at_utc",
+        "resource_identity_hash"
+      ],
+      "properties": {
+        "protocol_major": {
+          "const": 1
+        },
+        "protocol_minor": {
+          "const": 0
+        },
+        "schema_id": {
+          "const": "arcforge.resource-identity"
+        },
+        "schema_version": {
+          "const": 0
+        },
+        "required_features": {
+          "$ref": "#/$defs/RequiredFeatures"
+        },
+        "resource_identity_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "identity_kind": {
+          "const": "New"
+        },
+        "workspace_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "file_system": {
+          "const": "NTFS"
+        },
+        "workspace_root": {
+          "$ref": "#/$defs/NtfsFileIdentity"
+        },
+        "parent_directory": {
+          "$ref": "#/$defs/NtfsFileIdentity"
+        },
+        "relative_locator": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)(?!.*:)(?!.*//)[^\\u0000-\\u001F]+$"
+        },
+        "leaf_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "pattern": "^(?![ .])(?!.*[ .]$)(?!.*[<>:\"/\\\\|?*\\u0000-\\u001F]).+$"
+        },
+        "stream_name": {
+          "const": ""
+        },
+        "reparse_chain": {
+          "type": "array",
+          "maxItems": 0
+        },
+        "case_sensitive_directory": {
+          "const": false
+        },
+        "expected_revision": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "absence_proof_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "absence_observed_at_utc": {
+          "$ref": "#/$defs/Rfc3339Utc"
+        },
+        "resource_identity_hash": {
+          "$ref": "#/$defs/Sha256"
+        }
+      }
+    },
+    "ResourceIdentity": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/ExistingResourceIdentity"
+        },
+        {
+          "$ref": "#/$defs/NewResourceIdentity"
+        }
+      ]
+    },
+    "CapabilityBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "capability_id",
+        "capability_version",
+        "capability_descriptor_hash",
+        "capability_provider_id",
+        "capability_provider_version",
+        "provider_binary_hash"
+      ],
+      "properties": {
+        "capability_id": {
+          "$ref": "#/$defs/QualifiedName"
+        },
+        "capability_version": {
+          "$ref": "#/$defs/NonZeroDecimalUint"
+        },
+        "capability_descriptor_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "capability_provider_id": {
+          "$ref": "#/$defs/AsciiIdentifier"
+        },
+        "capability_provider_version": {
+          "$ref": "#/$defs/NonZeroDecimalUint"
+        },
+        "provider_binary_hash": {
+          "$ref": "#/$defs/Sha256"
+        }
+      }
+    },
+    "ResourceBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resource_operation_id",
+        "resource_identity_id",
+        "resource_identity_hash",
+        "resource_handle_id",
+        "resource_handle_hash",
+        "operation",
+        "expected_revision"
+      ],
+      "properties": {
+        "resource_operation_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "resource_identity_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "resource_identity_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "resource_handle_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "resource_handle_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "operation": {
+          "$ref": "#/$defs/QualifiedName"
+        },
+        "expected_revision": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "expected_content_hash": {
+          "$ref": "#/$defs/Sha256"
+        }
+      }
+    },
+    "ResourceOperationSet": {
+      "type": "object",
+      "additionalProperties": false,
+      "$comment": "Derived hash input only. resources MUST be sorted by resource_operation_id before RFC 8785 canonicalization; the review validator enforces ordering and uniqueness.",
+      "required": [
+        "resources"
+      ],
+      "properties": {
+        "resources": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/ResourceBinding"
+          }
+        }
+      }
+    },
+    "EndpointBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonical_origin",
+        "redirect_policy_hash",
+        "egress_policy_hash"
+      ],
+      "properties": {
+        "canonical_origin": {
+          "$ref": "#/$defs/CanonicalHttpsOrigin"
+        },
+        "redirect_policy_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "egress_policy_hash": {
+          "$ref": "#/$defs/Sha256"
+        }
+      }
+    },
+    "SecretRefBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "secret_ref",
+        "purpose",
+        "target_identity",
+        "binding_hash"
+      ],
+      "properties": {
+        "secret_ref": {
+          "type": "string",
+          "pattern": "^credref:[A-Za-z0-9._~-]{16,128}$"
+        },
+        "purpose": {
+          "type": "string",
+          "enum": [
+            "Provider",
+            "MCP",
+            "Connector"
+          ]
+        },
+        "target_identity": {
+          "$ref": "#/$defs/AsciiIdentifier"
+        },
+        "binding_hash": {
+          "$ref": "#/$defs/Sha256"
+        }
+      }
+    },
+    "InvocationLimits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "timeout_ms",
+        "max_output_bytes",
+        "max_resources"
+      ],
+      "properties": {
+        "timeout_ms": {
+          "$ref": "#/$defs/NonZeroDecimalUint"
+        },
+        "max_output_bytes": {
+          "$ref": "#/$defs/NonZeroDecimalUint"
+        },
+        "max_resources": {
+          "$ref": "#/$defs/NonZeroDecimalUint"
+        }
+      }
+    },
+    "InvocationSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "$comment": "source_tool_intent_id and source_intent_hash bind this sealed object to the untrusted proposal it normalized. spec_hash uses RFC 8785 JCS over this object without spec_hash, prefixed by the ArcForge canonicalization-version, object-type, and schema-version domain separator. Resources are sorted by resource_operation_id before hashing. expected_resource_set_hash is the domain-separated hash of {resources:[...]} after that sort, using object type ResourceOperationSet and schema version 0. canonical_args.sha256 and exact_args_bytes_sha256 bind the same exact byte sequence and MUST be equal; the review validator enforces these cross-field invariants.",
+      "required": [
+        "protocol_major",
+        "protocol_minor",
+        "schema_id",
+        "schema_version",
+        "required_features",
+        "invocation_id",
+        "effect_id",
+        "source_tool_intent_id",
+        "source_intent_hash",
+        "workspace_id",
+        "task_id",
+        "run_id",
+        "run_mode",
+        "mode_policy_hash",
+        "policy_snapshot_version",
+        "effect_class",
+        "capability",
+        "operation",
+        "canonicalization_version",
+        "canonical_args",
+        "exact_args_bytes_sha256",
+        "resources",
+        "expected_resource_set_hash",
+        "secret_refs",
+        "limits",
+        "idempotency_key",
+        "lifetime",
+        "spec_hash"
+      ],
+      "properties": {
+        "protocol_major": {
+          "const": 1
+        },
+        "protocol_minor": {
+          "const": 0
+        },
+        "schema_id": {
+          "const": "arcforge.invocation-spec"
+        },
+        "schema_version": {
+          "const": 0
+        },
+        "required_features": {
+          "$ref": "#/$defs/RequiredFeatures"
+        },
+        "invocation_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "effect_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "source_tool_intent_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "source_intent_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "workspace_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "task_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "run_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "run_mode": {
+          "type": "string",
+          "enum": [
+            "Plan",
+            "Execute"
+          ]
+        },
+        "mode_policy_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "policy_snapshot_version": {
+          "$ref": "#/$defs/NonZeroDecimalUint"
+        },
+        "effect_class": {
+          "$ref": "#/$defs/EffectClass"
+        },
+        "data_boundary_grant": {
+          "$ref": "#/$defs/DataBoundaryGrantRef"
+        },
+        "capability": {
+          "$ref": "#/$defs/CapabilityBinding"
+        },
+        "operation": {
+          "$ref": "#/$defs/QualifiedName"
+        },
+        "canonicalization_version": {
+          "const": "jcs-rfc8785-restricted-v0"
+        },
+        "canonical_args": {
+          "$ref": "#/$defs/ContentRef"
+        },
+        "exact_args_bytes_sha256": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "resources": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/ResourceBinding"
+          }
+        },
+        "expected_resource_set_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "cwd_resource_identity_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "endpoint": {
+          "$ref": "#/$defs/EndpointBinding"
+        },
+        "secret_refs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/SecretRefBinding"
+          }
+        },
+        "limits": {
+          "$ref": "#/$defs/InvocationLimits"
+        },
+        "idempotency_key": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "lifetime": {
+          "$ref": "#/$defs/ClockBinding"
+        },
+        "spec_hash": {
+          "$ref": "#/$defs/Sha256"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "effect_class": {
+                "const": "DataEgress"
+              }
+            },
+            "required": [
+              "effect_class"
+            ]
+          },
+          "then": {
+            "required": [
+              "data_boundary_grant",
+              "endpoint"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "run_mode": {
+                "const": "Plan"
+              }
+            },
+            "required": [
+              "run_mode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "effect_class": {
+                "const": "DataEgress"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "EvaluatedResourceVersion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resource_identity_id",
+        "resource_identity_hash",
+        "resource_revision"
+      ],
+      "properties": {
+        "resource_identity_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "resource_identity_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "resource_revision": {
+          "$ref": "#/$defs/Sha256"
+        }
+      }
+    },
+    "PolicyConstraint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "constraint_type",
+        "binding_hash"
+      ],
+      "properties": {
+        "constraint_type": {
+          "type": "string",
+          "enum": [
+            "MaxUses",
+            "Deadline",
+            "ResourceRevision",
+            "DataBoundary",
+            "Endpoint",
+            "RunMode",
+            "CapabilityVersion",
+            "Preview"
+          ]
+        },
+        "binding_hash": {
+          "$ref": "#/$defs/Sha256"
+        }
+      }
+    },
+    "PolicyDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "$comment": "Allow waives only the human approval step; a closed trusted PreviewBinding and AuthorizationGrant remain mandatory for every effect.",
+      "required": [
+        "protocol_major",
+        "protocol_minor",
+        "schema_id",
+        "schema_version",
+        "required_features",
+        "policy_decision_id",
+        "policy_version",
+        "policy_hash",
+        "invocation_spec_hash",
+        "preview_id",
+        "preview_hash",
+        "trusted_renderer",
+        "effect_class",
+        "risk_level",
+        "decision",
+        "reason_codes",
+        "required_constraints",
+        "evaluated_resource_versions",
+        "lifetime",
+        "policy_decision_hash"
+      ],
+      "properties": {
+        "protocol_major": {
+          "const": 1
+        },
+        "protocol_minor": {
+          "const": 0
+        },
+        "schema_id": {
+          "const": "arcforge.policy-decision"
+        },
+        "schema_version": {
+          "const": 0
+        },
+        "required_features": {
+          "$ref": "#/$defs/RequiredFeatures"
+        },
+        "policy_decision_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "policy_version": {
+          "$ref": "#/$defs/NonZeroDecimalUint"
+        },
+        "policy_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "invocation_spec_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "preview_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "preview_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "trusted_renderer": {
+          "$ref": "#/$defs/TrustedRendererBinding"
+        },
+        "effect_class": {
+          "$ref": "#/$defs/EffectClass"
+        },
+        "risk_level": {
+          "type": "string",
+          "enum": [
+            "Low",
+            "Medium",
+            "High",
+            "Critical"
+          ]
+        },
+        "decision": {
+          "type": "string",
+          "enum": [
+            "Deny",
+            "RequireApproval",
+            "Allow"
+          ]
+        },
+        "reason_codes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/AsciiIdentifier"
+          }
+        },
+        "required_constraints": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/PolicyConstraint"
+          }
+        },
+        "evaluated_resource_versions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/EvaluatedResourceVersion"
+          }
+        },
+        "lifetime": {
+          "$ref": "#/$defs/ClockBinding"
+        },
+        "policy_decision_hash": {
+          "$ref": "#/$defs/Sha256"
+        }
+      }
+    },
+    "TrustedRendererBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "renderer_id",
+        "renderer_version",
+        "renderer_binary_hash"
+      ],
+      "properties": {
+        "renderer_id": {
+          "$ref": "#/$defs/AsciiIdentifier"
+        },
+        "renderer_version": {
+          "$ref": "#/$defs/AsciiIdentifier"
+        },
+        "renderer_binary_hash": {
+          "$ref": "#/$defs/Sha256"
+        }
+      }
+    },
+    "PreviewResource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resource_operation_id",
+        "resource_identity_id",
+        "action",
+        "display_locator",
+        "expected_revision"
+      ],
+      "properties": {
+        "resource_operation_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "resource_identity_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "action": {
+          "type": "string",
+          "enum": [
+            "Read",
+            "Create",
+            "Replace",
+            "Delete",
+            "Send"
+          ]
+        },
+        "display_locator": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "pattern": "^[^\\u0000-\\u001F]+$"
+        },
+        "expected_revision": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "proposed_content_hash": {
+          "$ref": "#/$defs/Sha256"
+        }
+      }
+    },
+    "PreviewBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "$comment": "Trusted Renderer input and hash binding. Provider prose or HTML is never authoritative preview data; unknown fields are rejected before rendering or approval.",
+      "required": [
+        "protocol_major",
+        "protocol_minor",
+        "schema_id",
+        "schema_version",
+        "required_features",
+        "preview_id",
+        "invocation_id",
+        "invocation_spec_hash",
+        "effect_class",
+        "operation",
+        "canonical_args_sha256",
+        "exact_args_bytes_sha256",
+        "resources",
+        "risk_level",
+        "reversibility",
+        "warnings",
+        "trusted_renderer",
+        "preview_hash"
+      ],
+      "properties": {
+        "protocol_major": {
+          "const": 1
+        },
+        "protocol_minor": {
+          "const": 0
+        },
+        "schema_id": {
+          "const": "arcforge.preview-binding"
+        },
+        "schema_version": {
+          "const": 0
+        },
+        "required_features": {
+          "$ref": "#/$defs/RequiredFeatures"
+        },
+        "preview_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "invocation_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "invocation_spec_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "effect_class": {
+          "$ref": "#/$defs/EffectClass"
+        },
+        "operation": {
+          "$ref": "#/$defs/QualifiedName"
+        },
+        "canonical_args_sha256": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "exact_args_bytes_sha256": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "resources": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/PreviewResource"
+          }
+        },
+        "endpoint": {
+          "$ref": "#/$defs/EndpointBinding"
+        },
+        "risk_level": {
+          "type": "string",
+          "enum": [
+            "Low",
+            "Medium",
+            "High",
+            "Critical"
+          ]
+        },
+        "reversibility": {
+          "type": "string",
+          "enum": [
+            "Reversible",
+            "Compensatable",
+            "Irreversible",
+            "Unknown"
+          ]
+        },
+        "warnings": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/AsciiIdentifier"
+          }
+        },
+        "trusted_renderer": {
+          "$ref": "#/$defs/TrustedRendererBinding"
+        },
+        "preview_hash": {
+          "$ref": "#/$defs/Sha256"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "effect_class": {
+                "const": "DataEgress"
+              }
+            },
+            "required": [
+              "effect_class"
+            ]
+          },
+          "then": {
+            "required": [
+              "endpoint"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "endpoint"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "ApprovalDecisionRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "decision",
+        "decided_by",
+        "decided_at_utc",
+        "reason_codes"
+      ],
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": [
+            "Approved",
+            "Rejected",
+            "Expired",
+            "Superseded",
+            "Revoked"
+          ]
+        },
+        "decided_by": {
+          "$ref": "#/$defs/Actor"
+        },
+        "decided_at_utc": {
+          "$ref": "#/$defs/Rfc3339Utc"
+        },
+        "reason_codes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/AsciiIdentifier"
+          }
+        }
+      }
+    },
+    "Approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "$comment": "The approval binds the exact user-visible preview and sealed InvocationSpec. Version or hash changes require a new approval.",
+      "required": [
+        "protocol_major",
+        "protocol_minor",
+        "schema_id",
+        "schema_version",
+        "required_features",
+        "approval_id",
+        "approval_version",
+        "effect_id",
+        "scope",
+        "intent_hash",
+        "invocation_spec_hash",
+        "preview_id",
+        "preview_hash",
+        "trusted_renderer",
+        "policy_decision_id",
+        "policy_version",
+        "policy_hash",
+        "risk_level",
+        "reversibility",
+        "resource_versions",
+        "max_uses",
+        "lifetime",
+        "status",
+        "approval_hash"
+      ],
+      "properties": {
+        "protocol_major": {
+          "const": 1
+        },
+        "protocol_minor": {
+          "const": 0
+        },
+        "schema_id": {
+          "const": "arcforge.approval"
+        },
+        "schema_version": {
+          "const": 0
+        },
+        "required_features": {
+          "$ref": "#/$defs/RequiredFeatures"
+        },
+        "approval_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "approval_version": {
+          "$ref": "#/$defs/NonZeroDecimalUint"
+        },
+        "effect_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "scope": {
+          "$ref": "#/$defs/ApprovalScope"
+        },
+        "intent_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "invocation_spec_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "preview_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "preview_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "trusted_renderer": {
+          "$ref": "#/$defs/TrustedRendererBinding"
+        },
+        "policy_decision_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "policy_version": {
+          "$ref": "#/$defs/NonZeroDecimalUint"
+        },
+        "policy_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "risk_level": {
+          "type": "string",
+          "enum": [
+            "Low",
+            "Medium",
+            "High",
+            "Critical"
+          ]
+        },
+        "reversibility": {
+          "type": "string",
+          "enum": [
+            "Reversible",
+            "Compensatable",
+            "Irreversible",
+            "Unknown"
+          ]
+        },
+        "resource_versions": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/EvaluatedResourceVersion"
+          }
+        },
+        "max_uses": {
+          "const": "1"
+        },
+        "lifetime": {
+          "$ref": "#/$defs/ClockBinding"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Pending",
+            "Approved",
+            "Rejected",
+            "Expired",
+            "Superseded",
+            "Consumed",
+            "Revoked"
+          ]
+        },
+        "decision_record": {
+          "$ref": "#/$defs/ApprovalDecisionRecord"
+        },
+        "approval_hash": {
+          "$ref": "#/$defs/Sha256"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "Pending"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "decision_record"
+              ]
+            }
+          },
+          "else": {
+            "required": [
+              "decision_record"
+            ]
+          }
+        }
+      ]
+    },
+    "AuthorizationResourceScope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resource_operation_id",
+        "resource_identity_id",
+        "resource_identity_hash",
+        "resource_handle_id",
+        "resource_handle_hash",
+        "operation",
+        "expected_revision"
+      ],
+      "properties": {
+        "resource_operation_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "resource_identity_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "resource_identity_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "resource_handle_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "resource_handle_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "operation": {
+          "$ref": "#/$defs/QualifiedName"
+        },
+        "expected_revision": {
+          "$ref": "#/$defs/Sha256"
+        }
+      }
+    },
+    "AuthorizationGrant": {
+      "type": "object",
+      "additionalProperties": false,
+      "$comment": "Every effect requires this one-use grant and the exact trusted preview, even when policy waives human approval. Execution revalidates its hashes, lifetime, policy, resource revisions, broker epoch, durable fencing high-water, and active status.",
+      "required": [
+        "protocol_major",
+        "protocol_minor",
+        "schema_id",
+        "schema_version",
+        "required_features",
+        "authorization_id",
+        "authorization_basis",
+        "effect_id",
+        "invocation_id",
+        "invocation_spec_hash",
+        "preview_id",
+        "preview_hash",
+        "trusted_renderer",
+        "policy_decision_id",
+        "policy_decision_hash",
+        "scope",
+        "workspace_id",
+        "task_id",
+        "run_id",
+        "run_mode",
+        "mode_policy_hash",
+        "effect_class",
+        "capability",
+        "resources",
+        "secret_ref_scope",
+        "idempotency_key",
+        "max_uses",
+        "remaining_uses",
+        "fencing_scope",
+        "fencing_token",
+        "broker_epoch_id",
+        "lifetime",
+        "status",
+        "issued_by",
+        "authorization_hash"
+      ],
+      "properties": {
+        "protocol_major": {
+          "const": 1
+        },
+        "protocol_minor": {
+          "const": 0
+        },
+        "schema_id": {
+          "const": "arcforge.authorization-grant"
+        },
+        "schema_version": {
+          "const": 0
+        },
+        "required_features": {
+          "$ref": "#/$defs/RequiredFeatures"
+        },
+        "authorization_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "authorization_basis": {
+          "type": "string",
+          "enum": [
+            "PolicyAllow",
+            "ApprovedByUser"
+          ]
+        },
+        "approval_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "approval_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "effect_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "invocation_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "invocation_spec_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "preview_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "preview_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "trusted_renderer": {
+          "$ref": "#/$defs/TrustedRendererBinding"
+        },
+        "policy_decision_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "policy_decision_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "scope": {
+          "$ref": "#/$defs/ApprovalScope"
+        },
+        "workspace_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "task_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "run_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "run_mode": {
+          "type": "string",
+          "enum": [
+            "Plan",
+            "Execute"
+          ]
+        },
+        "mode_policy_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "effect_class": {
+          "$ref": "#/$defs/EffectClass"
+        },
+        "data_boundary_grant": {
+          "$ref": "#/$defs/DataBoundaryGrantRef"
+        },
+        "capability": {
+          "$ref": "#/$defs/CapabilityBinding"
+        },
+        "resources": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/AuthorizationResourceScope"
+          }
+        },
+        "endpoint_scope": {
+          "$ref": "#/$defs/EndpointBinding"
+        },
+        "secret_ref_scope": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/SecretRefBinding"
+          }
+        },
+        "idempotency_key": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "max_uses": {
+          "const": "1"
+        },
+        "remaining_uses": {
+          "type": "string",
+          "enum": [
+            "0",
+            "1"
+          ]
+        },
+        "fencing_scope": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[a-z]+:[A-Za-z0-9._:-]+$"
+        },
+        "fencing_token": {
+          "$ref": "#/$defs/NonZeroDecimalUint"
+        },
+        "broker_epoch_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "lifetime": {
+          "$ref": "#/$defs/ClockBinding"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "Active",
+            "Consumed",
+            "Revoked",
+            "Expired"
+          ]
+        },
+        "issued_by": {
+          "$ref": "#/$defs/BrokerActor"
+        },
+        "authorization_hash": {
+          "$ref": "#/$defs/Sha256"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "authorization_basis": {
+                "const": "ApprovedByUser"
+              }
+            },
+            "required": [
+              "authorization_basis"
+            ]
+          },
+          "then": {
+            "required": [
+              "approval_id",
+              "approval_hash"
+            ]
+          },
+          "else": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "approval_id"
+                  ]
+                },
+                {
+                  "required": [
+                    "approval_hash"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "effect_class": {
+                "const": "DataEgress"
+              }
+            },
+            "required": [
+              "effect_class"
+            ]
+          },
+          "then": {
+            "required": [
+              "data_boundary_grant",
+              "endpoint_scope"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "run_mode": {
+                "const": "Plan"
+              }
+            },
+            "required": [
+              "run_mode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "effect_class": {
+                "const": "DataEgress"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "effect_class": {
+                "const": "WorkspaceMutation"
+              }
+            },
+            "required": [
+              "effect_class"
+            ]
+          },
+          "then": {
+            "properties": {
+              "fencing_scope": {
+                "pattern": "^workspace:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "effect_class": {
+                "const": "DataEgress"
+              }
+            },
+            "required": [
+              "effect_class"
+            ]
+          },
+          "then": {
+            "properties": {
+              "fencing_scope": {
+                "pattern": "^task:[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}:provider:[A-Za-z0-9][A-Za-z0-9._-]*$"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "Active"
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "remaining_uses": {
+                "const": "1"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "EvidenceReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evidence_id",
+        "evidence_hash"
+      ],
+      "properties": {
+        "evidence_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "evidence_hash": {
+          "$ref": "#/$defs/Sha256"
+        }
+      }
+    },
+    "SanitizedReceiptRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "$comment": "Only sanitized receipt bytes may be persisted. Raw provider/Broker receipt bytes remain inside the TCB long enough to verify, redact, scan, hash, and discard; a clean attestation is necessary but still requires G1 canary tests.",
+      "required": [
+        "content",
+        "redaction_policy_hash",
+        "scanner_id",
+        "scanner_version",
+        "canary_scan_status",
+        "scan_attestation_hash"
+      ],
+      "properties": {
+        "content": {
+          "$ref": "#/$defs/ContentRef"
+        },
+        "redaction_policy_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "scanner_id": {
+          "$ref": "#/$defs/AsciiIdentifier"
+        },
+        "scanner_version": {
+          "$ref": "#/$defs/AsciiIdentifier"
+        },
+        "canary_scan_status": {
+          "const": "Clean"
+        },
+        "scan_attestation_hash": {
+          "$ref": "#/$defs/Sha256"
+        }
+      }
+    },
+    "ResourceOutcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "$comment": "Optional after-state and receipt fields are observations only; they never override outcome. Applied requires all success evidence. NotApplied requires a trusted receipt or structured error. Conflict requires an observed current identity. StillUnknown may retain partial evidence but cannot be promoted by field presence.",
+      "required": [
+        "resource_operation_id",
+        "resource_identity_before",
+        "expected_revision",
+        "operation",
+        "outcome",
+        "observed_at_utc",
+        "evidence_refs"
+      ],
+      "properties": {
+        "resource_operation_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "resource_identity_before": {
+          "$ref": "#/$defs/ResourceSnapshot"
+        },
+        "expected_revision": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "operation": {
+          "$ref": "#/$defs/QualifiedName"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "Applied",
+            "NotApplied",
+            "Conflict",
+            "StillUnknown"
+          ]
+        },
+        "resource_identity_after": {
+          "$ref": "#/$defs/ResourceSnapshot"
+        },
+        "content_hash_after": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "provider_error_code": {
+          "$ref": "#/$defs/AsciiIdentifier"
+        },
+        "sanitized_receipt_ref": {
+          "$ref": "#/$defs/SanitizedReceiptRef"
+        },
+        "evidence_refs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/EvidenceReference"
+          }
+        },
+        "observed_at_utc": {
+          "$ref": "#/$defs/Rfc3339Utc"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "Applied"
+              }
+            },
+            "required": [
+              "outcome"
+            ]
+          },
+          "then": {
+            "required": [
+              "resource_identity_after",
+              "content_hash_after",
+              "sanitized_receipt_ref"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "NotApplied"
+              }
+            },
+            "required": [
+              "outcome"
+            ]
+          },
+          "then": {
+            "anyOf": [
+              {
+                "required": [
+                  "sanitized_receipt_ref"
+                ]
+              },
+              {
+                "required": [
+                  "provider_error_code"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "Conflict"
+              }
+            },
+            "required": [
+              "outcome"
+            ]
+          },
+          "then": {
+            "required": [
+              "resource_identity_after"
+            ]
+          }
+        }
+      ]
+    },
+    "ReceiptSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "$comment": "V0 accepts receipt evidence only after the Broker verifies and attests it inside the TCB. attestation_hash binds the verified source bytes; verified_by_broker_epoch_id identifies the Broker epoch that made the trust decision. Detached/provider signatures remain FeatureDisabled until their algorithm, preimage, key trust, and rotation contracts are frozen.",
+      "required": [
+        "source_type",
+        "source_id",
+        "source_version",
+        "verification_method",
+        "verified_by_broker_epoch_id",
+        "attestation_hash"
+      ],
+      "properties": {
+        "source_type": {
+          "type": "string",
+          "enum": [
+            "WorkspaceBroker",
+            "ProviderEgress",
+            "CapabilityProvider",
+            "ReconciliationWorker"
+          ]
+        },
+        "source_id": {
+          "$ref": "#/$defs/AsciiIdentifier"
+        },
+        "source_version": {
+          "$ref": "#/$defs/NonZeroDecimalUint"
+        },
+        "verification_method": {
+          "const": "BrokerInternalAttestation"
+        },
+        "verified_by_broker_epoch_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "attestation_hash": {
+          "$ref": "#/$defs/Sha256"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "source_type": {
+                "enum": [
+                  "WorkspaceBroker",
+                  "ReconciliationWorker"
+                ]
+              }
+            },
+            "required": [
+              "source_type"
+            ]
+          },
+          "then": {
+            "properties": {
+              "verification_method": {
+                "const": "BrokerInternalAttestation"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "EffectReceipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "$comment": "The expected resource set must exactly equal the sealed InvocationSpec set. Resource outcomes are sorted by resource_operation_id before canonical hashing; missing, duplicate, or extra operations invalidate the receipt and preserve Unknown.",
+      "required": [
+        "protocol_major",
+        "protocol_minor",
+        "schema_id",
+        "schema_version",
+        "required_features",
+        "receipt_id",
+        "effect_id",
+        "invocation_id",
+        "invocation_spec_hash",
+        "authorization_id",
+        "authorization_hash",
+        "idempotency_key",
+        "provider_operation_id",
+        "started_at_utc",
+        "finished_at_utc",
+        "received_at_utc_trusted",
+        "expected_resource_set_hash",
+        "observed_outcome",
+        "resource_outcomes",
+        "receipt_source",
+        "sanitized_receipt",
+        "late_observation",
+        "reconciliation_status",
+        "receipt_hash"
+      ],
+      "properties": {
+        "protocol_major": {
+          "const": 1
+        },
+        "protocol_minor": {
+          "const": 0
+        },
+        "schema_id": {
+          "const": "arcforge.effect-receipt"
+        },
+        "schema_version": {
+          "const": 0
+        },
+        "required_features": {
+          "$ref": "#/$defs/RequiredFeatures"
+        },
+        "receipt_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "effect_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "invocation_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "invocation_spec_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "authorization_id": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "authorization_hash": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "idempotency_key": {
+          "$ref": "#/$defs/UuidV7"
+        },
+        "provider_operation_id": {
+          "$ref": "#/$defs/AsciiIdentifier"
+        },
+        "started_at_utc": {
+          "$ref": "#/$defs/Rfc3339Utc"
+        },
+        "finished_at_utc": {
+          "$ref": "#/$defs/Rfc3339Utc"
+        },
+        "received_at_utc_trusted": {
+          "$ref": "#/$defs/Rfc3339Utc"
+        },
+        "expected_resource_set_hash": {
+          "$ref": "#/$defs/Sha256",
+          "$comment": "Must exactly equal the sealed InvocationSpec expected_resource_set_hash; an unequal, missing, duplicate, or extra resource operation invalidates the receipt and preserves Unknown."
+        },
+        "observed_outcome": {
+          "type": "string",
+          "enum": [
+            "Applied",
+            "NotApplied",
+            "PartiallyApplied",
+            "Conflict",
+            "StillUnknown"
+          ]
+        },
+        "resource_outcomes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/ResourceOutcome"
+          }
+        },
+        "receipt_source": {
+          "$ref": "#/$defs/ReceiptSource"
+        },
+        "sanitized_receipt": {
+          "$ref": "#/$defs/SanitizedReceiptRef"
+        },
+        "late_observation": {
+          "type": "boolean"
+        },
+        "reconciliation_status": {
+          "type": "string",
+          "enum": [
+            "Unreconciled",
+            "Verified",
+            "DuplicateObservation",
+            "Contradictory",
+            "ReconciledApplied",
+            "ReconciledFailed",
+            "ManualResolutionRequired",
+            "AbandonedWithUncertainty"
+          ]
+        },
+        "receipt_hash": {
+          "$ref": "#/$defs/Sha256"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "observed_outcome": {
+                "const": "Applied"
+              }
+            },
+            "required": [
+              "observed_outcome"
+            ]
+          },
+          "then": {
+            "properties": {
+              "resource_outcomes": {
+                "items": {
+                  "properties": {
+                    "outcome": {
+                      "const": "Applied"
+                    }
+                  },
+                  "required": [
+                    "outcome"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "observed_outcome": {
+                "const": "NotApplied"
+              }
+            },
+            "required": [
+              "observed_outcome"
+            ]
+          },
+          "then": {
+            "properties": {
+              "resource_outcomes": {
+                "items": {
+                  "properties": {
+                    "outcome": {
+                      "const": "NotApplied"
+                    }
+                  },
+                  "required": [
+                    "outcome"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "observed_outcome": {
+                "const": "PartiallyApplied"
+              }
+            },
+            "required": [
+              "observed_outcome"
+            ]
+          },
+          "then": {
+            "properties": {
+              "resource_outcomes": {
+                "allOf": [
+                  {
+                    "contains": {
+                      "properties": {
+                        "outcome": {
+                          "const": "Applied"
+                        }
+                      },
+                      "required": [
+                        "outcome"
+                      ]
+                    },
+                    "minContains": 1
+                  },
+                  {
+                    "contains": {
+                      "properties": {
+                        "outcome": {
+                          "enum": [
+                            "NotApplied",
+                            "Conflict",
+                            "StillUnknown"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "outcome"
+                      ]
+                    },
+                    "minContains": 1
+                  }
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "observed_outcome": {
+                "const": "StillUnknown"
+              }
+            },
+            "required": [
+              "observed_outcome"
+            ]
+          },
+          "then": {
+            "properties": {
+              "resource_outcomes": {
+                "contains": {
+                  "properties": {
+                    "outcome": {
+                      "const": "StillUnknown"
+                    }
+                  },
+                  "required": [
+                    "outcome"
+                  ]
+                },
+                "minContains": 1,
+                "not": {
+                  "contains": {
+                    "properties": {
+                      "outcome": {
+                        "const": "Applied"
+                      }
+                    },
+                    "required": [
+                      "outcome"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "observed_outcome": {
+                "const": "Conflict"
+              }
+            },
+            "required": [
+              "observed_outcome"
+            ]
+          },
+          "then": {
+            "properties": {
+              "resource_outcomes": {
+                "contains": {
+                  "properties": {
+                    "outcome": {
+                      "const": "Conflict"
+                    }
+                  },
+                  "required": [
+                    "outcome"
+                  ]
+                },
+                "minContains": 1,
+                "not": {
+                  "contains": {
+                    "properties": {
+                      "outcome": {
+                        "enum": [
+                          "Applied",
+                          "StillUnknown"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "outcome"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "reconciliation_status": {
+                "const": "ReconciledApplied"
+              }
+            },
+            "required": [
+              "reconciliation_status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "observed_outcome": {
+                "const": "Applied"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "reconciliation_status": {
+                "const": "ReconciledFailed"
+              }
+            },
+            "required": [
+              "reconciliation_status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "observed_outcome": {
+                "const": "NotApplied"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "reconciliation_status": {
+                "const": "AbandonedWithUncertainty"
+              }
+            },
+            "required": [
+              "reconciliation_status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "late_observation": {
+                "const": true
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

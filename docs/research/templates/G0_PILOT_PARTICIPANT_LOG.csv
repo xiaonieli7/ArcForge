@@ -1,0 +1,4 @@
+participant_id,session_date,researcher,observer,role,eligible,last_real_task_date,material_count,formats,sensitivity,baseline_measurement_type,baseline_total_min,baseline_active_min,baseline_wait_min,baseline_app_switches,baseline_findings_correct,baseline_citations_valid,arcforge_total_min,arcforge_active_min,arcforge_wait_min,wizard_of_oz_min,blocking_reviews,findings_correct,citation_precision,locator_open_rate,boundary_pass_count,accepted_applied_succeeded_pass,partial_unknown_pass,artifact_adoption,value_score_1_7,workload_1_7,use_again_14d,private_alpha_consent,p0_incident,notes
+PILOT-P01,,,,,,,,,L0/L1,observed,,,,,,,,,,,,,,,,,,,,,,,,,
+PILOT-P02,,,,,,,,,L0/L1,observed,,,,,,,,,,,,,,,,,,,,,,,,,
+PILOT-P03,,,,,,,,,L0/L1,observed,,,,,,,,,,,,,,,,,,,,,,,,,

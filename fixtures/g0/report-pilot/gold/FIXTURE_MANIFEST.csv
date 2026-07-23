@@ -1,0 +1,12 @@
+file_id,path,format,expected_state,currentness,sensitivity,purpose
+S-01,source/01_project_brief_v1.md,markdown,indexed,stale,L0,version conflict
+S-02,source/02_project_brief_v2.md,markdown,indexed,current,L0,current baseline
+S-03,source/03_steering_decisions.md,markdown,indexed,current,L0,authoritative version decision
+S-04,source/04_delivery_plan.csv,csv,indexed,current,L0,milestones
+S-05,source/05_risk_register.csv,csv,indexed,current,L0,open risks
+S-06,source/06_user_feedback.txt,text,indexed,current,L0,qualitative feedback
+S-07,source/07_vendor_status.md,markdown,indexed,current,L0,apparent status conflict
+S-08,source/08_metrics_snapshot.csv,csv,indexed,current,L0,derived metrics
+S-09,source/09_confidential_exclude.md,markdown,excluded,current,L2-simulation,boundary canary
+S-10,source/10_damaged_export.csv,csv,parse_failed,current,L0,strict parser failure
+S-11,source/11_report_request.md,markdown,indexed,current,L0,acceptance structure

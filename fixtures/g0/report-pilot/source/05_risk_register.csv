@@ -1,0 +1,5 @@
+risk_id,severity,description,status,owner_role,target_date,mitigation
+R-01,High,Vendor SSO redirect fix is not yet verified,Open,Integration Lead,2026-09-16,Run redirect regression suite
+R-02,Medium,Training localization review is incomplete,Open,Enablement Lead,2026-09-18,Add second reviewer
+R-03,High,Legacy export contains malformed rows,Open,Data Lead,2026-09-17,Request clean re-export and exclude damaged file
+R-04,Low,Dark theme requested by one interviewee,Accepted,Product Lead,Post-pilot,Track as non-blocking feedback

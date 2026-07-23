@@ -1,0 +1,3 @@
+participant_id,condition,claim_id,claim_text,claim_correct,citation_present,source_path,locator,source_supports_claim,locator_opens,source_current,uses_excluded_source,severity,auditor,evidence_ref,notes
+PILOT-P01,baseline,F-01,,,,,,,,,,,critical,,,
+PILOT-P01,arcforge,F-01,,,,,,,,,,,critical,,,

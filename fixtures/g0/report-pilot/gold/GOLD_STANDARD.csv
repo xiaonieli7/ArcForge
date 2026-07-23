@@ -1,0 +1,11 @@
+claim_id,severity,canonical_claim,acceptable_value,required_source,locator,secondary_source,secondary_locator
+F-01,critical,V2 is the only current scope baseline,V2 current; V1 historical,02_project_brief_v2.md,Status,03_steering_decisions.md,2026-06-30 D-07
+F-02,critical,Target launch is conditional on the Go-No-Go gate,2026-10-06,02_project_brief_v2.md,Scope,03_steering_decisions.md,2026-09-09 D-09
+F-03,critical,Approved total budget,CNY 520000,02_project_brief_v2.md,Scope,03_steering_decisions.md,2026-06-30 D-08
+F-04,major,Pilot scope is East plus South,30 users; East 18; South 12,02_project_brief_v2.md,Scope,08_metrics_snapshot.csv,Total row
+F-05,major,Training content milestone is at risk,Due 2026-09-12; localization review incomplete,04_delivery_plan.csv,Training content complete row,05_risk_register.csv,R-02
+F-06,critical,Vendor security passed but SSO risk remains open,Assessment passed 2026-09-08; R-01 Open,07_vendor_status.md,Security assessment and SSO redirect,05_risk_register.csv,R-01
+F-07,major,Pilot activation rate,26 of 30 = 86.7%,08_metrics_snapshot.csv,Total row,,
+F-08,major,Training completion among activated users meets gate,24 of 26 = 92.3%; threshold 90%,08_metrics_snapshot.csv,Total row,02_project_brief_v2.md,Success criteria
+F-09,major,Day-14 active rate among activated users meets gate,20 of 26 = 76.9%; threshold 70%,08_metrics_snapshot.csv,Total row,02_project_brief_v2.md,Success criteria
+F-10,minor,Most frequent follow-up request is bulk CSV import,8 of 12 participants,06_user_feedback.txt,Participant request counts,,

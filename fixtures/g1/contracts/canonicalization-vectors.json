@@ -1,0 +1,423 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "fixture_id": "arcforge.contract-canonicalization.v0",
+  "fixture_version": "0",
+  "status": "G1 contract review evidence; not Contract Frozen",
+  "profile": {
+    "canonicalization_version": "jcs-rfc8785-restricted-v0",
+    "canonical_json": "RFC 8785 JCS UTF-8",
+    "object_key_order": "lexicographic UTF-16 code units as required by RFC 8785/ECMAScript",
+    "unicode_normalization": "none",
+    "strings": "Unicode scalar values are preserved without normalization and escaped with ECMAScript JSON string serialization",
+    "numbers": "lexical JSON integers only; any decimal point or exponent is rejected before conversion; BigInt range-check precedes Number conversion",
+    "semantic_u64": "unsigned decimal strings without leading zeroes",
+    "raw_json_boundary": "duplicate decoded member names and lone surrogates rejected before hashing",
+    "binary": "base64url without padding when embedded; execution argument bytes separately bound by SHA-256",
+    "domain_separator": "UTF8(ArcForge) || 00 || canonicalization_version || 00 || object_type || 00 || schema_version || 00 || JCS(object_without_hash)"
+  },
+  "bundle_registry_checks": {
+    "source_file": "../../../contracts/v0/examples/valid-contract-bundle.json",
+    "topology": [
+      {
+        "registry_key": "CommandPayloadRef",
+        "source_pointer": "/command_envelopes/0/payload",
+        "derivation": "identity",
+        "reference_pointers": [
+          "/command_envelopes/0/payload_hash"
+        ]
+      },
+      {
+        "registry_key": "DataBoundaryGrant",
+        "source_pointer": "/data_boundary_grants/0",
+        "reference_pointers": [
+          "/tool_intents/0/data_boundary_grant/grant_hash",
+          "/invocation_specs/0/data_boundary_grant/grant_hash"
+        ]
+      },
+      {
+        "registry_key": "ResourceIdentity",
+        "source_pointer": "/resource_identities/0",
+        "reference_pointers": [
+          "/tool_intents/0/resource_proposals/0/resource_identity_hash",
+          "/invocation_specs/0/resources/0/resource_identity_hash",
+          "/policy_decisions/0/evaluated_resource_versions/0/resource_identity_hash",
+          "/approvals/0/resource_versions/0/resource_identity_hash",
+          "/authorization_grants/0/resources/0/resource_identity_hash"
+        ]
+      },
+      {
+        "registry_key": "ResourceOperationSet",
+        "source_pointer": "/invocation_specs/0/resources",
+        "derivation": "resource_operation_set",
+        "reference_pointers": [
+          "/invocation_specs/0/expected_resource_set_hash",
+          "/effect_receipts/0/expected_resource_set_hash"
+        ]
+      },
+      {
+        "registry_key": "ToolIntent",
+        "source_pointer": "/tool_intents/0",
+        "reference_pointers": [
+          "/invocation_specs/0/source_intent_hash",
+          "/approvals/0/intent_hash"
+        ]
+      },
+      {
+        "registry_key": "InvocationSpec",
+        "source_pointer": "/invocation_specs/0",
+        "reference_pointers": [
+          "/policy_decisions/0/invocation_spec_hash",
+          "/previews/0/invocation_spec_hash",
+          "/approvals/0/invocation_spec_hash",
+          "/authorization_grants/0/invocation_spec_hash",
+          "/effect_receipts/0/invocation_spec_hash"
+        ]
+      },
+      {
+        "registry_key": "PreviewBinding",
+        "source_pointer": "/previews/0",
+        "reference_pointers": [
+          "/policy_decisions/0/required_constraints/1/binding_hash",
+          "/policy_decisions/0/preview_hash",
+          "/approvals/0/preview_hash",
+          "/authorization_grants/0/preview_hash"
+        ]
+      },
+      {
+        "registry_key": "PolicyDecision",
+        "source_pointer": "/policy_decisions/0",
+        "reference_pointers": [
+          "/authorization_grants/0/policy_decision_hash"
+        ]
+      },
+      {
+        "registry_key": "Approval",
+        "source_pointer": "/approvals/0",
+        "reference_pointers": [
+          "/authorization_grants/0/approval_hash"
+        ]
+      },
+      {
+        "registry_key": "AuthorizationGrant",
+        "source_pointer": "/authorization_grants/0",
+        "reference_pointers": [
+          "/effect_receipts/0/authorization_hash"
+        ]
+      },
+      {
+        "registry_key": "EffectReceipt",
+        "source_pointer": "/effect_receipts/0",
+        "reference_pointers": []
+      }
+    ],
+    "command_payload_bindings": []
+  },
+  "valid_vectors": [
+    {
+      "id": "formal-invocation-spec",
+      "purpose": "Complete schema-valid InvocationSpec loaded from the contract bundle and hashed under the fixed registry entry",
+      "registry_key": "InvocationSpec",
+      "source_file": "../../../contracts/v0/examples/valid-contract-bundle.json",
+      "source_pointer": "/invocation_specs/0",
+      "assertions": {},
+      "expected_canonical": "{\"canonical_args\":{\"byte_length\":\"384\",\"content_ref\":\"arcforge-content:sha256:1111111111111111111111111111111111111111111111111111111111111111\",\"sha256\":\"sha256:1111111111111111111111111111111111111111111111111111111111111111\"},\"canonicalization_version\":\"jcs-rfc8785-restricted-v0\",\"capability\":{\"capability_descriptor_hash\":\"sha256:2222222222222222222222222222222222222222222222222222222222222222\",\"capability_id\":\"workspace.apply\",\"capability_provider_id\":\"workspace-broker\",\"capability_provider_version\":\"1\",\"capability_version\":\"1\",\"provider_binary_hash\":\"sha256:3333333333333333333333333333333333333333333333333333333333333333\"},\"data_boundary_grant\":{\"data_boundary_id\":\"018f0f6c-7b11-7a10-8b01-00000000000a\",\"grant_hash\":\"sha256:fac9e532c32e82d17adaf1c6f9d8d88cde294e88badaccceb15b9a410df198da\",\"version\":\"1\"},\"effect_class\":\"WorkspaceMutation\",\"effect_id\":\"018f0f6c-7b11-7a10-8b01-00000000000f\",\"exact_args_bytes_sha256\":\"sha256:1111111111111111111111111111111111111111111111111111111111111111\",\"expected_resource_set_hash\":\"sha256:0a06c469f4d9bdaf9fef6ed7e59d79006ed1cfef846e6bc02d3217f7c536350e\",\"idempotency_key\":\"018f0f6c-7b11-7a10-8b01-000000000011\",\"invocation_id\":\"018f0f6c-7b11-7a10-8b01-00000000000e\",\"lifetime\":{\"clock_epoch_id\":\"018f0f6c-7b11-7a10-8b01-000000000015\",\"expires_monotonic_ticks\":\"1420000\",\"issued_at_utc_trusted\":\"2026-07-20T04:02:00Z\",\"issued_monotonic_ticks\":\"1120000\",\"ttl_ms\":\"300000\"},\"limits\":{\"max_output_bytes\":\"1048576\",\"max_resources\":\"1\",\"timeout_ms\":\"120000\"},\"mode_policy_hash\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"operation\":\"workspace.file.create\",\"policy_snapshot_version\":\"7\",\"protocol_major\":1,\"protocol_minor\":0,\"required_features\":[\"closed-authoritative-schema\",\"jcs-rfc8785\",\"exact-argument-bytes\",\"trusted-monotonic-clock\",\"ntfs-file-id-128\"],\"resources\":[{\"expected_content_hash\":\"sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\",\"expected_revision\":\"sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"operation\":\"workspace.file.create\",\"resource_handle_hash\":\"sha256:4444444444444444444444444444444444444444444444444444444444444444\",\"resource_handle_id\":\"018f0f6c-7b11-7a10-8b01-000000000010\",\"resource_identity_hash\":\"sha256:e97afc9ad68afaeb11b322edf95e25708fdeb5d245f80d6ac296772034cf7de0\",\"resource_identity_id\":\"018f0f6c-7b11-7a10-8b01-00000000000c\",\"resource_operation_id\":\"018f0f6c-7b11-7a10-8b01-00000000000d\"}],\"run_id\":\"018f0f6c-7b11-7a10-8b01-000000000004\",\"run_mode\":\"Execute\",\"schema_id\":\"arcforge.invocation-spec\",\"schema_version\":0,\"secret_refs\":[],\"source_intent_hash\":\"sha256:802eb0f91bcda4a749d36a4c5cd0be8f820151d7639e15460628af80d36fd0ea\",\"source_tool_intent_id\":\"018f0f6c-7b11-7a10-8b01-00000000000b\",\"task_id\":\"018f0f6c-7b11-7a10-8b01-000000000003\",\"workspace_id\":\"018f0f6c-7b11-7a10-8b01-000000000001\"}",
+      "expected_preimage_hex": "417263466f726765006a63732d726663383738352d726573747269637465642d763000496e766f636174696f6e537065630030007b2263616e6f6e6963616c5f61726773223a7b22627974655f6c656e677468223a22333834222c22636f6e74656e745f726566223a22617263666f7267652d636f6e74656e743a7368613235363a31313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131222c22736861323536223a227368613235363a31313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131227d2c2263616e6f6e6963616c697a6174696f6e5f76657273696f6e223a226a63732d726663383738352d726573747269637465642d7630222c226361706162696c697479223a7b226361706162696c6974795f64657363726970746f725f68617368223a227368613235363a32323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232323232222c226361706162696c6974795f6964223a22776f726b73706163652e6170706c79222c226361706162696c6974795f70726f76696465725f6964223a22776f726b73706163652d62726f6b6572222c226361706162696c6974795f70726f76696465725f76657273696f6e223a2231222c226361706162696c6974795f76657273696f6e223a2231222c2270726f76696465725f62696e6172795f68617368223a227368613235363a33333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333227d2c22646174615f626f756e646172795f6772616e74223a7b22646174615f626f756e646172795f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303061222c226772616e745f68617368223a227368613235363a66616339653533326333326538326431376164616631633666396438643838636465323934653838626164616363636562313562396134313064663139386461222c2276657273696f6e223a2231227d2c226566666563745f636c617373223a22576f726b73706163654d75746174696f6e222c226566666563745f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303066222c2265786163745f617267735f62797465735f736861323536223a227368613235363a31313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131222c2265787065637465645f7265736f757263655f7365745f68617368223a227368613235363a30613036633436396634643962646166396665663665643765353964373930303665643163666566383436653662633032643332313766376335333633353065222c226964656d706f74656e63795f6b6579223a2230313866306636632d376231312d376131302d386230312d303030303030303030303131222c22696e766f636174696f6e5f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303065222c226c69666574696d65223a7b22636c6f636b5f65706f63685f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303135222c22657870697265735f6d6f6e6f746f6e69635f7469636b73223a2231343230303030222c226973737565645f61745f7574635f74727573746564223a22323032362d30372d32305430343a30323a30305a222c226973737565645f6d6f6e6f746f6e69635f7469636b73223a2231313230303030222c2274746c5f6d73223a22333030303030227d2c226c696d697473223a7b226d61785f6f75747075745f6279746573223a2231303438353736222c226d61785f7265736f7572636573223a2231222c2274696d656f75745f6d73223a22313230303030227d2c226d6f64655f706f6c6963795f68617368223a227368613235363a61616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161616161222c226f7065726174696f6e223a22776f726b73706163652e66696c652e637265617465222c22706f6c6963795f736e617073686f745f76657273696f6e223a2237222c2270726f746f636f6c5f6d616a6f72223a312c2270726f746f636f6c5f6d696e6f72223a302c2272657175697265645f6665617475726573223a5b22636c6f7365642d617574686f72697461746976652d736368656d61222c226a63732d72666338373835222c2265786163742d617267756d656e742d6279746573222c22747275737465642d6d6f6e6f746f6e69632d636c6f636b222c226e7466732d66696c652d69642d313238225d2c227265736f7572636573223a5b7b2265787065637465645f636f6e74656e745f68617368223a227368613235363a66666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666222c2265787065637465645f7265766973696f6e223a227368613235363a65656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565222c226f7065726174696f6e223a22776f726b73706163652e66696c652e637265617465222c227265736f757263655f68616e646c655f68617368223a227368613235363a34343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434222c227265736f757263655f68616e646c655f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303130222c227265736f757263655f6964656e746974795f68617368223a227368613235363a65393761666339616436386166616562313162333232656466393565323537303866646562356432343566383064366163323936373732303334636637646530222c227265736f757263655f6964656e746974795f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303063222c227265736f757263655f6f7065726174696f6e5f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303064227d5d2c2272756e5f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303034222c2272756e5f6d6f6465223a2245786563757465222c22736368656d615f6964223a22617263666f7267652e696e766f636174696f6e2d73706563222c22736368656d615f76657273696f6e223a302c227365637265745f72656673223a5b5d2c22736f757263655f696e74656e745f68617368223a227368613235363a38303265623066393162636461346137343964333661346335636430626538663832303135316437363339653135343630363238616638306433366664306561222c22736f757263655f746f6f6c5f696e74656e745f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303062222c227461736b5f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303033222c22776f726b73706163655f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303031227d",
+      "expected_sha256": "292dcd8c77d0ed26b40a95e1fa6b74d4f96005192f28e6ebe24811af00004594"
+    },
+    {
+      "id": "invocation-binding-probe-order-a",
+      "status": "Canonicalization probe only; intentionally not schema-valid InvocationSpec",
+      "purpose": "Reduced probe for source-member ordering and exact argument-byte binding; it is not a complete contract object",
+      "probe_profile": "invocation-binding-probe-v0",
+      "raw_input": "{\"probe_hash\":\"sha256:0000000000000000000000000000000000000000000000000000000000000000\",\"provider\":{\"capability_version\":\"1\",\"provider_id\":\"local.mock\"},\"operation\":\"write_file\",\"exact_args_bytes_sha256\":\"sha256:f7fc3bca20fe897d273ea9d21a8080cd04bd99e6a87e0867818f9490e3bf269b\",\"args\":[\"--output\",\"report.docx\"],\"resource_operation_ids\":[\"op-1\"]}",
+      "assertions": {
+        "byte_hashes": [
+          {
+            "source_description": "UTF-8 bytes of the exact argument-vector encoding [\"--output\",\"report.docx\"]",
+            "source_base64url": "WyItLW91dHB1dCIsInJlcG9ydC5kb2N4Il0",
+            "sha256_pointer": "/exact_args_bytes_sha256"
+          }
+        ]
+      },
+      "expected_canonical": "{\"args\":[\"--output\",\"report.docx\"],\"exact_args_bytes_sha256\":\"sha256:f7fc3bca20fe897d273ea9d21a8080cd04bd99e6a87e0867818f9490e3bf269b\",\"operation\":\"write_file\",\"provider\":{\"capability_version\":\"1\",\"provider_id\":\"local.mock\"},\"resource_operation_ids\":[\"op-1\"]}",
+      "expected_preimage_hex": "417263466f726765006a63732d726663383738352d726573747269637465642d763000496e766f636174696f6e5370656342696e64696e6750726f62650030007b2261726773223a5b222d2d6f7574707574222c227265706f72742e646f6378225d2c2265786163745f617267735f62797465735f736861323536223a227368613235363a66376663336263613230666538393764323733656139643231613830383063643034626439396536613837653038363738313866393439306533626632363962222c226f7065726174696f6e223a2277726974655f66696c65222c2270726f7669646572223a7b226361706162696c6974795f76657273696f6e223a2231222c2270726f76696465725f6964223a226c6f63616c2e6d6f636b227d2c227265736f757263655f6f7065726174696f6e5f696473223a5b226f702d31225d7d",
+      "expected_sha256": "1126afd0f57c98d670f9bc791dfb219f1c189e839f690451f8c2316d35535441"
+    },
+    {
+      "id": "invocation-binding-probe-order-b",
+      "status": "Canonicalization probe only; intentionally not schema-valid InvocationSpec",
+      "purpose": "The same reduced binding probe in a different source-member order",
+      "probe_profile": "invocation-binding-probe-v0",
+      "raw_input": "{\"resource_operation_ids\":[\"op-1\"],\"args\":[\"--output\",\"report.docx\"],\"exact_args_bytes_sha256\":\"sha256:f7fc3bca20fe897d273ea9d21a8080cd04bd99e6a87e0867818f9490e3bf269b\",\"operation\":\"write_file\",\"provider\":{\"provider_id\":\"local.mock\",\"capability_version\":\"1\"},\"probe_hash\":\"sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\"}",
+      "assertions": {
+        "byte_hashes": [
+          {
+            "source_description": "The same exact argument bytes as invocation-order-a",
+            "source_base64url": "WyItLW91dHB1dCIsInJlcG9ydC5kb2N4Il0",
+            "sha256_pointer": "/exact_args_bytes_sha256"
+          }
+        ]
+      },
+      "expected_canonical": "{\"args\":[\"--output\",\"report.docx\"],\"exact_args_bytes_sha256\":\"sha256:f7fc3bca20fe897d273ea9d21a8080cd04bd99e6a87e0867818f9490e3bf269b\",\"operation\":\"write_file\",\"provider\":{\"capability_version\":\"1\",\"provider_id\":\"local.mock\"},\"resource_operation_ids\":[\"op-1\"]}",
+      "expected_preimage_hex": "417263466f726765006a63732d726663383738352d726573747269637465642d763000496e766f636174696f6e5370656342696e64696e6750726f62650030007b2261726773223a5b222d2d6f7574707574222c227265706f72742e646f6378225d2c2265786163745f617267735f62797465735f736861323536223a227368613235363a66376663336263613230666538393764323733656139643231613830383063643034626439396536613837653038363738313866393439306533626632363962222c226f7065726174696f6e223a2277726974655f66696c65222c2270726f7669646572223a7b226361706162696c6974795f76657273696f6e223a2231222c2270726f76696465725f6964223a226c6f63616c2e6d6f636b227d2c227265736f757263655f6f7065726174696f6e5f696473223a5b226f702d31225d7d",
+      "expected_sha256": "1126afd0f57c98d670f9bc791dfb219f1c189e839f690451f8c2316d35535441"
+    },
+    {
+      "id": "resource-operation-set-unsorted",
+      "purpose": "A two-resource derived set presented in reverse operation-id order is sorted before hashing",
+      "registry_key": "ResourceOperationSet",
+      "derived_input": true,
+      "raw_input": "{\"resources\":[{\"resource_operation_id\":\"018f0f6c-7b11-7a10-8b01-00000000001a\",\"resource_identity_id\":\"018f0f6c-7b11-7a10-8b01-00000000001b\",\"resource_identity_hash\":\"sha256:abababababababababababababababababababababababababababababababab\",\"resource_handle_id\":\"018f0f6c-7b11-7a10-8b01-00000000001c\",\"resource_handle_hash\":\"sha256:cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd\",\"operation\":\"workspace.file.create\",\"expected_revision\":\"sha256:edededededededededededededededededededededededededededededededed\",\"expected_content_hash\":\"sha256:fafafafafafafafafafafafafafafafafafafafafafafafafafafafafafafa\"},{\"resource_operation_id\":\"018f0f6c-7b11-7a10-8b01-00000000000d\",\"resource_identity_id\":\"018f0f6c-7b11-7a10-8b01-00000000000c\",\"resource_identity_hash\":\"sha256:e97afc9ad68afaeb11b322edf95e25708fdeb5d245f80d6ac296772034cf7de0\",\"resource_handle_id\":\"018f0f6c-7b11-7a10-8b01-000000000010\",\"resource_handle_hash\":\"sha256:4444444444444444444444444444444444444444444444444444444444444444\",\"operation\":\"workspace.file.create\",\"expected_revision\":\"sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"expected_content_hash\":\"sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\"}]}",
+      "assertions": {},
+      "expected_canonical": "{\"resources\":[{\"expected_content_hash\":\"sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\",\"expected_revision\":\"sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"operation\":\"workspace.file.create\",\"resource_handle_hash\":\"sha256:4444444444444444444444444444444444444444444444444444444444444444\",\"resource_handle_id\":\"018f0f6c-7b11-7a10-8b01-000000000010\",\"resource_identity_hash\":\"sha256:e97afc9ad68afaeb11b322edf95e25708fdeb5d245f80d6ac296772034cf7de0\",\"resource_identity_id\":\"018f0f6c-7b11-7a10-8b01-00000000000c\",\"resource_operation_id\":\"018f0f6c-7b11-7a10-8b01-00000000000d\"},{\"expected_content_hash\":\"sha256:fafafafafafafafafafafafafafafafafafafafafafafafafafafafafafafa\",\"expected_revision\":\"sha256:edededededededededededededededededededededededededededededededed\",\"operation\":\"workspace.file.create\",\"resource_handle_hash\":\"sha256:cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd\",\"resource_handle_id\":\"018f0f6c-7b11-7a10-8b01-00000000001c\",\"resource_identity_hash\":\"sha256:abababababababababababababababababababababababababababababababab\",\"resource_identity_id\":\"018f0f6c-7b11-7a10-8b01-00000000001b\",\"resource_operation_id\":\"018f0f6c-7b11-7a10-8b01-00000000001a\"}]}",
+      "expected_preimage_hex": "417263466f726765006a63732d726663383738352d726573747269637465642d7630005265736f757263654f7065726174696f6e5365740030007b227265736f7572636573223a5b7b2265787065637465645f636f6e74656e745f68617368223a227368613235363a66666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666222c2265787065637465645f7265766973696f6e223a227368613235363a65656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565222c226f7065726174696f6e223a22776f726b73706163652e66696c652e637265617465222c227265736f757263655f68616e646c655f68617368223a227368613235363a34343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434222c227265736f757263655f68616e646c655f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303130222c227265736f757263655f6964656e746974795f68617368223a227368613235363a65393761666339616436386166616562313162333232656466393565323537303866646562356432343566383064366163323936373732303334636637646530222c227265736f757263655f6964656e746974795f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303063222c227265736f757263655f6f7065726174696f6e5f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303064227d2c7b2265787065637465645f636f6e74656e745f68617368223a227368613235363a6661666166616661666166616661666166616661666166616661666166616661666166616661666166616661666166616661666166616661666166616661222c2265787065637465645f7265766973696f6e223a227368613235363a65646564656465646564656465646564656465646564656465646564656465646564656465646564656465646564656465646564656465646564656465646564222c226f7065726174696f6e223a22776f726b73706163652e66696c652e637265617465222c227265736f757263655f68616e646c655f68617368223a227368613235363a63646364636463646364636463646364636463646364636463646364636463646364636463646364636463646364636463646364636463646364636463646364222c227265736f757263655f68616e646c655f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303163222c227265736f757263655f6964656e746974795f68617368223a227368613235363a61626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162222c227265736f757263655f6964656e746974795f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303162222c227265736f757263655f6f7065726174696f6e5f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303161227d5d7d",
+      "expected_sha256": "f3080fa0ea36ad49de0de028b1df896e7142864756aedf92c8bc1bda3130f62e"
+    },
+    {
+      "id": "resource-operation-set-sorted",
+      "purpose": "The same two-resource derived set in canonical operation-id order",
+      "registry_key": "ResourceOperationSet",
+      "derived_input": true,
+      "raw_input": "{\"resources\":[{\"resource_operation_id\":\"018f0f6c-7b11-7a10-8b01-00000000000d\",\"resource_identity_id\":\"018f0f6c-7b11-7a10-8b01-00000000000c\",\"resource_identity_hash\":\"sha256:e97afc9ad68afaeb11b322edf95e25708fdeb5d245f80d6ac296772034cf7de0\",\"resource_handle_id\":\"018f0f6c-7b11-7a10-8b01-000000000010\",\"resource_handle_hash\":\"sha256:4444444444444444444444444444444444444444444444444444444444444444\",\"operation\":\"workspace.file.create\",\"expected_revision\":\"sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"expected_content_hash\":\"sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\"},{\"resource_operation_id\":\"018f0f6c-7b11-7a10-8b01-00000000001a\",\"resource_identity_id\":\"018f0f6c-7b11-7a10-8b01-00000000001b\",\"resource_identity_hash\":\"sha256:abababababababababababababababababababababababababababababababab\",\"resource_handle_id\":\"018f0f6c-7b11-7a10-8b01-00000000001c\",\"resource_handle_hash\":\"sha256:cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd\",\"operation\":\"workspace.file.create\",\"expected_revision\":\"sha256:edededededededededededededededededededededededededededededededed\",\"expected_content_hash\":\"sha256:fafafafafafafafafafafafafafafafafafafafafafafafafafafafafafafa\"}]}",
+      "assertions": {},
+      "expected_canonical": "{\"resources\":[{\"expected_content_hash\":\"sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\",\"expected_revision\":\"sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"operation\":\"workspace.file.create\",\"resource_handle_hash\":\"sha256:4444444444444444444444444444444444444444444444444444444444444444\",\"resource_handle_id\":\"018f0f6c-7b11-7a10-8b01-000000000010\",\"resource_identity_hash\":\"sha256:e97afc9ad68afaeb11b322edf95e25708fdeb5d245f80d6ac296772034cf7de0\",\"resource_identity_id\":\"018f0f6c-7b11-7a10-8b01-00000000000c\",\"resource_operation_id\":\"018f0f6c-7b11-7a10-8b01-00000000000d\"},{\"expected_content_hash\":\"sha256:fafafafafafafafafafafafafafafafafafafafafafafafafafafafafafafa\",\"expected_revision\":\"sha256:edededededededededededededededededededededededededededededededed\",\"operation\":\"workspace.file.create\",\"resource_handle_hash\":\"sha256:cdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcdcd\",\"resource_handle_id\":\"018f0f6c-7b11-7a10-8b01-00000000001c\",\"resource_identity_hash\":\"sha256:abababababababababababababababababababababababababababababababab\",\"resource_identity_id\":\"018f0f6c-7b11-7a10-8b01-00000000001b\",\"resource_operation_id\":\"018f0f6c-7b11-7a10-8b01-00000000001a\"}]}",
+      "expected_preimage_hex": "417263466f726765006a63732d726663383738352d726573747269637465642d7630005265736f757263654f7065726174696f6e5365740030007b227265736f7572636573223a5b7b2265787065637465645f636f6e74656e745f68617368223a227368613235363a66666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666222c2265787065637465645f7265766973696f6e223a227368613235363a65656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565222c226f7065726174696f6e223a22776f726b73706163652e66696c652e637265617465222c227265736f757263655f68616e646c655f68617368223a227368613235363a34343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434343434222c227265736f757263655f68616e646c655f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303130222c227265736f757263655f6964656e746974795f68617368223a227368613235363a65393761666339616436386166616562313162333232656466393565323537303866646562356432343566383064366163323936373732303334636637646530222c227265736f757263655f6964656e746974795f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303063222c227265736f757263655f6f7065726174696f6e5f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303064227d2c7b2265787065637465645f636f6e74656e745f68617368223a227368613235363a6661666166616661666166616661666166616661666166616661666166616661666166616661666166616661666166616661666166616661666166616661222c2265787065637465645f7265766973696f6e223a227368613235363a65646564656465646564656465646564656465646564656465646564656465646564656465646564656465646564656465646564656465646564656465646564222c226f7065726174696f6e223a22776f726b73706163652e66696c652e637265617465222c227265736f757263655f68616e646c655f68617368223a227368613235363a63646364636463646364636463646364636463646364636463646364636463646364636463646364636463646364636463646364636463646364636463646364222c227265736f757263655f68616e646c655f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303163222c227265736f757263655f6964656e746974795f68617368223a227368613235363a61626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162616261626162222c227265736f757263655f6964656e746974795f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303162222c227265736f757263655f6f7065726174696f6e5f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303161227d5d7d",
+      "expected_sha256": "f3080fa0ea36ad49de0de028b1df896e7142864756aedf92c8bc1bda3130f62e"
+    },
+    {
+      "id": "unicode-key-order",
+      "purpose": "RFC 8785 UTF-16 member ordering, including the supplementary-plane versus U+E000 edge",
+      "probe_profile": "canonicalization-probe-v0",
+      "raw_input": "{\"\":\"bmp-private\",\"😀\":\"astral\",\"A\":\"ascii\"}",
+      "assertions": {},
+      "expected_canonical": "{\"A\":\"ascii\",\"😀\":\"astral\",\"\":\"bmp-private\"}",
+      "expected_preimage_hex": "417263466f726765006a63732d726663383738352d726573747269637465642d76300043616e6f6e6963616c697a6174696f6e50726f62650030007b2241223a226173636969222c22f09f9880223a2261737472616c222c22ee8080223a22626d702d70726976617465227d",
+      "expected_sha256": "bab096b537e841e45754885cc18a3ee6e2da2097cb4a501434cc11e25dd96de4"
+    },
+    {
+      "id": "unicode-composed",
+      "purpose": "JCS preserves composed Unicode and performs no normalization",
+      "probe_profile": "canonicalization-probe-v0",
+      "raw_input": "{\"label\":\"é\"}",
+      "assertions": {},
+      "expected_canonical": "{\"label\":\"é\"}",
+      "expected_preimage_hex": "417263466f726765006a63732d726663383738352d726573747269637465642d76300043616e6f6e6963616c697a6174696f6e50726f62650030007b226c6162656c223a22c3a9227d",
+      "expected_sha256": "b2fea73716c5c8b181b9f25f32aa34a564aaddde75be0393018b548c2a40a37f"
+    },
+    {
+      "id": "unicode-decomposed",
+      "purpose": "A canonically equivalent-looking but code-unit-distinct string remains distinct",
+      "probe_profile": "canonicalization-probe-v0",
+      "raw_input": "{\"label\":\"é\"}",
+      "assertions": {},
+      "expected_canonical": "{\"label\":\"é\"}",
+      "expected_preimage_hex": "417263466f726765006a63732d726663383738352d726573747269637465642d76300043616e6f6e6963616c697a6174696f6e50726f62650030007b226c6162656c223a2265cc81227d",
+      "expected_sha256": "597cde68dc125cd38618f58b40759d2ada91acb2803f0b1974386938d04cd422"
+    },
+    {
+      "id": "integer-spelling",
+      "purpose": "Ordinary lexical safe integers serialize without a floating-point parse step",
+      "probe_profile": "canonicalization-probe-v0",
+      "raw_input": "{\"value\":100,\"zero\":0}",
+      "assertions": {},
+      "expected_canonical": "{\"value\":100,\"zero\":0}",
+      "expected_preimage_hex": "417263466f726765006a63732d726663383738352d726573747269637465642d76300043616e6f6e6963616c697a6174696f6e50726f62650030007b2276616c7565223a3130302c227a65726f223a307d",
+      "expected_sha256": "5780671a6fd8accf0cb14651e6a66468a28ad2de41a5d3c99281f32ae9c00585"
+    },
+    {
+      "id": "formal-preview-binding",
+      "purpose": "Complete schema-valid PreviewBinding loaded from the contract bundle and bound to the sealed InvocationSpec plus trusted renderer",
+      "registry_key": "PreviewBinding",
+      "source_file": "../../../contracts/v0/examples/valid-contract-bundle.json",
+      "source_pointer": "/previews/0",
+      "assertions": {
+        "bound_invocation_vector": "formal-invocation-spec",
+        "trusted_renderer": {
+          "renderer_id": "arcforge.trusted-preview",
+          "renderer_version": "0.1.0",
+          "renderer_binary_hash": "sha256:1212121212121212121212121212121212121212121212121212121212121212"
+        }
+      },
+      "expected_canonical": "{\"canonical_args_sha256\":\"sha256:1111111111111111111111111111111111111111111111111111111111111111\",\"effect_class\":\"WorkspaceMutation\",\"exact_args_bytes_sha256\":\"sha256:1111111111111111111111111111111111111111111111111111111111111111\",\"invocation_id\":\"018f0f6c-7b11-7a10-8b01-00000000000e\",\"invocation_spec_hash\":\"sha256:292dcd8c77d0ed26b40a95e1fa6b74d4f96005192f28e6ebe24811af00004594\",\"operation\":\"workspace.file.create\",\"preview_id\":\"018f0f6c-7b11-7a10-8b01-000000000019\",\"protocol_major\":1,\"protocol_minor\":0,\"required_features\":[\"closed-authoritative-schema\",\"jcs-rfc8785\",\"exact-argument-bytes\",\"trusted-preview-renderer\"],\"resources\":[{\"action\":\"Create\",\"display_locator\":\"deliverables/final-report.docx\",\"expected_revision\":\"sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"proposed_content_hash\":\"sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff\",\"resource_identity_id\":\"018f0f6c-7b11-7a10-8b01-00000000000c\",\"resource_operation_id\":\"018f0f6c-7b11-7a10-8b01-00000000000d\"}],\"reversibility\":\"Reversible\",\"risk_level\":\"High\",\"schema_id\":\"arcforge.preview-binding\",\"schema_version\":0,\"trusted_renderer\":{\"renderer_binary_hash\":\"sha256:1212121212121212121212121212121212121212121212121212121212121212\",\"renderer_id\":\"arcforge.trusted-preview\",\"renderer_version\":\"0.1.0\"},\"warnings\":[\"NewFile\",\"WorkspaceWrite\"]}",
+      "expected_preimage_hex": "417263466f726765006a63732d726663383738352d726573747269637465642d7630005072657669657742696e64696e670030007b2263616e6f6e6963616c5f617267735f736861323536223a227368613235363a31313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131222c226566666563745f636c617373223a22576f726b73706163654d75746174696f6e222c2265786163745f617267735f62797465735f736861323536223a227368613235363a31313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131222c22696e766f636174696f6e5f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303065222c22696e766f636174696f6e5f737065635f68617368223a227368613235363a32393264636438633737643065643236623430613935653166613662373464346639363030353139326632386536656265323438313161663030303034353934222c226f7065726174696f6e223a22776f726b73706163652e66696c652e637265617465222c22707265766965775f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303139222c2270726f746f636f6c5f6d616a6f72223a312c2270726f746f636f6c5f6d696e6f72223a302c2272657175697265645f6665617475726573223a5b22636c6f7365642d617574686f72697461746976652d736368656d61222c226a63732d72666338373835222c2265786163742d617267756d656e742d6279746573222c22747275737465642d707265766965772d72656e6465726572225d2c227265736f7572636573223a5b7b22616374696f6e223a22437265617465222c22646973706c61795f6c6f6361746f72223a2264656c6976657261626c65732f66696e616c2d7265706f72742e646f6378222c2265787065637465645f7265766973696f6e223a227368613235363a65656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565656565222c2270726f706f7365645f636f6e74656e745f68617368223a227368613235363a66666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666666222c227265736f757263655f6964656e746974795f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303063222c227265736f757263655f6f7065726174696f6e5f6964223a2230313866306636632d376231312d376131302d386230312d303030303030303030303064227d5d2c227265766572736962696c697479223a2252657665727369626c65222c227269736b5f6c6576656c223a2248696768222c22736368656d615f6964223a22617263666f7267652e707265766965772d62696e64696e67222c22736368656d615f76657273696f6e223a302c22747275737465645f72656e6465726572223a7b2272656e64657265725f62696e6172795f68617368223a227368613235363a31323132313231323132313231323132313231323132313231323132313231323132313231323132313231323132313231323132313231323132313231323132222c2272656e64657265725f6964223a22617263666f7267652e747275737465642d70726576696577222c2272656e64657265725f76657273696f6e223a22302e312e30227d2c227761726e696e6773223a5b224e657746696c65222c22576f726b73706163655772697465225d7d",
+      "expected_sha256": "d633c73f36c435acfcc5fae74517e6e578437daf03d022d8b4d85719fd555659"
+    }
+  ],
+  "invalid_vectors": [
+    {
+      "id": "duplicate-member",
+      "raw_input": "{\"a\":1,\"a\":2}",
+      "expected_error": "DUPLICATE_PROPERTY"
+    },
+    {
+      "id": "duplicate-member-after-unescape",
+      "raw_input": "{\"a\":1,\"\\u0061\":2}",
+      "expected_error": "DUPLICATE_PROPERTY"
+    },
+    {
+      "id": "negative-zero",
+      "raw_input": "{\"value\":-0}",
+      "expected_error": "NEGATIVE_ZERO"
+    },
+    {
+      "id": "floating-point",
+      "raw_input": "{\"value\":1.5}",
+      "expected_error": "FLOAT_FORBIDDEN"
+    },
+    {
+      "id": "unsafe-integer",
+      "raw_input": "{\"value\":9007199254740992}",
+      "expected_error": "UNSAFE_INTEGER"
+    },
+    {
+      "id": "non-json-nan",
+      "raw_input": "{\"value\":NaN}",
+      "expected_error": "JSON_SYNTAX"
+    },
+    {
+      "id": "non-finite-overflow",
+      "raw_input": "{\"value\":1e400}",
+      "expected_error": "FLOAT_FORBIDDEN"
+    },
+    {
+      "id": "rounded-fraction-near-one",
+      "raw_input": "{\"value\":1.0000000000000001}",
+      "expected_error": "FLOAT_FORBIDDEN"
+    },
+    {
+      "id": "rounded-fraction-near-safe-limit",
+      "raw_input": "{\"value\":9007199254740990.6}",
+      "expected_error": "FLOAT_FORBIDDEN"
+    },
+    {
+      "id": "underflowing-exponent",
+      "raw_input": "{\"value\":1e-4000}",
+      "expected_error": "FLOAT_FORBIDDEN"
+    },
+    {
+      "id": "integer-valued-exponent",
+      "raw_input": "{\"value\":1e2}",
+      "expected_error": "FLOAT_FORBIDDEN"
+    },
+    {
+      "id": "lone-high-surrogate",
+      "raw_input": "{\"value\":\"\\ud800\"}",
+      "expected_error": "LONE_SURROGATE"
+    },
+    {
+      "id": "lone-low-surrogate",
+      "raw_input": "{\"value\":\"\\udc00\"}",
+      "expected_error": "LONE_SURROGATE"
+    },
+    {
+      "id": "u64-leading-zero",
+      "raw_input": "{\"fencing_token\":\"01\"}",
+      "assertions": {
+        "decimal_u64_pointers": [
+          "/fencing_token"
+        ]
+      },
+      "expected_error": "INVALID_U64_DECIMAL"
+    },
+    {
+      "id": "u64-overflow",
+      "raw_input": "{\"fencing_token\":\"18446744073709551616\"}",
+      "assertions": {
+        "decimal_u64_pointers": [
+          "/fencing_token"
+        ]
+      },
+      "expected_error": "U64_OVERFLOW"
+    },
+    {
+      "id": "argument-byte-hash-mismatch",
+      "raw_input": "{\"exact_args_bytes_sha256\":\"sha256:f7fc3bca20fe897d273ea9d21a8080cd04bd99e6a87e0867818f9490e3bf269b\"}",
+      "assertions": {
+        "byte_hashes": [
+          {
+            "source_base64url": "WyItLW91dHB1dCIsInJlcG9ydC12Mi5kb2N4Il0",
+            "sha256_pointer": "/exact_args_bytes_sha256"
+          }
+        ]
+      },
+      "expected_error": "BYTE_HASH_MISMATCH"
+    },
+    {
+      "id": "padded-base64url",
+      "raw_input": "{\"exact_args_bytes_sha256\":\"sha256:f7fc3bca20fe897d273ea9d21a8080cd04bd99e6a87e0867818f9490e3bf269b\"}",
+      "assertions": {
+        "byte_hashes": [
+          {
+            "source_base64url": "WyItLW91dHB1dCIsInJlcG9ydC5kb2N4Il0=",
+            "sha256_pointer": "/exact_args_bytes_sha256"
+          }
+        ]
+      },
+      "expected_error": "INVALID_BASE64URL"
+    }
+  ],
+  "invalid_utf8_vectors": [
+    {
+      "id": "utf8-overlong-nul-in-json-string",
+      "raw_hex": "7b2276616c7565223a22c080227d",
+      "expected_error": "INVALID_UTF8"
+    },
+    {
+      "id": "utf8-encoded-surrogate-in-json-string",
+      "raw_hex": "7b2276616c7565223a22eda080227d",
+      "expected_error": "INVALID_UTF8"
+    },
+    {
+      "id": "utf8-isolated-continuation-byte",
+      "raw_hex": "7b2276616c7565223a2280227d",
+      "expected_error": "INVALID_UTF8"
+    }
+  ],
+  "relationship_assertions": [
+    {
+      "id": "member-order-does-not-change-hash",
+      "left": "invocation-binding-probe-order-a",
+      "right": "invocation-binding-probe-order-b",
+      "relationship": "same_hash"
+    },
+    {
+      "id": "resource-operation-set-order-is-normalized",
+      "left": "resource-operation-set-unsorted",
+      "right": "resource-operation-set-sorted",
+      "relationship": "same_hash"
+    },
+    {
+      "id": "unicode-normalization-is-not-performed",
+      "left": "unicode-composed",
+      "right": "unicode-decomposed",
+      "relationship": "different_hash"
+    },
+    {
+      "id": "changed-argument-bytes-change-invocation-hash",
+      "left": "invocation-binding-probe-order-a",
+      "mutation": {
+        "pointer": "/exact_args_bytes_sha256",
+        "value": "sha256:e3d428c3833a098fc5fc80afa0f2ebf8a3d17fe2fb69130eb343b7c874cf4b23"
+      },
+      "relationship": "different_hash"
+    },
+    {
+      "id": "changed-renderer-version-changes-preview-hash",
+      "left": "formal-preview-binding",
+      "mutation": {
+        "pointer": "/trusted_renderer/renderer_version",
+        "value": "0.1.1"
+      },
+      "relationship": "different_hash"
+    },
+    {
+      "id": "changed-invocation-spec-changes-preview-hash",
+      "left": "formal-preview-binding",
+      "mutation": {
+        "pointer": "/invocation_spec_hash",
+        "value": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "relationship": "different_hash"
+    }
+  ]
+}
